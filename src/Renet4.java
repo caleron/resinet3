@@ -77,9 +77,10 @@ public class Renet4 extends JFrame
         init();
     }
 
-    public static void main(String[] args){
+    public static void main(String[] args) {
         Renet4 r = new Renet4();
-        r.show();
+        r.setSize(new Dimension(800, 1000));
+        r.setVisible(true);
     }
 
     public void init() {
@@ -1704,7 +1705,7 @@ public class Renet4 extends JFrame
 
         // Wahrscheinlichkeiten neu zuordnen. 
         /*br = (MyList)graph.getEdgelist().clone();
-		br_fact = (MyList)graphfact.getEdgelist().clone();
+        br_fact = (MyList)graphfact.getEdgelist().clone();
 		for(int k=0; k<probs.length;k++)
 		{
 		    Edge e = (Edge)br.get(k);
