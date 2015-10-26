@@ -14,7 +14,7 @@ import javax.swing.*;
 import javax.swing.filechooser.FileNameExtensionFilter;
 
 
-public class Renet4 extends Applet
+public class Renet4 extends JFrame
         implements ActionListener, ItemListener {
     Panel panel1, panel3, panel5, panel6, panel7;
     static Panel output;
@@ -73,7 +73,18 @@ public class Renet4 extends Applet
         g.drawImage(logo, 270, 7, this);
     }
 
+    public Renet4() {
+        init();
+    }
+
+    public static void main(String[] args){
+        Renet4 r = new Renet4();
+        r.show();
+    }
+
     public void init() {
+        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+
         nodes = new MyList();
         edges = new MyList();
 
@@ -89,7 +100,7 @@ public class Renet4 extends Applet
         GridBagLayout mainLayout = new GridBagLayout();
         setLayout(mainLayout);
 
-        logo = getImage(getCodeBase(), "logo.jpg");
+        logo = getToolkit().getImage(getClass().getResource("logo.jpg"));
         prepareImage(logo, this);
 
         Panel halt0 = new Panel();
@@ -1135,8 +1146,9 @@ public class Renet4 extends Applet
             URL url = null;
             // URL url = getClass().getResource(s);
             try {
-                url = new URL(getDocumentBase(), s);
-            } catch (MalformedURLException e) {
+
+                url = getClass().getResource(s);
+            } catch (Exception e) {
                 e.printStackTrace();
             }
             img = getToolkit().getImage(url);
@@ -1691,7 +1703,7 @@ public class Renet4 extends Applet
         }
 
         // Wahrscheinlichkeiten neu zuordnen. 
-		/*br = (MyList)graph.getEdgelist().clone();
+        /*br = (MyList)graph.getEdgelist().clone();
 		br_fact = (MyList)graphfact.getEdgelist().clone();
 		for(int k=0; k<probs.length;k++)
 		{
