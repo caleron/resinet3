@@ -2,6 +2,9 @@ package com.resinet.views;
 
 import com.resinet.*;
 import com.resinet.model.Edge;
+import com.resinet.model.Graph;
+import com.resinet.model.Node;
+import com.resinet.util.MyIterator;
 
 import java.awt.*;
 

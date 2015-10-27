@@ -1,6 +1,6 @@
-package com.resinet;/* com.resinet.Node.java */
+package com.resinet.model;/* com.resinet.model.Node.java */
 
-import com.resinet.model.Edge;
+import com.resinet.util.MyList;
 
 import java.io.Serializable;
 
@@ -9,9 +9,9 @@ public class Node implements Serializable {
     public boolean c_node = false;
     // Kennzeichen fuer Konnektionsknoten
 
-    Node left, right;
+    public Node left, right;
 
-    MyList node_edge = new MyList();
+    public MyList node_edge = new MyList();
 
     public int xposition;
     public int yposition;
@@ -22,15 +22,15 @@ public class Node implements Serializable {
     public boolean marked = false;
 
     public boolean b_marked = false;
-    //mark fuer K-Baum (com.resinet.KTree.java)
+    //mark fuer K-Baum (com.resinet.model.KTree.java)
 
-    boolean useless = false;
+    public boolean useless = false;
 
-    Node(int node_no) {
+    public Node(int node_no) {
         this.node_no = node_no;
     }
 
-    protected void add_Edge(Edge edge) {
+    public void add_Edge(Edge edge) {
         node_edge.add(edge);
         degree = node_edge.size();
     }

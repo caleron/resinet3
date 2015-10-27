@@ -1,7 +1,13 @@
-package com.resinet;/*Tree.java*/
+package com.resinet.algorithms;/*Tree.java*/
 
 
 import com.resinet.model.Edge;
+import com.resinet.model.Graph;
+import com.resinet.model.KTree;
+import com.resinet.model.Node;
+import com.resinet.util.MyIterator;
+import com.resinet.util.MyList;
+import com.resinet.util.MySet;
 
 public class Tree extends Thread {
     Graph g;
@@ -16,7 +22,7 @@ public class Tree extends Thread {
     public boolean dead = false;
 
     public Tree(Graph graph) {
-        //g = (com.resinet.Graph)Sc.serialClone(graph);
+        //g = (com.resinet.model.Graph)Sc.serialClone(graph);
         g = graph;
         q = new Q();
         b = new KTree();
@@ -349,7 +355,7 @@ ausgegeben (b.val = true) werden, nachdem die "useless"-Kante des Graphen geloes
 wurde, wenn der (ebenfalls "useless") Knoten ueber eine andere Kante NOCHMAL er-
 reicht wird. Sonst kommt es zu doppelten Eintraegen in der Menge der K-Baeume.
 
-Ueber com.resinet.KTree:
+Ueber com.resinet.model.KTree:
 Alle K-Baeume werden direkt in die Datei ktree.txt geschrieben, damit 
 das "Memory-Out-Problem" vermieden wird. S.a java.memory.tar/Tree.java.
 

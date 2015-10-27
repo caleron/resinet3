@@ -1,7 +1,5 @@
 package com.resinet.model;/* Edge.java */
 
-import com.resinet.Node;
-
 import java.io.Serializable;
 
 public class Edge implements Serializable {
@@ -15,11 +13,11 @@ public class Edge implements Serializable {
     public Edge q_right;
 
     public Edge left, right;
-    //for com.resinet.KTree.java
+    //for com.resinet.model.KTree.java
 
     public boolean b_marked = false;
     public boolean in_q = false;
-    //Mark fuer K-Baum (com.resinet.KTree.java)
+    //Mark fuer K-Baum (com.resinet.model.KTree.java)
 
     public boolean useless = false;
     public boolean deleted = false;

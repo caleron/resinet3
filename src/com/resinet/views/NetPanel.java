@@ -3,6 +3,7 @@ package com.resinet.views;
 import java.awt.*;
 import com.resinet.*;
 import com.resinet.model.*;
+import com.resinet.util.MyIterator;
 
 /**
  * Created by Patrick on 27.10.2015.

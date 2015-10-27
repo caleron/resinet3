@@ -1,17 +1,18 @@
-package com.resinet;/* com.resinet.KTree.java */
+package com.resinet.model;/* com.resinet.model.KTree.java */
 
 import com.resinet.model.Edge;
+import com.resinet.model.Node;
 
 public class KTree {
-    int count_nd = 0;
-    int count_br = 0;
-    Node last_nd, first_nd;
-    Edge last_br, first_br;
+    public int count_nd = 0;
+    public int count_br = 0;
+    public Node last_nd, first_nd;
+    public Edge last_br, first_br;
 
 
-    int no_use = 0;
+    public int no_use = 0;
 
-    void add_Node(Node node) {
+    public void add_Node(Node node) {
         node.b_marked = true;
         if (count_nd == 0)
             first_nd = node;
@@ -23,7 +24,7 @@ public class KTree {
         count_nd++;
     }
 
-    void add_Edge(Edge b) {
+    public void add_Edge(Edge b) {
         b.b_marked = true;
         if (count_br == 0) {
             first_br = b;
@@ -38,7 +39,7 @@ public class KTree {
         count_br++;
     }
 
-    void delete_Node(Node node) {
+    public void delete_Node(Node node) {
 
         node.b_marked = false;
         if (node.left != null)
@@ -49,7 +50,7 @@ public class KTree {
         count_nd--;
     }
 
-    void delete_Edge(Edge b) {
+    public void delete_Edge(Edge b) {
         b.b_marked = false;
         if (b.left != null)
             b.left.right = b.right;

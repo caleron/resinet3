@@ -1,13 +1,19 @@
-package com.resinet;/* Zerleg.java */
+package com.resinet.algorithms;/* Zerleg.java */
 
+
+import com.resinet.util.MyIterator;
+import com.resinet.util.MyList;
+import com.resinet.util.MySet;
+import com.resinet.model.Graph;
+import com.resinet.model.ResultA;
 
 public class Zerleg extends Thread {
     Graph g;
     Tree ktrees;
     MyList trs;
 
-    MySet az;
-    MySet hz;
+    public MySet az;
+    public MySet hz;
 
     AZerleg azer;
     HZerleg hzer;

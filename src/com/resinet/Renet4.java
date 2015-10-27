@@ -1,8 +1,12 @@
 package com.resinet;/* Renet4.java */
 
-import com.resinet.model.Edge;
-import com.resinet.model.EdgeLine;
-import com.resinet.model.NodePoint;
+import com.resinet.algorithms.Con_check;
+import com.resinet.algorithms.Zerleg;
+import com.resinet.model.*;
+import com.resinet.util.MyIterator;
+import com.resinet.util.MyList;
+import com.resinet.util.MySet;
+import com.resinet.util.Util;
 import com.resinet.views.*;
 
 import java.awt.*;
@@ -47,13 +51,13 @@ public class Renet4 extends JFrame
     String resultText;
     TextArea result;
     MyList nd;
-    static String reduceText;
-    static String factProb;
-    static int counterFact;
+    public static String reduceText;
+    public static String factProb;
+    public static int counterFact;
 
     Graph graphfact;
     Graph graph;
-    static MyList generated_Graphs;
+    public static MyList generated_Graphs;
     public float graph_width;
     public float graph_height;
     int smallest_x_pos;
@@ -1501,7 +1505,7 @@ public class Renet4 extends JFrame
         //Prüfen ob das Netz zusammenhängt
         boolean graphConnected;
         if (Con_check.check(graph) == -1) {
-            //com.resinet.Graph ist zusammenhängend
+            //com.resinet.model.Graph ist zusammenhängend
             graphConnected = true;
         } else {
             graphConnected = false;
@@ -1713,7 +1717,7 @@ public class Renet4 extends JFrame
                 prob = prob + p;
 
             }
-		/*
+        /*
 		String str1 = "The network is decomposed with Heidtmann's Algorithm:\n";
 		String str2 = "The reliability of the network is:\n";
 
@@ -1839,7 +1843,7 @@ public class Renet4 extends JFrame
 
         //Prüfen ob das Netz zusammenhängt
         if (Con_check.check(graph) == -1) {
-            //com.resinet.Graph ist zusammenhängend
+            //com.resinet.model.Graph ist zusammenhängend
             resilienceMode = 2;
         } else {
             resilienceMode = 1;
@@ -1890,7 +1894,7 @@ public class Renet4 extends JFrame
             for (int i = 0; i < total_nodes; i++) {
                 // Entsprechenden Knoten holen
                 NodePoint node1 = (NodePoint) nodes.get(i);
-                //com.resinet.Node node1 = (com.resinet.Node)graph.nd.get(i);
+                //com.resinet.model.Node node1 = (com.resinet.model.Node)graph.nd.get(i);
 
                 // Dann auf true, falls K-Knoten
                 if (d.contains(i)) {
@@ -2372,7 +2376,7 @@ public class Renet4 extends JFrame
             //Prüfen ob das Netz zusammenhängt
             boolean graphConnected;
             if (Con_check.check(graph) == -1) {
-                //com.resinet.Graph ist zusammenhängend
+                //com.resinet.model.Graph ist zusammenhängend
                 graphConnected = true;
             } else {
                 graphConnected = false;

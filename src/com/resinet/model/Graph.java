@@ -1,39 +1,42 @@
-package com.resinet;/* com.resinet.Graph.java */
+package com.resinet.model;/* com.resinet.model.Graph.java */
 
-/* Auf den Klassen "com.resinet.Node" und "Edge" wird ein Zufallsgraph generiert. Mit einer Zufallszahl
-werden die Konnektionsknoten festgelegt. Anschliessend werden die K-Baeume vom com.resinet.Graph abgeleitet.
+/* Auf den Klassen "com.resinet.model.Node" und "Edge" wird ein Zufallsgraph generiert. Mit einer Zufallszahl
+werden die Konnektionsknoten festgelegt. Anschliessend werden die K-Baeume vom com.resinet.model.Graph abgeleitet.
 Durch die K-Baeume erhaelt man die Minimalkombinationen.
 */
 
-import com.resinet.model.Edge;
+import com.resinet.algorithms.Con_check;
+import com.resinet.util.MyIterator;
+import com.resinet.util.MyList;
+import com.resinet.util.MySet;
 
 import java.util.Random;
 import java.io.Serializable;
 
 public class Graph implements Serializable {
-    int edge_quan;
-    int node_quan;
+    public int edge_quan;
+    public int node_quan;
 
-    Random r = new Random();
-    int n, m;
-    float offset;
-    float left_offset, right_offset; //Die linke und rechte "Ausbreitung" des Subbaumes beim Zeichnen des Faktorisierungsbaumes
-    int level;
-    int kind_of_reduction; //Art der Faktorisierung, durch die der com.resinet.Graph entstanden ist: 0==intakt, 1==defekt
-    int reduced_edge; //Nach welcher Kante wurde reduziert?
+    public Random r = new Random();
+    public int n, m;
+    public  float offset;
+    public float left_offset, right_offset; //Die linke und rechte "Ausbreitung" des Subbaumes beim Zeichnen des Faktorisierungsbaumes
+    public int level;
+    public int kind_of_reduction; //Art der Faktorisierung, durch die der com.resinet.model.Graph entstanden ist: 0==intakt, 1==defekt
+    public int reduced_edge; //Nach welcher Kante wurde reduziert?
 
-    MyList child_Graphs;
-    MyList nd;
-    MyList br;
-    MyList nd_bak, br_bak, br_fact;
+    public MyList child_Graphs;
+    public MyList nd;
+    public MyList br;
+    public MyList nd_bak, br_bak, br_fact;
 
-    float kprob;
+    public float kprob;
     //fuer K-Reduktion (1-u1u2)(1-u3u4)...
-    String reducetype;
+    public String reducetype;
     //fuer Polygon-Ketten-Reduktion
     //wedge = (f1+f2)(f1+f3)/f1 oder wedge = (f1+f2)(f1+f3)(f1+f4)/f1^2
-    float wedge = 1f;
-    MySet wedgeIndex = new MySet();
+    public float wedge = 1f;
+    public MySet wedgeIndex = new MySet();
 
     public Object clone() throws CloneNotSupportedException {
         Graph graph = (Graph) super.clone();
@@ -54,7 +57,7 @@ public class Graph implements Serializable {
         return c_size;
     }
 
-    void node_generate(int x) {
+    public void node_generate(int x) {
         int m;
         if (x == 0) {
             do {
@@ -96,8 +99,8 @@ public class Graph implements Serializable {
         }
     }
 
-    void edge_generate() {
-        //Ein com.resinet.Graph mit m Knoten hat max. sum m Kanten
+    public void edge_generate() {
+        //Ein com.resinet.model.Graph mit m Knoten hat max. sum m Kanten
         br = new MyList();
         int i;
         int j;
@@ -106,7 +109,7 @@ public class Graph implements Serializable {
 
         for (i = 0; i < nd.size(); i++) {
             for (j = i + 1; j < nd.size(); j++)
-            // Da der com.resinet.Graph ungerichtet ist
+            // Da der com.resinet.model.Graph ungerichtet ist
             {
                 k = Math.random();
                 if (k > 0.5) {
@@ -152,7 +155,7 @@ public class Graph implements Serializable {
         node_quan = nd.size();
     }
 
-    int delete_Node(Node n) //Ergänzt um die Rückgabe der Anzahl der entfernten Kanten.
+    public int delete_Node(Node n) //Ergänzt um die Rückgabe der Anzahl der entfernten Kanten.
     {
         if (!nd.contains(n)) {
             return (-1);
@@ -170,7 +173,7 @@ public class Graph implements Serializable {
         return delcnt;
     }
 
-    void add_Node(Node n) {
+    public void add_Node(Node n) {
         int size = n.degree;
         Edge[] temp = new Edge[size];
         int i = 0;
@@ -187,7 +190,7 @@ public class Graph implements Serializable {
         node_quan = nd.size();
     }
 
-    void delete_Edge(Edge b) {
+    public void delete_Edge(Edge b) {
         Node left = b.left_node;
         Node right = b.right_node;
 
@@ -200,10 +203,10 @@ public class Graph implements Serializable {
 
 
     /*Läßt zwei Knoten zusammenfallen, Kante wird als intakt vorausgesetzt*/
-    void reduce_Edge_i(Edge b) {
+    public void reduce_Edge_i(Edge b) {
     /*Überprüfe, ob die Kante b in der Liste der Kanten br enthalten ist.*/
         if (br.contains(b)) {
-		/*Merke "linken" (verschwindet) und "rechten" (bleibt erhalten) Knoten der Kante b.*/
+        /*Merke "linken" (verschwindet) und "rechten" (bleibt erhalten) Knoten der Kante b.*/
             Node left = b.left_node;
             Node right = b.right_node;
 
@@ -246,12 +249,12 @@ public class Graph implements Serializable {
         }
     }
 
-    void reduce_Edge_d(Edge b) {
+    public void reduce_Edge_d(Edge b) {
         delete_Edge(b);
     }
 
-    /* Löscht einen Teil des Graphen und gibt dien Anzahl der gelöschten Kanten zurück. Betroffen sind alle Knoten, die markiert sind. Markierungen setzt z.B. die Methode public static int check(com.resinet.Graph g, Edge e) der Klasse com.resinet.Con_check, die nutzlose Teile des Graphen erkennt. */
-    int delete_part_of_Graph() {
+    /* Löscht einen Teil des Graphen und gibt dien Anzahl der gelöschten Kanten zurück. Betroffen sind alle Knoten, die markiert sind. Markierungen setzt z.B. die Methode public static int check(com.resinet.model.Graph g, Edge e) der Klasse com.resinet.algorithms.Con_check, die nutzlose Teile des Graphen erkennt. */
+    public int delete_part_of_Graph() {
         int delcnt = 0;
         for (int i = 0; i < nd.size(); i++) {
             Node node = (Node) nd.get(i);
@@ -263,7 +266,7 @@ public class Graph implements Serializable {
         return delcnt;
     }
 
-    void add_Edge(Edge b) {
+    public void add_Edge(Edge b) {
         if (!br.contains(b)) {
             br.add(b);
             b.deleted = false;

@@ -1,6 +1,10 @@
-package com.resinet;/* com.resinet.Util.java */
+package com.resinet.util;/* com.resinet.util.Util.java */
 
+import com.resinet.Renet4;
+import com.resinet.algorithms.Con_check;
 import com.resinet.model.Edge;
+import com.resinet.model.Graph;
+import com.resinet.model.Node;
 
 import java.io.*;
 import java.util.Hashtable;
@@ -555,8 +559,8 @@ public class Util {
             }
         }
     /*for(int i=0; i<nd.size(); i++)
-	    {
-		com.resinet.Node node = (com.resinet.Node)nd.get(i);
+        {
+		com.resinet.model.Node node = (com.resinet.model.Node)nd.get(i);
 		node.node_no=i;
 	    }
 	for(int i=0; i<br.size(); i++)
@@ -1075,8 +1079,8 @@ public class Util {
      * Describe <code>getOtherNode</code> method here.
      *
      * @param edge an <code>Edge</code> value
-     * @param node a <code>com.resinet.Node</code> value
-     * @return a <code>com.resinet.Node</code> value
+     * @param node a <code>com.resinet.model.Node</code> value
+     * @return a <code>com.resinet.model.Node</code> value
      */
     public static Node getOtherNode(Edge edge, Node node) {
         Node node2 = null;
@@ -1087,7 +1091,7 @@ public class Util {
             if (node == edge.right_node)
                 node2 = edge.left_node;
             else {
-                System.out.println("Error in the method com.resinet.Util.getOtherNode, line 241");
+                System.out.println("Error in the method com.resinet.util.Util.getOtherNode, line 241");
                 System.exit(1);
             }
         }
