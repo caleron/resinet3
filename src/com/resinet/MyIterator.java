@@ -1,4 +1,4 @@
-/* MyIterator.java */
+package com.resinet;/* MyIterator.java */
 
 import java.util.Enumeration;
 

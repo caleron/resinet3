@@ -1,6 +1,6 @@
-/* Con_check.java */
+package com.resinet;/* com.resinet.Con_check.java */
 
-import java.util.*;
+import com.resinet.model.Edge;
 
 public class Con_check {
     /*Vom Knoten "node" aus wird eine Tiefensuche durchgefuehrt. Der Rueckgabewert ist true, 
@@ -10,7 +10,7 @@ public class Con_check {
         node.marked = true;
         //boolean any_other_c_node = false;
         boolean c_node_reached = false;
-        // wenn jeder Knoten von Knoten "node" aus erreichbar ist, ist der Graph auch zusammenhaengend
+        // wenn jeder Knoten von Knoten "node" aus erreichbar ist, ist der com.resinet.Graph auch zusammenhaengend
         MyIterator it = node.node_edge.iterator();
         while (it.hasNext()) {
             Node next = null;
@@ -55,7 +55,7 @@ public class Con_check {
         Node node = (Node) nd.get(i);
         node.marked = true;
 
-        // wenn jeder Knoten von Knoten i aus erreichbar ist, ist der Graph auch zusammenhaengend
+        // wenn jeder Knoten von Knoten i aus erreichbar ist, ist der com.resinet.Graph auch zusammenhaengend
         MyIterator it = node.node_edge.iterator();
 
         while (it.hasNext()) {
@@ -121,10 +121,10 @@ public class Con_check {
     }
 
     /* Fuehrt Tiefensuche durch und ignoriert dabei die Kante e sowie zu e korrespondierende Mehrfachkanten. (2.3.) (10.3.)
-    Rueckgabewert -1: Graph wuerde nach dem Entfernen von e zusammenhaengend bleiben (Bizusammenhang).
-    Rueckgabewert 1: Graph wuerde nach dem Entfernen von e unzusammenhaengend, und der right-Teil enthaelt keine Konnektionsknoten.
-    Rueckgabewert 2: Graph wuerde nach dem Entfernen von e unzusammenhaengend, und der left-Teil enthaelt keine Konnektionsknoten.
-    Rueckgabewert 0: Graph wuerde nach dem Entfernen von e unzusammenhaengend, der right-Teil und der left-Teil enthalten Konnektionsknoten.*/
+    Rueckgabewert -1: com.resinet.Graph wuerde nach dem Entfernen von e zusammenhaengend bleiben (Bizusammenhang).
+    Rueckgabewert 1: com.resinet.Graph wuerde nach dem Entfernen von e unzusammenhaengend, und der right-Teil enthaelt keine Konnektionsknoten.
+    Rueckgabewert 2: com.resinet.Graph wuerde nach dem Entfernen von e unzusammenhaengend, und der left-Teil enthaelt keine Konnektionsknoten.
+    Rueckgabewert 0: com.resinet.Graph wuerde nach dem Entfernen von e unzusammenhaengend, der right-Teil und der left-Teil enthalten Konnektionsknoten.*/
     public static int check(Graph g, Edge e) {
         MyList nd;
         boolean right_part_contains_c_node;
@@ -140,7 +140,7 @@ public class Con_check {
         while (it.hasNext()) {
             Edge e1 = (Edge) it.next(); //naechste Kante
         /*Falls die Kante in der Liste der Kanten des "linken" Knoten ist,
-	    markiere sie. Das ist mindestens bei einer Kante (e) der Fall. Bei Mehrfachkanten werden demnach mehrere Kanten ignoriert.*/
+        markiere sie. Das ist mindestens bei einer Kante (e) der Fall. Bei Mehrfachkanten werden demnach mehrere Kanten ignoriert.*/
             if (n2.node_edge.contains(e1)) {
                 e1.marked = true; //Kante soll bei der Tiefensuche ausgelassen werden.
                 edge_cnt = edge_cnt + 1;

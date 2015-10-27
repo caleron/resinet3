@@ -1,11 +1,14 @@
-/* Renet4.java */
+package com.resinet;/* Renet4.java */
+
+import com.resinet.model.Edge;
+import com.resinet.model.EdgeLine;
+import com.resinet.model.NodePoint;
+import com.resinet.views.*;
 
 import java.awt.*;
 import java.awt.event.*;
-import java.applet.*;
 import java.math.BigDecimal;
 import java.math.BigInteger;
-import java.net.*;
 import java.lang.*;
 import java.util.*;
 import java.io.*;
@@ -19,7 +22,7 @@ public class Renet4 extends JFrame
     Panel panel1, panel3, panel5, panel6, panel7;
     static Panel output;
     FlagPanel panel0;
-    NetPanel panel2;
+    public NetPanel panel2;
     ProbPanel panel4;
     Label label0, label1, label2;
     TextArea text;
@@ -30,10 +33,10 @@ public class Renet4 extends JFrame
     char lang = 'E';
     String s1, s2;
 
-    MyList nodes;
-    MyList edges;
-    EdgeLine el;
-    boolean valid = false;
+    public MyList nodes;
+    public MyList edges;
+    public EdgeLine el;
+    public boolean valid = false;
     boolean probability_mode = false;
     MyMouseListener ml;
     MyMouseMotionListener mml;
@@ -51,8 +54,8 @@ public class Renet4 extends JFrame
     Graph graphfact;
     Graph graph;
     static MyList generated_Graphs;
-    float graph_width;
-    float graph_height;
+    public float graph_width;
+    public float graph_height;
     int smallest_x_pos;
     int highest_x_pos;
     int smallest_y_pos;
@@ -79,7 +82,7 @@ public class Renet4 extends JFrame
 
     public static void main(String[] args) {
         Renet4 r = new Renet4();
-        r.setSize(new Dimension(800, 1000));
+        r.pack();
         r.setVisible(true);
     }
 
@@ -101,7 +104,7 @@ public class Renet4 extends JFrame
         GridBagLayout mainLayout = new GridBagLayout();
         setLayout(mainLayout);
 
-        logo = getToolkit().getImage(getClass().getResource("logo.jpg"));
+        logo = getToolkit().getImage(getClass().getResource("img/logo.jpg"));
         prepareImage(logo, this);
 
         Panel halt0 = new Panel();
@@ -163,7 +166,7 @@ public class Renet4 extends JFrame
         GridBagConstraints exportNetGbc = makegbc(5, 1, 1, 1, "west");
         panel1.add(exportNet, exportNetGbc);
 
-        panel2 = new NetPanel();
+        panel2 = new NetPanel(this);
         ml = new MyMouseListener();
         mml = new MyMouseMotionListener();
         panel2.setBackground(Color.white);
@@ -206,7 +209,7 @@ public class Renet4 extends JFrame
 
         //Option 2: ScrollPane
         sp = new ScrollPane(ScrollPane.SCROLLBARS_AS_NEEDED);
-        panel4 = new ProbPanel();
+        panel4 = new ProbPanel(this);
         //sp.setSize(625, 200);
         sp.setSize(625, 140);
         //panel4.setSize(600, 400);	
@@ -342,7 +345,7 @@ public class Renet4 extends JFrame
 
                 //panel0
 
-                panel0.s = "uk.gif";
+                panel0.s = "img/uk.gif";
                 label0.setText("Select your language");
                 panel0.invalidate();
 
@@ -383,7 +386,7 @@ public class Renet4 extends JFrame
                 drawB.setEnabled(true);
 
                 //panel0
-                panel0.s = "de.gif";
+                panel0.s = "img/de.gif";
                 label0.setText("Bitte waehlen Sie Ihre Sprache aus");
                 panel0.invalidate();
 
@@ -417,7 +420,7 @@ public class Renet4 extends JFrame
                 break;
             }
             default:
-                panel0.s = "logo.jpg";
+                panel0.s = "img/logo.jpg";
         }
 
     }
@@ -1095,7 +1098,7 @@ public class Renet4 extends JFrame
         Graph child_left = null;
         Graph child_right = null;
 
-        GraphPanel gp = new GraphPanel(g);
+        GraphPanel gp = new GraphPanel(this, g);
         int xpos = Math.round(pos);
         int ypos = Math.round(g.level * (graph_height + 100));
         int width = Math.round(graph_width);
@@ -1131,196 +1134,6 @@ public class Renet4 extends JFrame
         }
 
         return;
-    }
-
-    class FlagPanel extends Panel {
-        private Image dbImage;
-        private Graphics dbGraphics;
-        //String s = "uk.gif";
-        String s = "logo.jpg";
-
-        //int width;
-        int width = 20;
-
-        public void paint(Graphics g) {
-            Image img;
-            URL url = null;
-            // URL url = getClass().getResource(s);
-            try {
-
-                url = getClass().getResource(s);
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-            img = getToolkit().getImage(url);
-            //Point p = ch.getLocation();
-            //width = (int)(p.x+ch.getSize().width+2);
-            //g.drawImage(img, width, -6, this);
-            g.drawImage(img, 250, -6, this);
-        }
-
-        public void update(Graphics g) {
-            if (dbImage == null) {
-                dbImage = createImage(this.getSize().width, this.getSize().height);
-                dbGraphics = dbImage.getGraphics();
-            }
-            dbGraphics.setColor(getBackground());
-            dbGraphics.fillRect(0, 0, this.getSize().width, this.getSize().height);
-            dbGraphics.setColor(getForeground());
-            paint(dbGraphics);
-            g.drawImage(dbImage, 0, 0, this);
-        }
-        //ueberschreibe die Methode update, um den Bildschirm nicht zu loeschen
-    }
-
-    class NetPanel extends Panel {
-        private Image dbImage;
-        private Graphics dbGraphics;
-
-        public void paint(Graphics g) {
-            //g.drawRect(0, 0, 600, 200);
-            //System.out.println(panel2.getHeight());		
-            g.drawRect(0, 0, 625, panel2.getHeight());
-
-            MyIterator it = nodes.iterator();
-            int cnt = 0;
-            while (it.hasNext()) {
-                g.setColor(Color.black);
-                NodePoint np = (NodePoint) it.next();
-                int x = np.x;
-                int y = np.y;
-                String s = String.valueOf(cnt);
-                if (!np.k)
-                    g.drawOval(x, y, 20, 20);
-                else {
-                    g.fillOval(x, y, 20, 20);
-                    g.setColor(Color.white);
-                }
-                if (cnt < 10)
-                    g.drawString(s, x + 6, y + 13);
-                else
-                    g.drawString(s, x + 1, y + 13);
-                cnt++;
-            }
-
-            g.setColor(Color.black);
-            it = edges.iterator();
-            while (it.hasNext()) {
-                EdgeLine e = (EdgeLine) it.next();
-                g.drawLine(e.x1, e.y1, e.x2, e.y2);
-                String s = String.valueOf(edges.indexOf(e));
-                g.drawString(s, e.x0, e.y0);
-            }
-
-
-            if (valid)
-                g.drawLine(el.x1, el.y1, el.x2, el.y2);
-        }
-
-        public void update(Graphics g) {
-            if (dbImage == null) {
-                dbImage = createImage(this.getSize().width, this.getSize().height);
-                dbGraphics = dbImage.getGraphics();
-            }
-            dbGraphics.setColor(getBackground());
-            dbGraphics.fillRect(0, 0, this.getSize().width, this.getSize().height);
-            dbGraphics.setColor(getForeground());
-            paint(dbGraphics);
-            g.drawImage(dbImage, 0, 0, this);
-        }
-        //ueberschreiben der Methode update, um den Bildschirm nicht zu loeschen
-    }
-
-    class ProbPanel extends Panel {
-
-        public Dimension getPreferredSize() {
-            Dimension dm = new Dimension(600, (edges.size() / 2 + 1) * 30);
-            return dm;
-        }
-
-    }
-
-    class GraphPanel extends Panel {
-        Graph graph;
-
-        public GraphPanel(Graph graph) {
-            this.graph = graph;
-        }
-
-        public void paint(Graphics g) {
-            int h = graph.getHighestNodeNr();
-            int m = graph.getNodelist().size();
-            int[] px = new int[h + 1];
-            int[] py = new int[h + 1];
-
-            MyIterator it = graph.getNodelist().iterator();
-            while (it.hasNext()) {
-                Node node = (Node) it.next();
-                int i = node.node_no;
-                g.setColor(Color.black);
-                int x = node.xposition;
-                int y = node.yposition;
-                String s = String.valueOf(node.node_no);
-                if (!node.c_node)
-                    g.drawOval(x, y, 20, 20);
-                else {
-                    g.fillOval(x, y, 20, 20);
-                    g.setColor(Color.white);
-                }
-                if (i < 10)
-                    g.drawString(s, x + 6, y + 13);
-                else
-                    g.drawString(s, x + 1, y + 13);
-            }
-            g.setColor(Color.black);
-            int n = graph.getEdgelist().size();
-            for (int i = 0; i < n; i++) {
-                Edge edge = (Edge) graph.getEdgelist().get(i);
-                int x1 = edge.left_node.xposition + 10;
-                int y1 = edge.left_node.yposition + 10;
-                int x2 = edge.right_node.xposition + 10;
-                int y2 = edge.right_node.yposition + 10;
-                int x0 = (x1 + x2) / 2;
-                int y0 = (y1 + y2) / 2;
-                g.drawLine(x1, y1, x2, y2);
-                g.drawString(String.valueOf(edge.edge_no), x0, y0);
-            }
-        }
-
-        public Dimension getPreferredSize() {
-            Dimension dimension = new Dimension(Math.round(graph_width) + 25, Math.round(graph_height) + 25);
-            return dimension;
-        }
-    }
-
-    class LinePanel extends Panel {
-        int width, height, type, edge; //type 0: von oben rechts nach unten links, type1: von oben links nach unten rechts
-
-        public LinePanel(int width, int height, int type, int edge) {
-            this.width = width;
-            this.height = height;
-            this.type = type;
-            this.edge = edge;
-        }
-
-        public void paint(Graphics g) {
-            if (type == 0) {
-                g.setColor(Color.blue);
-                int x0 = width / 2 - 10;
-                int y0 = height / 2;
-                String s = "" + edge + "i";
-                g.drawLine(width, 0, 0, height);
-                g.drawString(s, x0, y0);
-            }
-            if (type == 1) {
-                g.setColor(Color.red);
-                int x0 = width / 2 - 10;
-                int y0 = height / 2;
-                String s = "" + edge + "d";
-                g.drawLine(0, 0, width, height);
-                g.drawString(s, x0, y0);
-            }
-        }
     }
 
     class MyMouseListener extends MouseAdapter {
@@ -1646,15 +1459,6 @@ public class Renet4 extends JFrame
         }
     }
 
-    class NodePoint {
-        int x, y;
-        boolean k = false;
-    }
-
-    class EdgeLine {
-        int x1, y1, x2, y2, node1, node2, x0, y0;
-    }
-
     class MessageFrame extends Frame {
         String newline;
         TextArea msgArea;
@@ -1697,7 +1501,7 @@ public class Renet4 extends JFrame
         //Prüfen ob das Netz zusammenhängt
         boolean graphConnected;
         if (Con_check.check(graph) == -1) {
-            //Graph ist zusammenhängend
+            //com.resinet.Graph ist zusammenhängend
             graphConnected = true;
         } else {
             graphConnected = false;
@@ -2035,7 +1839,7 @@ public class Renet4 extends JFrame
 
         //Prüfen ob das Netz zusammenhängt
         if (Con_check.check(graph) == -1) {
-            //Graph ist zusammenhängend
+            //com.resinet.Graph ist zusammenhängend
             resilienceMode = 2;
         } else {
             resilienceMode = 1;
@@ -2086,7 +1890,7 @@ public class Renet4 extends JFrame
             for (int i = 0; i < total_nodes; i++) {
                 // Entsprechenden Knoten holen
                 NodePoint node1 = (NodePoint) nodes.get(i);
-                //Node node1 = (Node)graph.nd.get(i); 
+                //com.resinet.Node node1 = (com.resinet.Node)graph.nd.get(i);
 
                 // Dann auf true, falls K-Knoten
                 if (d.contains(i)) {
@@ -2568,7 +2372,7 @@ public class Renet4 extends JFrame
             //Prüfen ob das Netz zusammenhängt
             boolean graphConnected;
             if (Con_check.check(graph) == -1) {
-                //Graph ist zusammenhängend
+                //com.resinet.Graph ist zusammenhängend
                 graphConnected = true;
             } else {
                 graphConnected = false;

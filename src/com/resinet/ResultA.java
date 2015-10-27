@@ -1,4 +1,6 @@
-/* ResultA.java */
+package com.resinet;/* com.resinet.ResultA.java */
+
+import com.resinet.MySet;
 
 public class ResultA {
     MySet i, d;

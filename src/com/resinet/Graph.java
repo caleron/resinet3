@@ -1,9 +1,11 @@
-/* Graph.java */
+package com.resinet;/* com.resinet.Graph.java */
 
-/* Auf den Klassen "Node" und "Edge" wird ein Zufallsgraph generiert. Mit einer Zufallszahl
-werden die Konnektionsknoten festgelegt. Anschliessend werden die K-Baeume vom Graph abgeleitet.
+/* Auf den Klassen "com.resinet.Node" und "Edge" wird ein Zufallsgraph generiert. Mit einer Zufallszahl
+werden die Konnektionsknoten festgelegt. Anschliessend werden die K-Baeume vom com.resinet.Graph abgeleitet.
 Durch die K-Baeume erhaelt man die Minimalkombinationen.
 */
+
+import com.resinet.model.Edge;
 
 import java.util.Random;
 import java.io.Serializable;
@@ -17,7 +19,7 @@ public class Graph implements Serializable {
     float offset;
     float left_offset, right_offset; //Die linke und rechte "Ausbreitung" des Subbaumes beim Zeichnen des Faktorisierungsbaumes
     int level;
-    int kind_of_reduction; //Art der Faktorisierung, durch die der Graph entstanden ist: 0==intakt, 1==defekt
+    int kind_of_reduction; //Art der Faktorisierung, durch die der com.resinet.Graph entstanden ist: 0==intakt, 1==defekt
     int reduced_edge; //Nach welcher Kante wurde reduziert?
 
     MyList child_Graphs;
@@ -95,7 +97,7 @@ public class Graph implements Serializable {
     }
 
     void edge_generate() {
-        //Ein Graph mit m Knoten hat max. sum m Kanten
+        //Ein com.resinet.Graph mit m Knoten hat max. sum m Kanten
         br = new MyList();
         int i;
         int j;
@@ -104,7 +106,7 @@ public class Graph implements Serializable {
 
         for (i = 0; i < nd.size(); i++) {
             for (j = i + 1; j < nd.size(); j++)
-            // Da der Graph ungerichtet ist
+            // Da der com.resinet.Graph ungerichtet ist
             {
                 k = Math.random();
                 if (k > 0.5) {
@@ -248,7 +250,7 @@ public class Graph implements Serializable {
         delete_Edge(b);
     }
 
-    /* Löscht einen Teil des Graphen und gibt dien Anzahl der gelöschten Kanten zurück. Betroffen sind alle Knoten, die markiert sind. Markierungen setzt z.B. die Methode public static int check(Graph g, Edge e) der Klasse Con_check, die nutzlose Teile des Graphen erkennt. */
+    /* Löscht einen Teil des Graphen und gibt dien Anzahl der gelöschten Kanten zurück. Betroffen sind alle Knoten, die markiert sind. Markierungen setzt z.B. die Methode public static int check(com.resinet.Graph g, Edge e) der Klasse com.resinet.Con_check, die nutzlose Teile des Graphen erkennt. */
     int delete_part_of_Graph() {
         int delcnt = 0;
         for (int i = 0; i < nd.size(); i++) {

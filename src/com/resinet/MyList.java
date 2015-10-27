@@ -1,4 +1,4 @@
-/* MyList.java */
+package com.resinet;/* MyList.java */
 /* Meine Implementierung fuer List mit pure java1.0 */
 
 import java.util.Enumeration;

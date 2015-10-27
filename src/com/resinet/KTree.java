@@ -1,4 +1,6 @@
-/* KTree.java */
+package com.resinet;/* com.resinet.KTree.java */
+
+import com.resinet.model.Edge;
 
 public class KTree {
     int count_nd = 0;

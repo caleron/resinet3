@@ -1,4 +1,4 @@
-/* MySet.java */
+package com.resinet;/* MySet.java */
 /* Meine Implementierung fuer HashSet mit pure java1.0 */
 
 import java.util.Hashtable;
