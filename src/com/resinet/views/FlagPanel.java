@@ -10,11 +10,12 @@ public class FlagPanel extends Panel {
     private Image dbImage;
     private Graphics dbGraphics;
     //String s = "uk.gif";
-    public String s = "com/resinet/img/logo.jpg";
+    public String s = "../img/uk.gif";
 
     //int width;
     int width = 20;
 
+    @Override
     public void paint(Graphics g) {
         Image img;
         URL url = null;
@@ -32,6 +33,7 @@ public class FlagPanel extends Panel {
         g.drawImage(img, 250, -6, this);
     }
 
+    @Override
     public void update(Graphics g) {
         if (dbImage == null) {
             dbImage = createImage(this.getSize().width, this.getSize().height);

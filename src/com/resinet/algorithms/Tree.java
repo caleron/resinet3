@@ -10,7 +10,7 @@ import com.resinet.util.MyList;
 import com.resinet.util.MySet;
 
 public class Tree extends Thread {
-    Graph g;
+    Graph graph;
     KTree b;
     MyList trs;
     //Menge aller k-Baeume
@@ -22,8 +22,8 @@ public class Tree extends Thread {
     public boolean dead = false;
 
     public Tree(Graph graph) {
-        //g = (com.resinet.model.Graph)Sc.serialClone(graph);
-        g = graph;
+        //graph = (com.resinet.model.Graph)Sc.serialClone(graph);
+        this.graph = graph;
         q = new Q();
         b = new KTree();
         trs = new MyList();
@@ -32,7 +32,7 @@ public class Tree extends Thread {
         Node node;
         int i;
 
-        MyIterator it = g.nd.iterator();
+        MyIterator it = this.graph.nd.iterator();
         while (it.hasNext()) {
             Node node2 = (Node) it.next();
             if (node2.c_node == true) {
@@ -47,6 +47,7 @@ public class Tree extends Thread {
         //tree();
     }
 
+    @Override
     public void run() {
         tree();
         dead = true;
@@ -212,7 +213,7 @@ public class Tree extends Thread {
             output_ktree();
             //if N(G,B)=0 then output spannender Baum B
         } else {
-            while (Con_check.check(g) < 0 && tag == false) {
+            while (Con_check.check(graph) < 0 && tag == false) {
                 e = q.last;
                 //e := letztes Element von Q
 
@@ -248,7 +249,7 @@ public class Tree extends Thread {
 
                 //entfern e aus B;
 
-                g.delete_Edge(e);
+                graph.delete_Edge(e);
                 //entfern e aus G
 
                 q1[q1_i] = e;
@@ -264,7 +265,7 @@ public class Tree extends Thread {
                 Edge e1;
                 e1 = q1[q1_i - 1];
                 q.add(e1);
-                g.add_Edge(e1);
+                graph.add_Edge(e1);
                 q1_i--;
             }
         }
@@ -325,7 +326,7 @@ Da es sich hier um ein k-von-n Problem handelt, wobei k<=n, wird der
 Algorithmus von Kohlas leicht modifiziert.
 
 Line 231: Jedesmal, nachdem eine neue Kante e in den aktuellen Baum b hinzu-
-gefuegt wurde, wird geprüft, ob die letzte Kante, d.h. e.left, eine s.g. Endkante
+gefuegt wurde, wird geprüft, ob die letzte Kante, d.h. e.left, eine s.graph. Endkante
 und der dazugehoerige Knoten ein NICHT-Konnectionsknoten ist. Falls ja, wird 
 weiter geprueft, ob der Knoten bereits erreicht wurde (w.reached == true). Falls
 ja, wird die Schleife abgebrochen und kein Baum ausgegeben.

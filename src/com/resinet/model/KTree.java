@@ -1,8 +1,5 @@
 package com.resinet.model;/* com.resinet.model.KTree.java */
 
-import com.resinet.model.Edge;
-import com.resinet.model.Node;
-
 public class KTree {
     public int count_nd = 0;
     public int count_br = 0;

@@ -19,8 +19,8 @@ public class NetPanel extends Panel {
 
     public void paint(Graphics g) {
         //g.drawRect(0, 0, 600, 200);
-        //System.out.println(panel2.getHeight());
-        g.drawRect(0, 0, 625, renet4.panel2.getHeight());
+        //System.out.println(netPanel.getHeight());
+        g.drawRect(0, 0, 625, renet4.netPanel.getHeight());
 
         MyIterator it = renet4.nodes.iterator();
         int cnt = 0;

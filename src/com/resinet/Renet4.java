@@ -22,16 +22,16 @@ import javax.swing.filechooser.FileNameExtensionFilter;
 
 
 public class Renet4 extends JFrame
-        implements ActionListener, ItemListener {
-    Panel panel1, panel3, panel5, panel6, panel7;
+        implements ActionListener {
+    Panel headerPanel, reliabilityPanelHeader, probabilitiesBtnPanel, panel6, panel7;
     static Panel output;
-    FlagPanel panel0;
-    public NetPanel panel2;
-    ProbPanel panel4;
-    Label label0, label1, label2;
+    FlagPanel flagPanel;
+    public NetPanel netPanel;
+    ProbPanel probPanel;
+    Label label0, headerLabel, label2;
     TextArea text;
     TextField pf, textfieldEndvalue, textfieldStepsize;
-    Button drawB, reset1B, ok1B, sameReliabilityB, reset2B, ok2B, decomB, resilienceB, viewB, inputNet, exportNet;
+    Button drawBtn, resetGraphBtn, differentReliabilitiesOkBtn, sameReliabilityOkBtn, resetProbabilitiesBtn, probabilitiesOkBtn, decomB, resilienceB, viewB, inputNetBtn, exportNetBtn;
     boolean sameReliability, inputNetBoolean;
     Choice ch;
     char lang = 'E';
@@ -70,14 +70,14 @@ public class Renet4 extends JFrame
 
     String enText, deText, resultTextEn;
 
-    ScrollPane sp;
+    ScrollPane probScrollPane;
     Image logo;
     Checkbox reliabilityCheckBox;
 
 
     //Fuers Logo
     public void paint(Graphics g) {
-        g.drawImage(logo, 270, 7, this);
+        g.drawImage(logo, 270, 30, this);
     }
 
     public Renet4() {
@@ -87,6 +87,7 @@ public class Renet4 extends JFrame
     public static void main(String[] args) {
         Renet4 r = new Renet4();
         r.pack();
+        r.setSize(700, 825);
         r.setVisible(true);
     }
 
@@ -115,138 +116,62 @@ public class Renet4 extends JFrame
         GridBagConstraints halt0Gbc = makegbc(0, 0, 1, 1, "west");
         add(halt0, halt0Gbc);
 
-        panel0 = new FlagPanel();
-        GridBagConstraints panel0Gbc = makegbc(0, 0, 1, 4, "center");
-        //GridBagConstraints panel0Gbc = makegbc(0, 0, 1, 4, "center");
-        panel0Gbc.fill = GridBagConstraints.BOTH;
-        //add(panel0, panel0Gbc);
+        flagPanel = new FlagPanel();
+        GridBagConstraints flagPanelGbc = makegbc(0, 0, 1, 5, "center");
+        //GridBagConstraints flagPanelGbc = makegbc(0, 0, 1, 4, "center");
+        flagPanelGbc.fill = GridBagConstraints.BOTH;
+        //add(flagPanel, flagPanelGbc);
 
         //Sprachenauswahl nicht sichtbar!
-        //panel0.setVisible(false);
+        //flagPanel.setVisible(false);
 
-        panel1 = new Panel();
-        GridBagConstraints panel1Gbc = makegbc(0, 5, 1, 1, "west");
-        add(panel1, panel1Gbc);
-        GridBagLayout panel1Layout = new GridBagLayout();
-        panel1.setLayout(panel1Layout);
-        label1 = new Label("Please input your network model:");
-        GridBagConstraints label1Gbc = makegbc(0, 0, 4, 1, "west");
-        panel1.add(label1, label1Gbc);
-        drawB = new Button("Draw");
-        drawB.addActionListener(this);
-        GridBagConstraints drawBGbc = makegbc(0, 1, 1, 1, "west");
-        panel1.add(drawB, drawBGbc);
-        ok1B = new Button("Ok (edges have different reliabilities)");
-        ok1B.setEnabled(false);
-        ok1B.addActionListener(this);
-        GridBagConstraints ok1BGbc = makegbc(1, 1, 1, 1, "west");
-        panel1.add(ok1B, ok1BGbc);
-        reset1B = new Button("Reset");
-        reset1B.setEnabled(false);
-        reset1B.addActionListener(this);
-        GridBagConstraints reset1BGbc = makegbc(3, 1, 1, 1, "west");
-        panel1.add(reset1B, reset1BGbc);
-
-        sameReliabilityB = new Button("Ok (all edges have the same reliability)");
-        sameReliabilityB.setEnabled(false);
-        sameReliabilityB.addActionListener(this);
-        GridBagConstraints sameReliabilityBGbc = makegbc(2, 1, 1, 1, "west");
-        panel1.add(sameReliabilityB, sameReliabilityBGbc);
-        sameReliability = false;
-
-
-        //Button Input Network
-        inputNet = new Button("Load");
-        inputNet.setEnabled(true);
-        inputNet.addActionListener(this);
-        GridBagConstraints inputNetGbc = makegbc(4, 1, 1, 1, "west");
-        panel1.add(inputNet, inputNetGbc);
-        inputNetBoolean = false;
-
-        //Button Output Network
-        exportNet = new Button("Save");
-        exportNet.setEnabled(true);
-        exportNet.addActionListener(this);
-        GridBagConstraints exportNetGbc = makegbc(5, 1, 1, 1, "west");
-        panel1.add(exportNet, exportNetGbc);
-
-        panel2 = new NetPanel(this);
+        netPanel = new NetPanel(this);
         ml = new MyMouseListener();
         mml = new MyMouseMotionListener();
-        panel2.setBackground(Color.white);
-        panel2.setSize(625, 315);
-        //panel2.setSize(600, 200);
-        panel2.setVisible(true);
+        netPanel.setBackground(Color.white);
+        netPanel.setSize(625, 315);
+        //netPanel.setSize(600, 200);
+        netPanel.setVisible(true);
         GridBagConstraints panel2Gbc = makegbc(0, 6, 1, 1, "west");
-        add(panel2, panel2Gbc);
+        add(netPanel, panel2Gbc);
         reduceText = "";
         enText = "On this panel you can draw your network model after a click on the \"Draw\" button.\nPress the left button to draw a node and the right button to draw a connection-node. Delete a node by holding the <shift>-key an pressing the left button.\nTo draw an edge press the left button when the mouse pointer is on a node and hold it. Then drag the mouse to another node and release it. For deleting an edge delete its corresponding nodes.\nAfter you have finished, click the \"Ok\" button.\n\nYou can also import a previously created network (ResiNeT or Pajek) by clicking the \"Load\" button. To turn an existing node into a connection-node hold the Ctrl-Key while left-clicking on the node.";
         deText = "Hier koennen Sie Ihr Netz eingeben. Klicken Sie dazu zunaechst auf \"Zeichnen\".\nEinen \"normalen\" Knoten erzeugen Sie, indem Sie die linke Maustaste betaetigen, einen K-Knoten durch Betaetigen der rechten Maustaste. Loeschen Sie einen Knoten, indem Sie die <shift>-Taste halten und die linke Maustaste betaetigen.\nUm eine Kante zu zeichnen, klicken Sie mit der linken Maustaste auf einen Knoten, halten diese solange gedrueckt, bis sich der Mauszeiger ueber dem Knoten befindet, zu dem die Kante fuehren soll. Eine Kante kann durch das Löschen ihrer inzidenten Knoten geloescht werden.\nHaben Sie Ihr Netz komplett eingegeben, klicken Sie bitte auf \"Ok\".\n";
         text = new TextArea(enText, 19, 85, TextArea.SCROLLBARS_NONE);
         text.setBackground(Color.white);
         text.setEditable(false);
-        panel2.add(text);
+        netPanel.add(text);
 
+        initHeaderPanel();
 
-        Panel halt1 = new Panel();
+        /*Panel halt1 = new Panel();
         GridBagConstraints halt1Gbc = makegbc(0, 7, 1, 1, "west");
-        add(halt1, halt1Gbc);
+        add(halt1, halt1Gbc);*/
 
 
-        panel3 = new Panel();
-        panel3.setLayout(new GridLayout(1, 1));
+        reliabilityPanelHeader = new Panel();
+        reliabilityPanelHeader.setLayout(new GridLayout(1, 1));
         GridBagConstraints panel3Gbc = makegbc(0, 7, 1, 1, "west");
         panel3Gbc.fill = GridBagConstraints.HORIZONTAL;
-        add(panel3, panel3Gbc);
+        add(reliabilityPanelHeader, panel3Gbc);
+        reliabilityPanelHeader.setBackground(color);
         label2 = new Label("   Now you can input the reliability of every edge:", Label.LEFT);
-        panel3.add(label2);
+        reliabilityPanelHeader.add(label2);
 
+        initProbabilitiesPanel();
 
-        //Option 1: JScrollPane, funktioniert nicht
-/*	JScrollPane sp = new JScrollPane( JScrollPane.VERTICAL_SCROLLBAR_ALWAYS,
-            JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS );	
-	sp.setPreferredSize(new java.awt.Dimension(600, 200));
-	panel4 = new ProbPanel();
-	sp.setViewportView( panel4 );	
-	GridBagConstraints spGbc = makegbc(0, 9, 1, 4, "west" );*/
-
-
-        //Option 2: ScrollPane
-        sp = new ScrollPane(ScrollPane.SCROLLBARS_AS_NEEDED);
-        panel4 = new ProbPanel(this);
-        //sp.setSize(625, 200);
-        sp.setSize(625, 140);
-        //panel4.setSize(600, 400);	
-        sp.add(panel4);
-        GridBagConstraints spGbc = makegbc(0, 9, 1, 4, "west");
-        add(sp, spGbc);
-
-        panel5 = new Panel();
-        GridBagConstraints panel5Gbc = makegbc(0, 13, 1, 1, "west");
-        panel5.setLayout(new FlowLayout(FlowLayout.LEFT));
-        panel5Gbc.fill = GridBagConstraints.HORIZONTAL;
-        add(panel5, panel5Gbc);
-        reset2B = new Button("Reset");
-        reset2B.setEnabled(false);
-        reset2B.addActionListener(this);
-        ok2B = new Button("Ok");
-        ok2B.setEnabled(false);
-        ok2B.addActionListener(this);
-        panel5.add(reset2B);
-        panel5.add(ok2B);
-
-        Panel halt2 = new Panel();
+        /*Panel halt2 = new Panel();
         GridBagConstraints halt2Gbc = makegbc(0, 14, 1, 1, "west");
-        add(halt2, halt2Gbc);
+        add(halt2, halt2Gbc);*/
 
         panel6 = new Panel();
         GridBagConstraints panel6Gbc = makegbc(0, 15, 1, 1, "west");
         panel6.setLayout(new GridBagLayout());
         add(panel6, panel6Gbc);
 
-        Panel halt3 = new Panel();
+        /*Panel halt3 = new Panel();
         GridBagConstraints halt3Gbc = makegbc(0, 1, 1, 3, "west");
-        panel6.add(halt3, halt3Gbc);
+        panel6.add(halt3, halt3Gbc);*/
 
         decomB = new Button("Calculate the reliability of the network");
         decomB.setEnabled(false);
@@ -300,6 +225,94 @@ public class Renet4 extends JFrame
         panel7.add(result);
     }
 
+    private void initHeaderPanel() {
+        headerPanel = new Panel();
+        GridBagConstraints panel1Gbc = makegbc(0, 5, 1, 1, "west");
+        add(headerPanel, panel1Gbc);
+
+        GridBagLayout headerPanelLayout = new GridBagLayout();
+        headerPanel.setLayout(headerPanelLayout);
+
+        headerLabel = new Label("Please input your network model:");
+        GridBagConstraints label1Gbc = makegbc(0, 0, 4, 1, "west");
+        headerPanel.add(headerLabel, label1Gbc);
+
+        drawBtn = new Button("Draw");
+        drawBtn.addActionListener(this);
+        GridBagConstraints drawBGbc = makegbc(0, 1, 1, 1, "west");
+        headerPanel.add(drawBtn, drawBGbc);
+
+        differentReliabilitiesOkBtn = new Button("Ok (edges have different reliabilities)");
+        differentReliabilitiesOkBtn.setEnabled(false);
+        differentReliabilitiesOkBtn.addActionListener(this);
+        GridBagConstraints ok1BGbc = makegbc(1, 1, 1, 1, "west");
+        headerPanel.add(differentReliabilitiesOkBtn, ok1BGbc);
+
+        sameReliabilityOkBtn = new Button("Ok (all edges have the same reliability)");
+        sameReliabilityOkBtn.setEnabled(false);
+        sameReliabilityOkBtn.addActionListener(this);
+        GridBagConstraints sameReliabilityBGbc = makegbc(2, 1, 1, 1, "west");
+        headerPanel.add(sameReliabilityOkBtn, sameReliabilityBGbc);
+        sameReliability = false;
+
+        resetGraphBtn = new Button("Reset");
+        resetGraphBtn.setEnabled(false);
+        resetGraphBtn.addActionListener(this);
+        GridBagConstraints reset1BGbc = makegbc(3, 1, 1, 1, "west");
+        headerPanel.add(resetGraphBtn, reset1BGbc);
+
+        //Button Input Network
+        inputNetBtn = new Button("Load");
+        inputNetBtn.setEnabled(true);
+        inputNetBtn.addActionListener(this);
+        GridBagConstraints inputNetGbc = makegbc(4, 1, 1, 1, "west");
+        headerPanel.add(inputNetBtn, inputNetGbc);
+        inputNetBoolean = false;
+
+        //Button Output Network
+        exportNetBtn = new Button("Save");
+        exportNetBtn.setEnabled(true);
+        exportNetBtn.addActionListener(this);
+        GridBagConstraints exportNetGbc = makegbc(5, 1, 1, 1, "west");
+        headerPanel.add(exportNetBtn, exportNetGbc);
+    }
+
+    private void initProbabilitiesPanel() {
+
+        //Option 1: JScrollPane, funktioniert nicht
+/*	JScrollPane probScrollPane = new JScrollPane( JScrollPane.VERTICAL_SCROLLBAR_ALWAYS,
+            JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS );
+	probScrollPane.setPreferredSize(new java.awt.Dimension(600, 200));
+	probPanel = new ProbPanel();
+	probScrollPane.setViewportView( probPanel );
+	GridBagConstraints spGbc = makegbc(0, 9, 1, 4, "west" );*/
+
+
+        //Option 2: ScrollPane
+        probScrollPane = new ScrollPane(ScrollPane.SCROLLBARS_AS_NEEDED);
+        probPanel = new ProbPanel(this);
+        //probScrollPane.setSize(625, 200);
+        probScrollPane.setSize(625, 140);
+        //probPanel.setSize(600, 400);
+        probScrollPane.add(probPanel);
+        GridBagConstraints spGbc = makegbc(0, 9, 1, 4, "west");
+        add(probScrollPane, spGbc);
+
+        probabilitiesBtnPanel = new Panel();
+        GridBagConstraints panel5Gbc = makegbc(0, 13, 1, 1, "west");
+        probabilitiesBtnPanel.setLayout(new FlowLayout(FlowLayout.LEFT));
+        panel5Gbc.fill = GridBagConstraints.HORIZONTAL;
+        add(probabilitiesBtnPanel, panel5Gbc);
+        resetProbabilitiesBtn = new Button("Reset");
+        resetProbabilitiesBtn.setEnabled(false);
+        resetProbabilitiesBtn.addActionListener(this);
+        probabilitiesOkBtn = new Button("Ok");
+        probabilitiesOkBtn.setEnabled(false);
+        probabilitiesOkBtn.addActionListener(this);
+        probabilitiesBtnPanel.add(resetProbabilitiesBtn);
+        probabilitiesBtnPanel.add(probabilitiesOkBtn);
+    }
+
     private GridBagConstraints makegbc(int x, int y, int width, int height, String anchor) {
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.gridx = x;
@@ -336,6 +349,7 @@ public class Renet4 extends JFrame
         return gbc;
     }
 
+    //wird nicht verwendet
     public void itemStateChanged(ItemEvent evt) {
         Choice ch = (Choice) evt.getItemSelectable();
         int i = ch.getSelectedIndex();
@@ -343,34 +357,34 @@ public class Renet4 extends JFrame
             case 0: {
                 lang = 'E';
                 result.setText(" ");
-                panel2.add(text);
-                panel4.removeAll();
-                drawB.setEnabled(true);
+                netPanel.add(text);
+                probPanel.removeAll();
+                drawBtn.setEnabled(true);
 
-                //panel0
+                //flagPanel
 
-                panel0.s = "img/uk.gif";
+                flagPanel.s = "../img/uk.gif";
                 label0.setText("Select your language");
-                panel0.invalidate();
+                flagPanel.invalidate();
 
 
-                //panel1
-                label1.setText("Please input your network model:");
-                drawB.setLabel("Draw");
-                ok1B.setLabel("Ok (edges have different reliabilities)");
-                sameReliabilityB.setLabel("Ok (all edges have the same reliability)");
-                reset1B.setLabel("Reset");
-                panel1.invalidate();
+                //headerPanel
+                headerLabel.setText("Please input your network model:");
+                drawBtn.setLabel("Draw");
+                differentReliabilitiesOkBtn.setLabel("Ok (edges have different reliabilities)");
+                sameReliabilityOkBtn.setLabel("Ok (all edges have the same reliability)");
+                resetGraphBtn.setLabel("Reset");
+                headerPanel.invalidate();
 
-                //panel2
+                //netPanel
                 text.setText(enText);
 
-                //panel3
+                //reliabilityPanelHeader
                 label2.setText("   Now you can input the reliability of every edge:");
 
-                //panel5
-                reset2B.setLabel("Reset");
-                panel5.invalidate();
+                //probabilitiesBtnPanel
+                resetProbabilitiesBtn.setLabel("Reset");
+                probabilitiesBtnPanel.invalidate();
 
                 //panel6
                 //reduceB.setLabel("Reduce this network");
@@ -385,32 +399,32 @@ public class Renet4 extends JFrame
             case 1: {
                 lang = 'D';
                 result.setText(" ");
-                panel2.add(text);
-                panel4.removeAll();
-                drawB.setEnabled(true);
+                netPanel.add(text);
+                probPanel.removeAll();
+                drawBtn.setEnabled(true);
 
-                //panel0
-                panel0.s = "img/de.gif";
+                //flagPanel
+                flagPanel.s = "../img/de.gif";
                 label0.setText("Bitte waehlen Sie Ihre Sprache aus");
-                panel0.invalidate();
+                flagPanel.invalidate();
 
-                //panel1
-                label1.setText(" Bitte geben Sie hier Ihr Netz ein:");
-                drawB.setLabel("Zeichnen");
-                ok1B.setLabel("Ok (Verschiedene Kantenzuverlässigkeiten)");
-                sameReliabilityB.setLabel("Ok (Einheitliche Kantenzuverlässigkeit)");
-                reset1B.setLabel("Zurücksetzen");
-                panel1.invalidate();
+                //headerPanel
+                headerLabel.setText(" Bitte geben Sie hier Ihr Netz ein:");
+                drawBtn.setLabel("Zeichnen");
+                differentReliabilitiesOkBtn.setLabel("Ok (Verschiedene Kantenzuverlässigkeiten)");
+                sameReliabilityOkBtn.setLabel("Ok (Einheitliche Kantenzuverlässigkeit)");
+                resetGraphBtn.setLabel("Zurücksetzen");
+                headerPanel.invalidate();
 
-                //panel2
+                //netPanel
                 text.setText(deText);
 
-                //panel3
+                //reliabilityPanelHeader
                 label2.setText("   Nun geben Sie bitte die Intaktwahrscheinlichkeit jeder Kante ein:");
 
-                //panel5
-                reset2B.setLabel("Zurücksetzen");
-                panel5.invalidate();
+                //probabilitiesBtnPanel
+                resetProbabilitiesBtn.setLabel("Zurücksetzen");
+                probabilitiesBtnPanel.invalidate();
 
                 //panel6
                 //reduceB.setLabel("Das Netz reduzieren");
@@ -424,7 +438,7 @@ public class Renet4 extends JFrame
                 break;
             }
             default:
-                panel0.s = "img/logo.jpg";
+                flagPanel.s = "img/logo.jpg";
         }
 
     }
@@ -432,119 +446,119 @@ public class Renet4 extends JFrame
     public void actionPerformed(ActionEvent evt) {
         Button button = (Button) evt.getSource();
 
-        if (button == drawB) {
-            panel2.setCursor(new Cursor(Cursor.CROSSHAIR_CURSOR));
-            panel2.addMouseListener(ml);
-            panel2.addMouseMotionListener(mml);
-            ok1B.setEnabled(true);
-            sameReliabilityB.setEnabled(true);
-            drawB.setEnabled(false);
-            reset1B.setEnabled(true);
-            if (panel2.getComponentCount() != 0)
-                panel2.remove(text);
+        if (button == drawBtn) {
+            netPanel.setCursor(new Cursor(Cursor.CROSSHAIR_CURSOR));
+            netPanel.addMouseListener(ml);
+            netPanel.addMouseMotionListener(mml);
+            differentReliabilitiesOkBtn.setEnabled(true);
+            sameReliabilityOkBtn.setEnabled(true);
+            drawBtn.setEnabled(false);
+            resetGraphBtn.setEnabled(true);
+            if (netPanel.getComponentCount() != 0)
+                netPanel.remove(text);
         }
 
-        if (button == sameReliabilityB) {
-            panel4.removeAll();
+        if (button == sameReliabilityOkBtn) {
+            probPanel.removeAll();
             sameReliability = true;
-            reset1B.setEnabled(true);
-            sameReliabilityB.setEnabled(true);
+            resetGraphBtn.setEnabled(true);
+            sameReliabilityOkBtn.setEnabled(true);
             okButton();
-            ok1B.setEnabled(true);
+            differentReliabilitiesOkBtn.setEnabled(true);
             decomB.setEnabled(false);
             resilienceB.setEnabled(false);
         }
 
-        if (button == inputNet) {
-            panel2.setCursor(new Cursor(Cursor.CROSSHAIR_CURSOR));
-            ok1B.setEnabled(true);
-            reset1B.setEnabled(true);
-            panel2.removeMouseListener(ml);
-            panel2.removeMouseMotionListener(mml);
-            panel2.addMouseListener(ml);
-            panel2.addMouseMotionListener(mml);
+        if (button == inputNetBtn) {
+            netPanel.setCursor(new Cursor(Cursor.CROSSHAIR_CURSOR));
+            differentReliabilitiesOkBtn.setEnabled(true);
+            resetGraphBtn.setEnabled(true);
+            netPanel.removeMouseListener(ml);
+            netPanel.removeMouseMotionListener(mml);
+            netPanel.addMouseListener(ml);
+            netPanel.addMouseMotionListener(mml);
             nodes.clear();
             edges.clear();
             graph = null;
             zer = null;
             valid = false;
             probability_mode = false;
-            panel4.removeAll();
-            panel4.repaint();
-            drawB.setEnabled(false);
-            ok2B.setEnabled(false);
+            probPanel.removeAll();
+            probPanel.repaint();
+            drawBtn.setEnabled(false);
+            probabilitiesOkBtn.setEnabled(false);
             decomB.setEnabled(false);
             resilienceB.setEnabled(false);
             viewB.setEnabled(false);
             //result.setText(" ");
             //reduceText = "";
             sameReliability = false;
-            sameReliabilityB.setEnabled(true);
+            sameReliabilityOkBtn.setEnabled(true);
 
-            //panel4.removeAll();
+            //probPanel.removeAll();
             inputNetBoolean = true;
-            //reset1B.setEnabled(true);			
+            //resetGraphBtn.setEnabled(true);
 
             inputNet();
 
-            //ok1B.setEnabled(true);
-            //sameReliabilityB.setEnabled(true);
+            //differentReliabilitiesOkBtn.setEnabled(true);
+            //sameReliabilityOkBtn.setEnabled(true);
             //decomB.setEnabled(false);
             //resilienceB.setEnabled(false);
-            panel2.remove(text);
-            panel2.repaint();
+            netPanel.remove(text);
+            netPanel.repaint();
 
         }
 
-        if (button == exportNet) {
+        if (button == exportNetBtn) {
             exportNet();
         }
 
-        if (button == ok1B) {
-            panel4.removeAll();
+        if (button == differentReliabilitiesOkBtn) {
+            probPanel.removeAll();
             sameReliability = false;
-            reset1B.setEnabled(true);
-            sameReliabilityB.setEnabled(true);
+            resetGraphBtn.setEnabled(true);
+            sameReliabilityOkBtn.setEnabled(true);
             okButton();
-            ok1B.setEnabled(true);
+            differentReliabilitiesOkBtn.setEnabled(true);
             decomB.setEnabled(false);
             resilienceB.setEnabled(false);
 
         }
 
-        if (button == reset1B) {
+        if (button == resetGraphBtn) {
             startValue = BigDecimal.ZERO;
             endValue = BigDecimal.ZERO;
             stepSize = BigDecimal.ZERO;
 
-            panel2.setCursor(new Cursor(Cursor.CROSSHAIR_CURSOR));
-            ok1B.setEnabled(true);
-            reset1B.setEnabled(true);
-            panel2.removeMouseListener(ml);
-            panel2.removeMouseMotionListener(mml);
-            panel2.addMouseListener(ml);
-            panel2.addMouseMotionListener(mml);
+            netPanel.setCursor(new Cursor(Cursor.CROSSHAIR_CURSOR));
+            differentReliabilitiesOkBtn.setEnabled(true);
+            resetGraphBtn.setEnabled(true);
+            netPanel.removeMouseListener(ml);
+            netPanel.removeMouseMotionListener(mml);
+            netPanel.addMouseListener(ml);
+            netPanel.addMouseMotionListener(mml);
             nodes.clear();
             edges.clear();
             graph = null;
             zer = null;
             valid = false;
             probability_mode = false;
-            panel2.repaint();
-            panel4.removeAll();
-            panel4.repaint();
-            drawB.setEnabled(false);
-            ok2B.setEnabled(false);
+            netPanel.repaint();
+            probPanel.removeAll();
+            probPanel.repaint();
+            drawBtn.setEnabled(false);
+            probabilitiesOkBtn.setEnabled(false);
             decomB.setEnabled(false);
             resilienceB.setEnabled(false);
             viewB.setEnabled(false);
             result.setText(" ");
             reduceText = "";
             sameReliability = false;
-            sameReliabilityB.setEnabled(true);
+            sameReliabilityOkBtn.setEnabled(true);
         }
 
-        if (button == ok2B) {
+        if (button == probabilitiesOkBtn) {
             int n = probabs.length;
             probs = new float[n];
             MyList l = new MyList();
@@ -605,7 +619,7 @@ public class Renet4 extends JFrame
                 GridBagConstraints bnGbc = makegbc(2, 0, 1, 1, "center");
                 buttonPanel.add(bn, bnGbc);
                 frame.add("South", buttonPanel);
-                Point location = panel4.getLocationOnScreen();
+                Point location = probPanel.getLocationOnScreen();
                 frame.setLocation(location);
                 frame.setVisible(true);
                 frame.setSize(370, 200);
@@ -619,10 +633,10 @@ public class Renet4 extends JFrame
                 float f = fo.floatValue();
                 probs[i] = f;
             }
-            reset2B.setEnabled(true);
-            ok2B.setEnabled(false);
-            panel2.removeMouseListener(ml);
-            panel2.removeMouseMotionListener(mml);
+            resetProbabilitiesBtn.setEnabled(true);
+            probabilitiesOkBtn.setEnabled(false);
+            netPanel.removeMouseListener(ml);
+            netPanel.removeMouseMotionListener(mml);
 
             if (graph != null)
                 decomB.setEnabled(true);
@@ -660,14 +674,14 @@ public class Renet4 extends JFrame
         }
 
 
-        if (button == reset2B) {
+        if (button == resetProbabilitiesBtn) {
             startValue = BigDecimal.ZERO;
             endValue = BigDecimal.ZERO;
             stepSize = BigDecimal.ZERO;
 
-            ok2B.setEnabled(true);
-            ok1B.setEnabled(true);
-            reset2B.setEnabled(false);
+            probabilitiesOkBtn.setEnabled(true);
+            differentReliabilitiesOkBtn.setEnabled(true);
+            resetProbabilitiesBtn.setEnabled(false);
             decomB.setEnabled(false);
             resilienceB.setEnabled(false);
             probs = null;
@@ -683,7 +697,7 @@ public class Renet4 extends JFrame
                 textfieldStepsize.setText(null);
             }
 
-            sameReliabilityB.setEnabled(true);
+            sameReliabilityOkBtn.setEnabled(true);
 
         }
 
@@ -867,7 +881,7 @@ public class Renet4 extends JFrame
             GridBagConstraints bnGbc = makegbc(2, 0, 1, 1, "center");
             buttonPanel.add(bn, bnGbc);
             frame.add("South", buttonPanel);
-            Point location = panel4.getLocationOnScreen();
+            Point location = probPanel.getLocationOnScreen();
             frame.setLocation(location);
             frame.setVisible(true);
             frame.setSize(370, 200);
@@ -914,7 +928,7 @@ public class Renet4 extends JFrame
             GridBagConstraints bnGbc = makegbc(2, 0, 1, 1, "center");
             buttonPanel.add(bn, bnGbc);
             frame.add("South", buttonPanel);
-            Point location = panel4.getLocationOnScreen();
+            Point location = probPanel.getLocationOnScreen();
             frame.setLocation(location);
             frame.setVisible(true);
             frame.setSize(370, 200);
@@ -963,28 +977,28 @@ public class Renet4 extends JFrame
             n.yposition = n.yposition - smallest_y_pos;
         }
 
-        panel2.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
-        ok1B.setEnabled(false);
-        reset1B.setEnabled(true);
+        netPanel.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
+        differentReliabilitiesOkBtn.setEnabled(false);
+        resetGraphBtn.setEnabled(true);
         probability_mode = true;
 
         int n = edges.size();
-        //panel4.setSize(panel4.getPreferredSize());
-        //System.out.println(panel4.getSize());
+        //probPanel.setSize(probPanel.getPreferredSize());
+        //System.out.println(probPanel.getSize());
         /*Da edges.size() sich geaendert hat, muss hier die
-          Size von panel4 nochmal festgelegt werden, oder man fuegt erst hier
-		  panel4 zur ScrollPane sp:
-		  panel4 = new ProbPanel();
-		  sp.add(panel4);
-		  Dann hat panel4 die richtige Groesse.
+          Size von probPanel nochmal festgelegt werden, oder man fuegt erst hier
+		  probPanel zur ScrollPane probScrollPane:
+		  probPanel = new ProbPanel();
+		  probScrollPane.add(probPanel);
+		  Dann hat probPanel die richtige Groesse.
 		*/
 
         if (sameReliability) {
-            sp.setScrollPosition(0, 0);
-            panel4.setSize(600, 179);
-            panel4.removeAll();
-            //panel4.setLayout(new GridLayout(1, 1));		
-            panel4.setLayout(new GridLayout(4, 2));
+            probScrollPane.setScrollPosition(0, 0);
+            probPanel.setSize(600, 179);
+            probPanel.removeAll();
+            //probPanel.setLayout(new GridLayout(1, 1));
+            probPanel.setLayout(new GridLayout(4, 2));
             probabs = new TextField[n];
             String str = "Reliability of every edge: ";
             if (lang == 'D') {
@@ -1000,14 +1014,14 @@ public class Renet4 extends JFrame
             Panel p = new Panel();
             p.add(l);
             p.add(tf);
-            panel4.add(p);
+            probPanel.add(p);
 
 
             String str1 = "Optional for calculation series: ";
             Label l1 = new Label(str1, Label.RIGHT);
             Panel p1 = new Panel();
             p1.add(l1);
-            panel4.add(p1);
+            probPanel.add(p1);
 
             String str2 = "End value: ";
             Label l2 = new Label(str2, Label.RIGHT);
@@ -1024,12 +1038,12 @@ public class Renet4 extends JFrame
 
             p2.add(l3);
             p2.add(textfieldStepsize);
-            panel4.add(p2);
+            probPanel.add(p2);
         } else {
-            panel4.setSize(panel4.getPreferredSize());
-            panel4.removeAll();
-            panel4.setLayout(new GridLayout(n / 2 + 1, 2));
-            //panel4.setLayout(new GridLayout(0, 3));	
+            probPanel.setSize(probPanel.getPreferredSize());
+            probPanel.removeAll();
+            probPanel.setLayout(new GridLayout(n / 2 + 1, 2));
+            //probPanel.setLayout(new GridLayout(0, 3));
             probabs = new TextField[n];
             String str = "Edge ";
             if (lang == 'D')
@@ -1049,16 +1063,16 @@ public class Renet4 extends JFrame
                 Panel p = new Panel();
                 p.add(l);
                 p.add(tf);
-                panel4.add(p);
+                probPanel.add(p);
             }
-            sp.validate();
+            probScrollPane.validate();
         }
-        panel4.validate();
+        probPanel.validate();
 
 
-        ok2B.setEnabled(true);
-        sameReliabilityB.setEnabled(true);
-        ok1B.setEnabled(true);
+        probabilitiesOkBtn.setEnabled(true);
+        sameReliabilityOkBtn.setEnabled(true);
+        differentReliabilitiesOkBtn.setEnabled(true);
     }
 
     private Graph makeGraph() {
@@ -1189,7 +1203,7 @@ public class Renet4 extends JFrame
 
                             nodes.set(cnt1, nps);
                         }
-                        panel2.repaint();
+                        netPanel.repaint();
                         return;
                     }
                     //punkt (x,y) ist in dem Kreis(px, py)
@@ -1206,7 +1220,7 @@ public class Renet4 extends JFrame
                 if (evt.isMetaDown())
                     np.k = true;
                 nodes.add(np);
-                panel2.repaint();
+                netPanel.repaint();
             } else {
                 int r = 5;
                 double dr;
@@ -1272,7 +1286,7 @@ public class Renet4 extends JFrame
                             GridBagConstraints bnGbc = makegbc(2, 0, 1, 1, "center");
                             buttonPanel.add(bn, bnGbc);
                             bp.add(pf, bnGbc);
-                            Point location = panel4.getLocationOnScreen();
+                            Point location = probPanel.getLocationOnScreen();
                             frame.setLocation(location);
                             frame.setVisible(true);
                             frame.setSize(270, 140);
@@ -1320,7 +1334,7 @@ public class Renet4 extends JFrame
                             GridBagConstraints bnGbc = makegbc(2, 0, 1, 1, "center");
                             buttonPanel.add(bn, bnGbc);
                             bp.add(pf, bnGbc);
-                            Point location = panel4.getLocationOnScreen();
+                            Point location = probPanel.getLocationOnScreen();
                             frame.setLocation(location);
                             frame.setVisible(true);
                             frame.setSize(270, 140);
@@ -1368,7 +1382,7 @@ public class Renet4 extends JFrame
                             GridBagConstraints bnGbc = makegbc(2, 0, 1, 1, "center");
                             buttonPanel.add(bn, bnGbc);
                             bp.add(pf, bnGbc);
-                            Point location = panel4.getLocationOnScreen();
+                            Point location = probPanel.getLocationOnScreen();
                             frame.setLocation(location);
                             frame.setVisible(true);
                             frame.setSize(270, 140);
@@ -1380,7 +1394,7 @@ public class Renet4 extends JFrame
                     }
                     cntedge++;
                 }
-                panel2.repaint();
+                netPanel.repaint();
             }
         }
 
@@ -1447,7 +1461,7 @@ public class Renet4 extends JFrame
                 }
                 //punkt (x,y) ist in dem Kreis(px, py)
             }
-            panel2.repaint();
+            netPanel.repaint();
         }
     }
 
@@ -1458,7 +1472,7 @@ public class Renet4 extends JFrame
                 int y = evt.getY();
                 el.x2 = x;
                 el.y2 = y;
-                panel2.repaint();
+                netPanel.repaint();
             }
         }
     }
@@ -1718,7 +1732,7 @@ public class Renet4 extends JFrame
 
             }
         /*
-		String str1 = "The network is decomposed with Heidtmann's Algorithm:\n";
+        String str1 = "The network is decomposed with Heidtmann's Algorithm:\n";
 		String str2 = "The reliability of the network is:\n";
 
 		if(lang=='D')
@@ -2026,8 +2040,8 @@ public class Renet4 extends JFrame
             actRow = lineReader.readLine();
             actRow = actRow.substring(10);
             int nodesCount = Integer.parseInt(actRow);
-            int panelHeight = panel2.getHeight() - 20;
-            int panelWidth = panel2.getWidth() - 20;
+            int panelHeight = netPanel.getHeight() - 20;
+            int panelWidth = netPanel.getWidth() - 20;
 
             //Erzeuge Knoten
             for (int i = 0; i < nodesCount; i++) {
@@ -2150,7 +2164,7 @@ public class Renet4 extends JFrame
         GridBagConstraints bnGbc = makegbc(2, 0, 1, 1, "center");
         buttonPanel.add(bn, bnGbc);
         frame.add("South", buttonPanel);
-        Point location = panel2.getLocationOnScreen();
+        Point location = netPanel.getLocationOnScreen();
         frame.setLocation(location);
         frame.setVisible(true);
         frame.setSize(370, 200);
@@ -2228,8 +2242,8 @@ public class Renet4 extends JFrame
                     yCoordinate = 5;
                 }
 
-                xCoordinate = xCoordinate / (double) (panel2.getWidth());
-                yCoordinate = yCoordinate / (double) (panel2.getHeight());
+                xCoordinate = xCoordinate / (double) (netPanel.getWidth());
+                yCoordinate = yCoordinate / (double) (netPanel.getHeight());
 
                 // Auf 4 Nachkommastellen runden
                 xCoordinate = Math.round(xCoordinate * 10000.0) / 10000.0;
@@ -2311,7 +2325,7 @@ public class Renet4 extends JFrame
         GridBagConstraints bnGbc = makegbc(2, 0, 1, 1, "center");
         buttonPanel.add(bn, bnGbc);
         frame.add("South", buttonPanel);
-        Point location = panel2.getLocationOnScreen();
+        Point location = netPanel.getLocationOnScreen();
         frame.setLocation(location);
         frame.setVisible(true);
         frame.setSize(370, 200);
