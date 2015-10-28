@@ -42,8 +42,8 @@ public class Renet4 extends JFrame
     public EdgeLine el;
     public boolean valid = false;
     boolean probability_mode = false;
-    MyMouseListener ml;
-    MyMouseMotionListener mml;
+    MyMouseListener drawMouseListener;
+    MyMouseMotionListener drawMouseMoveListener;
     TextField[] probabs;
     float[] probs;
     float prob;
@@ -126,8 +126,8 @@ public class Renet4 extends JFrame
         //flagPanel.setVisible(false);
 
         netPanel = new NetPanel(this);
-        ml = new MyMouseListener();
-        mml = new MyMouseMotionListener();
+        drawMouseListener = new MyMouseListener();
+        drawMouseMoveListener = new MyMouseMotionListener();
         netPanel.setBackground(Color.white);
         netPanel.setSize(625, 315);
         //netPanel.setSize(600, 200);
@@ -448,8 +448,8 @@ public class Renet4 extends JFrame
 
         if (button == drawBtn) {
             netPanel.setCursor(new Cursor(Cursor.CROSSHAIR_CURSOR));
-            netPanel.addMouseListener(ml);
-            netPanel.addMouseMotionListener(mml);
+            netPanel.addMouseListener(drawMouseListener);
+            netPanel.addMouseMotionListener(drawMouseMoveListener);
             differentReliabilitiesOkBtn.setEnabled(true);
             sameReliabilityOkBtn.setEnabled(true);
             drawBtn.setEnabled(false);
@@ -473,10 +473,10 @@ public class Renet4 extends JFrame
             netPanel.setCursor(new Cursor(Cursor.CROSSHAIR_CURSOR));
             differentReliabilitiesOkBtn.setEnabled(true);
             resetGraphBtn.setEnabled(true);
-            netPanel.removeMouseListener(ml);
-            netPanel.removeMouseMotionListener(mml);
-            netPanel.addMouseListener(ml);
-            netPanel.addMouseMotionListener(mml);
+            netPanel.removeMouseListener(drawMouseListener);
+            netPanel.removeMouseMotionListener(drawMouseMoveListener);
+            netPanel.addMouseListener(drawMouseListener);
+            netPanel.addMouseMotionListener(drawMouseMoveListener);
             nodes.clear();
             edges.clear();
             graph = null;
@@ -534,10 +534,10 @@ public class Renet4 extends JFrame
             netPanel.setCursor(new Cursor(Cursor.CROSSHAIR_CURSOR));
             differentReliabilitiesOkBtn.setEnabled(true);
             resetGraphBtn.setEnabled(true);
-            netPanel.removeMouseListener(ml);
-            netPanel.removeMouseMotionListener(mml);
-            netPanel.addMouseListener(ml);
-            netPanel.addMouseMotionListener(mml);
+            netPanel.removeMouseListener(drawMouseListener);
+            netPanel.removeMouseMotionListener(drawMouseMoveListener);
+            netPanel.addMouseListener(drawMouseListener);
+            netPanel.addMouseMotionListener(drawMouseMoveListener);
             nodes.clear();
             edges.clear();
             graph = null;
@@ -635,8 +635,8 @@ public class Renet4 extends JFrame
             }
             resetProbabilitiesBtn.setEnabled(true);
             probabilitiesOkBtn.setEnabled(false);
-            netPanel.removeMouseListener(ml);
-            netPanel.removeMouseMotionListener(mml);
+            netPanel.removeMouseListener(drawMouseListener);
+            netPanel.removeMouseMotionListener(drawMouseMoveListener);
 
             if (graph != null)
                 decomB.setEnabled(true);

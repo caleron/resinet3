@@ -41,10 +41,8 @@ public class Con_check {
                 }
             }
         }
-        if (c_node_reached == true || node.c_node == true) //|| any_other_c_node==true)
-            return true;
-        else
-            return false;
+        //|| any_other_c_node==true)
+        return c_node_reached || node.c_node;
     }
 
 
