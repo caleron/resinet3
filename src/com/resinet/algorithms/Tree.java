@@ -270,53 +270,55 @@ public class Tree extends Thread {
             }
         }
     }
-}
 
+    private class Q {
+        int count;
+        Edge last;
 
-class Q {
-    int count;
-    Edge last;
-
-    public Q() {
-        count = 0;
-    }
-
-    void add(Edge e) {
-        if (count == 0)
-            e.q_left = null;
-        else {
-            e.q_left = last;
-            last.q_right = e;
+        public Q() {
+            count = 0;
         }
-        e.in_q = true;
-        e.q_right = null;
-        count++;
-        last = e;
-    }
 
-    void insert(Edge e) {
-        count++;
-        e.in_q = true;
-        if (e.q_left != null)
-            e.q_left.q_right = e;
-        if (e.q_right != null)
-            e.q_right.q_left = e;
-        else
-            last = e;
-    }
+        void add(Edge edge) {
+            if (count == 0)
+                edge.q_left = null;
+            else {
+                edge.q_left = last;
+                last.q_right = edge;
+            }
+            edge.in_q = true;
+            edge.q_right = null;
+            count++;
+            last = edge;
+        }
 
-    void delete(Edge e) {
-        count--;
-        e.in_q = false;
-        if (e.q_left != null)
-            e.q_left.q_right = e.q_right;
-        if (e.q_right != null)
-            e.q_right.q_left = e.q_left;
-        else
-            last = e.q_left;
-    }
+        void insert(Edge edge) {
+            count++;
+            edge.in_q = true;
+            if (edge.q_left != null)
+                edge.q_left.q_right = edge;
+            if (edge.q_right != null)
+                edge.q_right.q_left = edge;
+            else
+                last = edge;
+        }
 
+        void delete(Edge edge) {
+            count--;
+            edge.in_q = false;
+            if (edge.q_left != null)
+                edge.q_left.q_right = edge.q_right;
+            if (edge.q_right != null)
+                edge.q_right.q_left = edge.q_left;
+            else
+                last = edge.q_left;
+        }
+
+    }
 }
+
+
+
 
 
 

@@ -23,7 +23,7 @@ import javax.swing.filechooser.FileNameExtensionFilter;
 
 public class Renet4 extends JFrame
         implements ActionListener {
-    Panel headerPanel, reliabilityPanelHeader, probabilitiesBtnPanel, panel6, panel7;
+    Panel headerPanel, reliabilityPanelHeader, probabilitiesBtnPanel, reliabilityPanel, outputTextPanel;
     static Panel output;
     FlagPanel flagPanel;
     public NetPanel netPanel;
@@ -70,6 +70,8 @@ public class Renet4 extends JFrame
 
     String enText, deText, resultTextEn;
 
+    Color backgroundColor = new Color(85, 143, 180);
+
     ScrollPane probScrollPane;
     Image logo;
     Checkbox reliabilityCheckBox;
@@ -103,9 +105,8 @@ public class Renet4 extends JFrame
         calculationSeriesMode = 0;
         onlyReliabilityFast = false;
 
-        Color color = new Color(85, 143, 180);
         //color = color.brighter();
-        setBackground(color);
+        setBackground(backgroundColor);
         GridBagLayout mainLayout = new GridBagLayout();
         setLayout(mainLayout);
 
@@ -125,108 +126,81 @@ public class Renet4 extends JFrame
         //Sprachenauswahl nicht sichtbar!
         //flagPanel.setVisible(false);
 
-        netPanel = new NetPanel(this);
-        drawMouseListener = new MyMouseListener();
-        drawMouseMoveListener = new MyMouseMotionListener();
-        netPanel.setBackground(Color.white);
-        netPanel.setSize(625, 315);
-        //netPanel.setSize(600, 200);
-        netPanel.setVisible(true);
-        GridBagConstraints panel2Gbc = makegbc(0, 6, 1, 1, "west");
-        add(netPanel, panel2Gbc);
-        reduceText = "";
-        enText = "On this panel you can draw your network model after a click on the \"Draw\" button.\nPress the left button to draw a node and the right button to draw a connection-node. Delete a node by holding the <shift>-key an pressing the left button.\nTo draw an edge press the left button when the mouse pointer is on a node and hold it. Then drag the mouse to another node and release it. For deleting an edge delete its corresponding nodes.\nAfter you have finished, click the \"Ok\" button.\n\nYou can also import a previously created network (ResiNeT or Pajek) by clicking the \"Load\" button. To turn an existing node into a connection-node hold the Ctrl-Key while left-clicking on the node.";
-        deText = "Hier koennen Sie Ihr Netz eingeben. Klicken Sie dazu zunaechst auf \"Zeichnen\".\nEinen \"normalen\" Knoten erzeugen Sie, indem Sie die linke Maustaste betaetigen, einen K-Knoten durch Betaetigen der rechten Maustaste. Loeschen Sie einen Knoten, indem Sie die <shift>-Taste halten und die linke Maustaste betaetigen.\nUm eine Kante zu zeichnen, klicken Sie mit der linken Maustaste auf einen Knoten, halten diese solange gedrueckt, bis sich der Mauszeiger ueber dem Knoten befindet, zu dem die Kante fuehren soll. Eine Kante kann durch das Löschen ihrer inzidenten Knoten geloescht werden.\nHaben Sie Ihr Netz komplett eingegeben, klicken Sie bitte auf \"Ok\".\n";
-        text = new TextArea(enText, 19, 85, TextArea.SCROLLBARS_NONE);
-        text.setBackground(Color.white);
-        text.setEditable(false);
-        netPanel.add(text);
+        initNetPanel();
 
         initHeaderPanel();
 
         /*Panel halt1 = new Panel();
         GridBagConstraints halt1Gbc = makegbc(0, 7, 1, 1, "west");
         add(halt1, halt1Gbc);*/
-
-
-        reliabilityPanelHeader = new Panel();
-        reliabilityPanelHeader.setLayout(new GridLayout(1, 1));
-        GridBagConstraints panel3Gbc = makegbc(0, 7, 1, 1, "west");
-        panel3Gbc.fill = GridBagConstraints.HORIZONTAL;
-        add(reliabilityPanelHeader, panel3Gbc);
-        reliabilityPanelHeader.setBackground(color);
-        label2 = new Label("   Now you can input the reliability of every edge:", Label.LEFT);
-        reliabilityPanelHeader.add(label2);
-
+        initReliabilityPanelHeader();
         initProbabilitiesPanel();
 
         /*Panel halt2 = new Panel();
         GridBagConstraints halt2Gbc = makegbc(0, 14, 1, 1, "west");
         add(halt2, halt2Gbc);*/
 
-        panel6 = new Panel();
-        GridBagConstraints panel6Gbc = makegbc(0, 15, 1, 1, "west");
-        panel6.setLayout(new GridBagLayout());
-        add(panel6, panel6Gbc);
+        initReliabilityPanel();
+        initResiliencePanel();
 
-        /*Panel halt3 = new Panel();
-        GridBagConstraints halt3Gbc = makegbc(0, 1, 1, 3, "west");
-        panel6.add(halt3, halt3Gbc);*/
+        //reliabilityPanel.add(reliabilityCheckBox);
 
-        decomB = new Button("Calculate the reliability of the network");
-        decomB.setEnabled(false);
-        decomB.addActionListener(this);
-
-        resilienceB = new Button("Calculate the resilience of the network");
-        resilienceB.setEnabled(false);
-        resilienceB.addActionListener(this);
-
-        //GridBagConstraints resilienceBGbc = makegbc(0, 4, 1, 1, "southwest");
-        GridBagConstraints resilienceBGbc = makegbc(2, 0, 1, 1, "west");
-        GridBagConstraints decomBGbc = makegbc(1, 0, 1, 1, "west");
-
-        Panel reliabilityButtons = new Panel();
-        reliabilityButtons.setLayout(new FlowLayout(FlowLayout.CENTER));
-        reliabilityButtons.add(decomB);
-
-        reliabilityCheckBox = new Checkbox("Compare 3 algorithms");
-        reliabilityButtons.add(reliabilityCheckBox);
-        //reliabilityButtons.add(resilienceB);	
-        panel6.add(reliabilityButtons);
-
-        Panel resiliencePanel = new Panel();
-        GridBagConstraints resiliencePanelGbc = makegbc(0, 16, 1, 1, "west");
-        resiliencePanel.add(resilienceB);
-        add(resiliencePanel, resiliencePanelGbc);
-
-        //panel6.add(reliabilityCheckBox);
-
-        //panel6.add(decomB, decomBGbc);
-        //panel6.add(resilienceB, resilienceBGbc);
-
-        viewB = new Button("View Tree of Factorisation");
-        viewB.setEnabled(false);
-        viewB.addActionListener(this);
+        //reliabilityPanel.add(decomB, decomBGbc);
+        //reliabilityPanel.add(resilienceB, resilienceBGbc);
 
         // Fuer ResiNeT2 ist der Button nicht sichtbar
-        viewB.setVisible(false);
+        /*viewB = new Button("View Tree of Factorisation");
+        viewB.setEnabled(false);
+        viewB.addActionListener(this);
+        viewB.setVisible(true);*/
 
         //GridBagConstraints viewBGbc = makegbc(2, 0, 1, 1, "northwest");
-        //panel6.add(viewB, viewBGbc);
-        panel7 = new Panel();
+        //reliabilityPanel.add(viewB, viewBGbc);
+        initOutputTextPanel();
+    }
+
+    private void initOutputTextPanel() {
+        outputTextPanel = new Panel();
         //GridBagConstraints panel7Gbc = makegbc(0, 16, 1, 4, "west" );
         GridBagConstraints panel7Gbc = makegbc(0, 17, 1, 4, "west");
-        add(panel7, panel7Gbc);
+        add(outputTextPanel, panel7Gbc);
 
         //result = new TextArea(" ", 10, 80, TextArea.SCROLLBARS_VERTICAL_ONLY);
         //result = new TextArea(" ", 3, 85, TextArea.SCROLLBARS_NONE);
         result = new TextArea(" ", 3, 85, TextArea.SCROLLBARS_VERTICAL_ONLY);
         result.setEditable(false);
-        panel7.add(result);
+        outputTextPanel.add(result);
+        outputTextPanel.setBackground(backgroundColor);
+    }
+
+    private void initReliabilityPanelHeader() {
+        //Panel unter dem Netzwerkgraphen
+        reliabilityPanelHeader = new Panel();
+        reliabilityPanelHeader.setLayout(new GridLayout(1, 1));
+        GridBagConstraints panel3Gbc = makegbc(0, 7, 1, 1, "west");
+        panel3Gbc.fill = GridBagConstraints.HORIZONTAL;
+        add(reliabilityPanelHeader, panel3Gbc);
+        reliabilityPanelHeader.setBackground(backgroundColor);
+        label2 = new Label("   Now you can input the reliability of every edge:", Label.LEFT);
+        reliabilityPanelHeader.add(label2);
+    }
+
+    private void initResiliencePanel() {
+        Panel resiliencePanel = new Panel();
+        GridBagConstraints resiliencePanelGbc = makegbc(0, 16, 1, 1, "west");
+
+        resilienceB = new Button("Calculate the resilience of the network");
+        resilienceB.setEnabled(false);
+        resilienceB.addActionListener(this);
+
+        resiliencePanel.add(resilienceB);
+        resiliencePanel.setBackground(backgroundColor);
+        add(resiliencePanel, resiliencePanelGbc);
     }
 
     private void initHeaderPanel() {
         headerPanel = new Panel();
+        headerPanel.setBackground(backgroundColor);
         GridBagConstraints panel1Gbc = makegbc(0, 5, 1, 1, "west");
         add(headerPanel, panel1Gbc);
 
@@ -311,6 +285,58 @@ public class Renet4 extends JFrame
         probabilitiesOkBtn.addActionListener(this);
         probabilitiesBtnPanel.add(resetProbabilitiesBtn);
         probabilitiesBtnPanel.add(probabilitiesOkBtn);
+
+        probabilitiesBtnPanel.setBackground(backgroundColor);
+    }
+
+    private void initNetPanel() {
+        netPanel = new NetPanel(this);
+        drawMouseListener = new MyMouseListener();
+        drawMouseMoveListener = new MyMouseMotionListener();
+        netPanel.setBackground(Color.white);
+        netPanel.setSize(625, 315);
+
+        //netPanel.setSize(600, 200);
+        netPanel.setVisible(true);
+        GridBagConstraints panel2Gbc = makegbc(0, 6, 1, 1, "west");
+        add(netPanel, panel2Gbc);
+        reduceText = "";
+        enText = "On this panel you can draw your network model after a click on the \"Draw\" button.\nPress the left button to draw a node and the right button to draw a connection-node. Delete a node by holding the <shift>-key an pressing the left button.\nTo draw an edge press the left button when the mouse pointer is on a node and hold it. Then drag the mouse to another node and release it. For deleting an edge delete its corresponding nodes.\nAfter you have finished, click the \"Ok\" button.\n\nYou can also import a previously created network (ResiNeT or Pajek) by clicking the \"Load\" button. To turn an existing node into a connection-node hold the Ctrl-Key while left-clicking on the node.";
+        deText = "Hier koennen Sie Ihr Netz eingeben. Klicken Sie dazu zunaechst auf \"Zeichnen\".\nEinen \"normalen\" Knoten erzeugen Sie, indem Sie die linke Maustaste betaetigen, einen K-Knoten durch Betaetigen der rechten Maustaste. Loeschen Sie einen Knoten, indem Sie die <shift>-Taste halten und die linke Maustaste betaetigen.\nUm eine Kante zu zeichnen, klicken Sie mit der linken Maustaste auf einen Knoten, halten diese solange gedrueckt, bis sich der Mauszeiger ueber dem Knoten befindet, zu dem die Kante fuehren soll. Eine Kante kann durch das Löschen ihrer inzidenten Knoten geloescht werden.\nHaben Sie Ihr Netz komplett eingegeben, klicken Sie bitte auf \"Ok\".\n";
+        text = new TextArea(enText, 19, 85, TextArea.SCROLLBARS_NONE);
+        text.setBackground(Color.white);
+        text.setEditable(false);
+        netPanel.add(text);
+    }
+
+    private void initReliabilityPanel() {
+        reliabilityPanel = new Panel();
+        GridBagConstraints panel6Gbc = makegbc(0, 15, 1, 1, "west");
+        reliabilityPanel.setLayout(new GridBagLayout());
+        add(reliabilityPanel, panel6Gbc);
+
+        /*Panel halt3 = new Panel();
+        GridBagConstraints halt3Gbc = makegbc(0, 1, 1, 3, "west");
+        reliabilityPanel.add(halt3, halt3Gbc);*/
+
+        decomB = new Button("Calculate the reliability of the network");
+        decomB.setEnabled(false);
+        decomB.addActionListener(this);
+
+        //GridBagConstraints resilienceBGbc = makegbc(0, 4, 1, 1, "southwest");
+        GridBagConstraints resilienceBGbc = makegbc(2, 0, 1, 1, "west");
+        GridBagConstraints decomBGbc = makegbc(1, 0, 1, 1, "west");
+
+        Panel reliabilityButtons = new Panel();
+        reliabilityButtons.setLayout(new FlowLayout(FlowLayout.CENTER));
+        reliabilityButtons.add(decomB);
+
+        reliabilityCheckBox = new Checkbox("Compare 3 algorithms");
+        reliabilityButtons.add(reliabilityCheckBox);
+        //reliabilityButtons.add(resilienceB);
+        reliabilityPanel.add(reliabilityButtons);
+
+        reliabilityPanel.setBackground(backgroundColor);
     }
 
     private GridBagConstraints makegbc(int x, int y, int width, int height, String anchor) {
@@ -386,12 +412,12 @@ public class Renet4 extends JFrame
                 resetProbabilitiesBtn.setLabel("Reset");
                 probabilitiesBtnPanel.invalidate();
 
-                //panel6
+                //reliabilityPanel
                 //reduceB.setLabel("Reduce this network");
                 viewB.setLabel("View Tree of Factorisation");
                 decomB.setLabel("Calculate the reliability of the network");
                 resilienceB.setLabel(" resilience of the network");
-                panel6.invalidate();
+                reliabilityPanel.invalidate();
 
                 validate();
                 break;
@@ -426,13 +452,13 @@ public class Renet4 extends JFrame
                 resetProbabilitiesBtn.setLabel("Zurücksetzen");
                 probabilitiesBtnPanel.invalidate();
 
-                //panel6
+                //reliabilityPanel
                 //reduceB.setLabel("Das Netz reduzieren");
                 //viewB.setLabel("Anzeigen");
                 decomB.setLabel("Die Zuverlaessigkeit des Netzes berechnen");
                 resilienceB.setLabel("Die Resilienz des Netzes berechnen");
                 viewB.setLabel("Faktorisierungsbaum anzeigen");
-                panel6.invalidate();
+                reliabilityPanel.invalidate();
 
                 validate();
                 break;
