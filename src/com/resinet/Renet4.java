@@ -30,22 +30,22 @@ public class Renet4 extends JFrame
     ProbPanel probPanel;
     Label label0, headerLabel, label2;
     TextArea text;
-    TextField pf, textfieldEndvalue, textfieldStepsize;
-    Button drawBtn, resetGraphBtn, differentReliabilitiesOkBtn, sameReliabilityOkBtn, resetProbabilitiesBtn, probabilitiesOkBtn, decomB, resilienceB, viewB, inputNetBtn, exportNetBtn;
+    TextField pf, endProbabilityTextField, textfieldStepsize;
+    Button drawBtn, resetGraphBtn, differentReliabilitiesOkBtn, sameReliabilityOkBtn, resetProbabilitiesBtn, probabilitiesOkBtn, calcReliabilityBtn, resilienceBtn, viewFactorTreeBtn, inputNetBtn, exportNetBtn;
     boolean sameReliability, inputNetBoolean;
     Choice ch;
     char lang = 'E';
     String s1, s2;
 
-    public MyList nodes;
-    public MyList edges;
+    public MyList drawnNodes;
+    public MyList drawnEdges;
     public EdgeLine el;
     public boolean valid = false;
     boolean probability_mode = false;
     MyMouseListener drawMouseListener;
     MyMouseMotionListener drawMouseMoveListener;
-    TextField[] probabs;
-    float[] probs;
+    TextField[] probabilityTextFields;
+    float[] edgeProbabilities;
     float prob;
     float probfact;
     String resultText;
@@ -74,7 +74,7 @@ public class Renet4 extends JFrame
 
     ScrollPane probScrollPane;
     Image logo;
-    Checkbox reliabilityCheckBox;
+    Checkbox reliabilityCompareCheckBox;
 
 
     //Fuers Logo
@@ -96,8 +96,8 @@ public class Renet4 extends JFrame
     public void init() {
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
-        nodes = new MyList();
-        edges = new MyList();
+        drawnNodes = new MyList();
+        drawnEdges = new MyList();
 
         startValue = BigDecimal.ZERO;
         endValue = BigDecimal.ZERO;
@@ -143,19 +143,19 @@ public class Renet4 extends JFrame
         initReliabilityPanel();
         initResiliencePanel();
 
-        //reliabilityPanel.add(reliabilityCheckBox);
+        //reliabilityPanel.add(reliabilityCompareCheckBox);
 
-        //reliabilityPanel.add(decomB, decomBGbc);
-        //reliabilityPanel.add(resilienceB, resilienceBGbc);
+        //reliabilityPanel.add(calcReliabilityBtn, decomBGbc);
+        //reliabilityPanel.add(resilienceBtn, resilienceBGbc);
 
         // Fuer ResiNeT2 ist der Button nicht sichtbar
-        /*viewB = new Button("View Tree of Factorisation");
-        viewB.setEnabled(false);
-        viewB.addActionListener(this);
-        viewB.setVisible(true);*/
+        viewFactorTreeBtn = new Button("View Tree of Factorisation");
+        viewFactorTreeBtn.setEnabled(false);
+        viewFactorTreeBtn.addActionListener(this);
+        viewFactorTreeBtn.setVisible(false);
 
         //GridBagConstraints viewBGbc = makegbc(2, 0, 1, 1, "northwest");
-        //reliabilityPanel.add(viewB, viewBGbc);
+        //reliabilityPanel.add(viewFactorTreeBtn, viewBGbc);
         initOutputTextPanel();
     }
 
@@ -189,11 +189,11 @@ public class Renet4 extends JFrame
         Panel resiliencePanel = new Panel();
         GridBagConstraints resiliencePanelGbc = makegbc(0, 16, 1, 1, "west");
 
-        resilienceB = new Button("Calculate the resilience of the network");
-        resilienceB.setEnabled(false);
-        resilienceB.addActionListener(this);
+        resilienceBtn = new Button("Calculate the resilience of the network");
+        resilienceBtn.setEnabled(false);
+        resilienceBtn.addActionListener(this);
 
-        resiliencePanel.add(resilienceB);
+        resiliencePanel.add(resilienceBtn);
         resiliencePanel.setBackground(backgroundColor);
         add(resiliencePanel, resiliencePanelGbc);
     }
@@ -301,7 +301,7 @@ public class Renet4 extends JFrame
         GridBagConstraints panel2Gbc = makegbc(0, 6, 1, 1, "west");
         add(netPanel, panel2Gbc);
         reduceText = "";
-        enText = "On this panel you can draw your network model after a click on the \"Draw\" button.\nPress the left button to draw a node and the right button to draw a connection-node. Delete a node by holding the <shift>-key an pressing the left button.\nTo draw an edge press the left button when the mouse pointer is on a node and hold it. Then drag the mouse to another node and release it. For deleting an edge delete its corresponding nodes.\nAfter you have finished, click the \"Ok\" button.\n\nYou can also import a previously created network (ResiNeT or Pajek) by clicking the \"Load\" button. To turn an existing node into a connection-node hold the Ctrl-Key while left-clicking on the node.";
+        enText = "On this panel you can draw your network model after a click on the \"Draw\" button.\nPress the left button to draw a node and the right button to draw a connection-node. Delete a node by holding the <shift>-key an pressing the left button.\nTo draw an edge press the left button when the mouse pointer is on a node and hold it. Then drag the mouse to another node and release it. For deleting an edge delete its corresponding drawnNodes.\nAfter you have finished, click the \"Ok\" button.\n\nYou can also import a previously created network (ResiNeT or Pajek) by clicking the \"Load\" button. To turn an existing node into a connection-node hold the Ctrl-Key while left-clicking on the node.";
         deText = "Hier koennen Sie Ihr Netz eingeben. Klicken Sie dazu zunaechst auf \"Zeichnen\".\nEinen \"normalen\" Knoten erzeugen Sie, indem Sie die linke Maustaste betaetigen, einen K-Knoten durch Betaetigen der rechten Maustaste. Loeschen Sie einen Knoten, indem Sie die <shift>-Taste halten und die linke Maustaste betaetigen.\nUm eine Kante zu zeichnen, klicken Sie mit der linken Maustaste auf einen Knoten, halten diese solange gedrueckt, bis sich der Mauszeiger ueber dem Knoten befindet, zu dem die Kante fuehren soll. Eine Kante kann durch das Löschen ihrer inzidenten Knoten geloescht werden.\nHaben Sie Ihr Netz komplett eingegeben, klicken Sie bitte auf \"Ok\".\n";
         text = new TextArea(enText, 19, 85, TextArea.SCROLLBARS_NONE);
         text.setBackground(Color.white);
@@ -319,9 +319,9 @@ public class Renet4 extends JFrame
         GridBagConstraints halt3Gbc = makegbc(0, 1, 1, 3, "west");
         reliabilityPanel.add(halt3, halt3Gbc);*/
 
-        decomB = new Button("Calculate the reliability of the network");
-        decomB.setEnabled(false);
-        decomB.addActionListener(this);
+        calcReliabilityBtn = new Button("Calculate the reliability of the network");
+        calcReliabilityBtn.setEnabled(false);
+        calcReliabilityBtn.addActionListener(this);
 
         //GridBagConstraints resilienceBGbc = makegbc(0, 4, 1, 1, "southwest");
         GridBagConstraints resilienceBGbc = makegbc(2, 0, 1, 1, "west");
@@ -329,11 +329,11 @@ public class Renet4 extends JFrame
 
         Panel reliabilityButtons = new Panel();
         reliabilityButtons.setLayout(new FlowLayout(FlowLayout.CENTER));
-        reliabilityButtons.add(decomB);
+        reliabilityButtons.add(calcReliabilityBtn);
 
-        reliabilityCheckBox = new Checkbox("Compare 3 algorithms");
-        reliabilityButtons.add(reliabilityCheckBox);
-        //reliabilityButtons.add(resilienceB);
+        reliabilityCompareCheckBox = new Checkbox("Compare 3 algorithms");
+        reliabilityButtons.add(reliabilityCompareCheckBox);
+        //reliabilityButtons.add(resilienceBtn);
         reliabilityPanel.add(reliabilityButtons);
 
         reliabilityPanel.setBackground(backgroundColor);
@@ -414,9 +414,9 @@ public class Renet4 extends JFrame
 
                 //reliabilityPanel
                 //reduceB.setLabel("Reduce this network");
-                viewB.setLabel("View Tree of Factorisation");
-                decomB.setLabel("Calculate the reliability of the network");
-                resilienceB.setLabel(" resilience of the network");
+                viewFactorTreeBtn.setLabel("View Tree of Factorisation");
+                calcReliabilityBtn.setLabel("Calculate the reliability of the network");
+                resilienceBtn.setLabel(" resilience of the network");
                 reliabilityPanel.invalidate();
 
                 validate();
@@ -454,10 +454,10 @@ public class Renet4 extends JFrame
 
                 //reliabilityPanel
                 //reduceB.setLabel("Das Netz reduzieren");
-                //viewB.setLabel("Anzeigen");
-                decomB.setLabel("Die Zuverlaessigkeit des Netzes berechnen");
-                resilienceB.setLabel("Die Resilienz des Netzes berechnen");
-                viewB.setLabel("Faktorisierungsbaum anzeigen");
+                //viewFactorTreeBtn.setLabel("Anzeigen");
+                calcReliabilityBtn.setLabel("Die Zuverlaessigkeit des Netzes berechnen");
+                resilienceBtn.setLabel("Die Resilienz des Netzes berechnen");
+                viewFactorTreeBtn.setLabel("Faktorisierungsbaum anzeigen");
                 reliabilityPanel.invalidate();
 
                 validate();
@@ -489,10 +489,10 @@ public class Renet4 extends JFrame
             sameReliability = true;
             resetGraphBtn.setEnabled(true);
             sameReliabilityOkBtn.setEnabled(true);
-            okButton();
+            reliabilityButtonOk();
             differentReliabilitiesOkBtn.setEnabled(true);
-            decomB.setEnabled(false);
-            resilienceB.setEnabled(false);
+            calcReliabilityBtn.setEnabled(false);
+            resilienceBtn.setEnabled(false);
         }
 
         if (button == inputNetBtn) {
@@ -503,8 +503,8 @@ public class Renet4 extends JFrame
             netPanel.removeMouseMotionListener(drawMouseMoveListener);
             netPanel.addMouseListener(drawMouseListener);
             netPanel.addMouseMotionListener(drawMouseMoveListener);
-            nodes.clear();
-            edges.clear();
+            drawnNodes.clear();
+            drawnEdges.clear();
             graph = null;
             zer = null;
             valid = false;
@@ -513,9 +513,9 @@ public class Renet4 extends JFrame
             probPanel.repaint();
             drawBtn.setEnabled(false);
             probabilitiesOkBtn.setEnabled(false);
-            decomB.setEnabled(false);
-            resilienceB.setEnabled(false);
-            viewB.setEnabled(false);
+            calcReliabilityBtn.setEnabled(false);
+            resilienceBtn.setEnabled(false);
+            viewFactorTreeBtn.setEnabled(false);
             //result.setText(" ");
             //reduceText = "";
             sameReliability = false;
@@ -529,8 +529,8 @@ public class Renet4 extends JFrame
 
             //differentReliabilitiesOkBtn.setEnabled(true);
             //sameReliabilityOkBtn.setEnabled(true);
-            //decomB.setEnabled(false);
-            //resilienceB.setEnabled(false);
+            //calcReliabilityBtn.setEnabled(false);
+            //resilienceBtn.setEnabled(false);
             netPanel.remove(text);
             netPanel.repaint();
 
@@ -545,10 +545,10 @@ public class Renet4 extends JFrame
             sameReliability = false;
             resetGraphBtn.setEnabled(true);
             sameReliabilityOkBtn.setEnabled(true);
-            okButton();
+            reliabilityButtonOk();
             differentReliabilitiesOkBtn.setEnabled(true);
-            decomB.setEnabled(false);
-            resilienceB.setEnabled(false);
+            calcReliabilityBtn.setEnabled(false);
+            resilienceBtn.setEnabled(false);
 
         }
 
@@ -564,8 +564,8 @@ public class Renet4 extends JFrame
             netPanel.removeMouseMotionListener(drawMouseMoveListener);
             netPanel.addMouseListener(drawMouseListener);
             netPanel.addMouseMotionListener(drawMouseMoveListener);
-            nodes.clear();
-            edges.clear();
+            drawnNodes.clear();
+            drawnEdges.clear();
             graph = null;
             zer = null;
             valid = false;
@@ -575,9 +575,9 @@ public class Renet4 extends JFrame
             probPanel.repaint();
             drawBtn.setEnabled(false);
             probabilitiesOkBtn.setEnabled(false);
-            decomB.setEnabled(false);
-            resilienceB.setEnabled(false);
-            viewB.setEnabled(false);
+            calcReliabilityBtn.setEnabled(false);
+            resilienceBtn.setEnabled(false);
+            viewFactorTreeBtn.setEnabled(false);
             result.setText(" ");
             reduceText = "";
             sameReliability = false;
@@ -585,37 +585,38 @@ public class Renet4 extends JFrame
         }
 
         if (button == probabilitiesOkBtn) {
-            int n = probabs.length;
-            probs = new float[n];
-            MyList l = new MyList();
+            int n = probabilityTextFields.length;
+            edgeProbabilities = new float[n];
+            MyList edgesWithMissingProbability = new MyList();
 
             for (int i = 0; i < n; i++) {
-                String s = probabs[i].getText();
-                if (!checkText(s))
-                    l.add(String.valueOf(i));
+                String s = probabilityTextFields[i].getText();
+                if (!textIsProbability(s))
+                    edgesWithMissingProbability.add(String.valueOf(i));
             }
 
             if (sameReliability) {
-                String sEnd = textfieldEndvalue.getText();
+                String sEnd = endProbabilityTextField.getText();
                 if (sEnd.length() != 0) {
                     for (int i = 0; i < n; i++) {
-                        if (!checkText(sEnd))
-                            l.add(String.valueOf(i));
+                        if (!textIsProbability(sEnd))
+                            edgesWithMissingProbability.add(String.valueOf(i));
                     }
                 }
             }
 
-            if (l.size() != 0) {
-                MyIterator it = l.iterator();
-                String s1 = (String) it.next();
+            if (edgesWithMissingProbability.size() != 0) {
+                //Dieser Block zeigt nur ein Hinweisfenster an, falls Wahrscheinlichkeiten fehlen
+                MyIterator it = edgesWithMissingProbability.iterator();
+                String missingProbabilityEdges = (String) it.next();
                 while (it.hasNext()) {
                     String s2 = (String) it.next();
-                    s1 = s1 + ", " + s2;
+                    missingProbabilityEdges = missingProbabilityEdges + ", " + s2;
                 }
-                String str = "The reliability of an edge is a probability, thus\nit must be a number in format x.xxxxxx which is\nless than or equal to 1. Please check the in-\nput for edge\n" + s1;
+                String str = "The reliability of an edge is a probability, thus\nit must be a number in format x.xxxxxx which is\nless than or equal to 1. Please check the in-\nput for edge\n" + missingProbabilityEdges;
 
                 if (lang == 'D')
-                    str = "Die Intaktwahrscheinlichkeit einer Kante muss eine Zahl kleiner oder gleich 1 im Format x.xxxxxx sein. Bitte ueberpruefen Sie die Eingabe bei Kante:\n" + s1;
+                    str = "Die Intaktwahrscheinlichkeit einer Kante muss eine Zahl kleiner oder gleich 1 im Format x.xxxxxx sein. Bitte ueberpruefen Sie die Eingabe bei Kante:\n" + missingProbabilityEdges;
 
                 //Toolkit.getDefaultToolkit().beep();
                 Frame frame = new Frame("Warning!");
@@ -653,40 +654,42 @@ public class Renet4 extends JFrame
             }
 
             for (int i = 0; i < n; i++) {
-                probabs[i].setEditable(false);
-                String s = probabs[i].getText();
+                probabilityTextFields[i].setEditable(false);
+                String s = probabilityTextFields[i].getText();
                 Float fo = Float.valueOf(s);
-                float f = fo.floatValue();
-                probs[i] = f;
+                edgeProbabilities[i] = fo;
             }
+
             resetProbabilitiesBtn.setEnabled(true);
             probabilitiesOkBtn.setEnabled(false);
             netPanel.removeMouseListener(drawMouseListener);
             netPanel.removeMouseMotionListener(drawMouseMoveListener);
 
             if (graph != null)
-                decomB.setEnabled(true);
-            resilienceB.setEnabled(true);
+                calcReliabilityBtn.setEnabled(true);
+            resilienceBtn.setEnabled(true);
 
+            //TODO knotenwahrscheinlichkeiten zuweisen
 		/*Wahrscheinlichkeiten neu zuordnen.*/
             br = (MyList) graph.getEdgelist().clone();
             br_fact = (MyList) graphfact.getEdgelist().clone();
-            for (int i = 0; i < probs.length; i++) {
+            for (int i = 0; i < edgeProbabilities.length; i++) {
                 Edge e = (Edge) br.get(i);
-                e.prob = probs[i];
+                e.prob = edgeProbabilities[i];
                 Edge e2 = (Edge) br_fact.get(i);
-                e2.prob = probs[i];
+                e2.prob = edgeProbabilities[i];
             }
 
             //End value und step size zuordnen
-            if (probabs[0].getText().length() != 0) {
-                startValue = new BigDecimal(probabs[0].getText());
+            //TODO dies kann eigentlich in den Block mit sameReliability
+            if (probabilityTextFields[0].getText().length() != 0) {
+                startValue = new BigDecimal(probabilityTextFields[0].getText());
                 System.out.println("StartValue: " + startValue);
             }
 
             if (sameReliability) {
-                if (textfieldEndvalue.getText().length() != 0) {
-                    endValue = new BigDecimal(textfieldEndvalue.getText());
+                if (endProbabilityTextField.getText().length() != 0) {
+                    endValue = new BigDecimal(endProbabilityTextField.getText());
                     System.out.println("EndValue: " + endValue);
                 }
 
@@ -708,16 +711,16 @@ public class Renet4 extends JFrame
             probabilitiesOkBtn.setEnabled(true);
             differentReliabilitiesOkBtn.setEnabled(true);
             resetProbabilitiesBtn.setEnabled(false);
-            decomB.setEnabled(false);
-            resilienceB.setEnabled(false);
-            probs = null;
-            for (int i = 0; i < probabs.length; i++) {
-                probabs[i].setText(null);
-                probabs[i].setEditable(true);
+            calcReliabilityBtn.setEnabled(false);
+            resilienceBtn.setEnabled(false);
+            edgeProbabilities = null;
+            for (int i = 0; i < probabilityTextFields.length; i++) {
+                probabilityTextFields[i].setText(null);
+                probabilityTextFields[i].setEditable(true);
             }
 
-            if (textfieldEndvalue != null) {
-                textfieldEndvalue.setText(null);
+            if (endProbabilityTextField != null) {
+                endProbabilityTextField.setText(null);
             }
             if (textfieldStepsize != null) {
                 textfieldStepsize.setText(null);
@@ -727,7 +730,7 @@ public class Renet4 extends JFrame
 
         }
 
-        if (button == viewB) {
+        if (button == viewFactorTreeBtn) {
             Frame frame = new Frame("Tree of Factorisation");
             frame.setSize(800, 600);
             frame.addWindowListener(
@@ -774,7 +777,7 @@ public class Renet4 extends JFrame
         }
 
 
-        if (button == resilienceB) {
+        if (button == resilienceBtn) {
             if (!endValue.equals(BigDecimal.ZERO) && !stepSize.equals(BigDecimal.ZERO) && sameReliability) {
                 calculationSeriesMode = 1;
                 calculationSeries();
@@ -782,15 +785,15 @@ public class Renet4 extends JFrame
                 calculationSeriesMode = 0;
                 calculate_resilience();
 
-                resultText = "The network has " + total_nodes + " nodes, containing " + c_nodes + " c-nodes.\n" + "There are " + combinations + " combinations.\n" + "The resilience of the network is: " + result_resilience;
+                resultText = "The network has " + total_nodes + " drawnNodes, containing " + c_nodes + " c-drawnNodes.\n" + "There are " + combinations + " combinations.\n" + "The resilience of the network is: " + result_resilience;
                 //resultText = "Das Netz hat " + total_nodes + " Knoten, davon " + c_nodes + " K-Knoten.\n" + "Es gibt also " + combinations + " Kombinationen.\n" + "Die Resilienz des Netzes ist: " + result_resilience;		
                 result.setText(resultText);
             }
-            viewB.setEnabled(true);
+            viewFactorTreeBtn.setEnabled(true);
         }
 
 
-        if (button == decomB) {
+        if (button == calcReliabilityBtn) {
             //heidtmanns_reliability();
             //fact_reliability();
 
@@ -800,8 +803,8 @@ public class Renet4 extends JFrame
             } else {
                 calculationSeriesMode = 0;
                 //Wenn die Checkbox angeklickt wurde, sollen die 3 Alg. verglichen werden. Sonst nicht.
-                if (reliabilityCheckBox.getState()) {
-                    calculate_reliability();
+                if (reliabilityCompareCheckBox.getState()) {
+                    calculate_reliability_3_Algorithms();
                 } else {
                     onlyReliabilityFast = true;
                     calculate_reliability_faster();
@@ -834,7 +837,12 @@ public class Renet4 extends JFrame
         return s;
     }
 
-    private boolean checkText(String str) {
+    /**
+     * Prüft, ob der gegebene String eine (Gleitkomma)Zahl zwischen 0 und 1 ist
+     * @param str der zu überprüfende String
+     * @return Boolean, ob der Text eine Wahrscheinlichkeit ist
+     */
+    private boolean textIsProbability(String str) {
         boolean b = true;
         boolean temp = false;
         if (str.length() == 0)
@@ -854,7 +862,6 @@ public class Renet4 extends JFrame
             if (i == 1) {
                 if (c != '.') {
                     b = false;
-                    ;
                     break;
                 }
                 continue;
@@ -872,8 +879,12 @@ public class Renet4 extends JFrame
         return b;
     }
 
-    public void okButton() {
-        if (edges.size() == 0) {
+    /**
+     * Prüft den Graphen und baut die Anzeige mit den Textfeldern für die Wahrscheinlichkeiten auf
+     */
+    public void reliabilityButtonOk() {
+        if (drawnEdges.size() == 0) {
+            //Dieser Block zeigt ein Hinweisfenster an, wenn keine Knoten vorhanden sind und bricht die Methode ab
             String str = "Your Network does not contain edges!";
             if (lang == 'D')
                 str = "Ihr Netz besitzt keine Kanten!";
@@ -914,8 +925,9 @@ public class Renet4 extends JFrame
             return;
         }
 
+        //Anzahl Konnektionsknoten bestimmen
         int count = 0;
-        MyIterator np = nodes.iterator();
+        MyIterator np = drawnNodes.iterator();
         while (np.hasNext()) {
             NodePoint n = (NodePoint) np.next();
             if (n.k == true)
@@ -923,7 +935,8 @@ public class Renet4 extends JFrame
         }
 
         if (count < 2) {
-            String str = "Your Network does not contain at least 2 c-nodes! You can draw a new c-node by pressing the right mouse button. If you want to transform an existing node into a c-node, please hold the Ctrl-Key on your keyboard while left-clicking on the node.";
+            //Der Code in diesem Block zeigt nur ein Hinweisfenster an und bricht die Funktion ab
+            String str = "Your Network does not contain at least 2 c-drawnNodes! You can draw a new c-node by pressing the right mouse button. If you want to transform an existing node into a c-node, please hold the Ctrl-Key on your keyboard while left-clicking on the node.";
             if (lang == 'D')
                 str = "Ihr Netz besitzt nicht mindestens 2 Konnektionsknoten!";
             Frame frame = new Frame("Warning!");
@@ -961,12 +974,14 @@ public class Renet4 extends JFrame
             return;
         }
 
+        //Genug Knoten bzw. Konnektionsknoten vorhanden, weiter gehts
+
 		/*Ermittle kleinste und größte Positionswerte der Knoten.*/
         smallest_x_pos = 2000;
         highest_x_pos = 0;
         smallest_y_pos = 2000;
         highest_y_pos = 0;
-        np = nodes.iterator();
+        np = drawnNodes.iterator();
         while (np.hasNext()) {
             NodePoint n = (NodePoint) np.next();
             if (n.x < smallest_x_pos)
@@ -1008,10 +1023,12 @@ public class Renet4 extends JFrame
         resetGraphBtn.setEnabled(true);
         probability_mode = true;
 
-        int n = edges.size();
+        //TODO Eingabefelder für Knotenwahrscheinlichkeiten erzeugen
+
+        int edgeCount = drawnEdges.size();
         //probPanel.setSize(probPanel.getPreferredSize());
         //System.out.println(probPanel.getSize());
-        /*Da edges.size() sich geaendert hat, muss hier die
+        /*Da drawnEdges.size() sich geaendert hat, muss hier die
           Size von probPanel nochmal festgelegt werden, oder man fuegt erst hier
 		  probPanel zur ScrollPane probScrollPane:
 		  probPanel = new ProbPanel();
@@ -1025,7 +1042,7 @@ public class Renet4 extends JFrame
             probPanel.removeAll();
             //probPanel.setLayout(new GridLayout(1, 1));
             probPanel.setLayout(new GridLayout(4, 2));
-            probabs = new TextField[n];
+            probabilityTextFields = new TextField[edgeCount];
             String str = "Reliability of every edge: ";
             if (lang == 'D') {
                 str = "Intaktwahrscheinlichkeit: ";
@@ -1034,8 +1051,8 @@ public class Renet4 extends JFrame
             Label l = new Label(str, Label.RIGHT);
             TextField tf = new TextField(20);
             tf.setBackground(Color.white);
-            for (int i = 0; i < edges.size(); i++) {
-                probabs[i] = tf;
+            for (int i = 0; i < drawnEdges.size(); i++) {
+                probabilityTextFields[i] = tf;
             }
             Panel p = new Panel();
             p.add(l);
@@ -1051,11 +1068,11 @@ public class Renet4 extends JFrame
 
             String str2 = "End value: ";
             Label l2 = new Label(str2, Label.RIGHT);
-            textfieldEndvalue = new TextField(20);
-            textfieldEndvalue.setBackground(Color.white);
+            endProbabilityTextField = new TextField(20);
+            endProbabilityTextField.setBackground(Color.white);
             Panel p2 = new Panel();
             p2.add(l2);
-            p2.add(textfieldEndvalue);
+            p2.add(endProbabilityTextField);
 
             String str3 = "Step size (e.g. 0.01): ";
             Label l3 = new Label(str3, Label.RIGHT);
@@ -1068,14 +1085,14 @@ public class Renet4 extends JFrame
         } else {
             probPanel.setSize(probPanel.getPreferredSize());
             probPanel.removeAll();
-            probPanel.setLayout(new GridLayout(n / 2 + 1, 2));
+            probPanel.setLayout(new GridLayout(edgeCount / 2 + 1, 2));
             //probPanel.setLayout(new GridLayout(0, 3));
-            probabs = new TextField[n];
+            probabilityTextFields = new TextField[edgeCount];
             String str = "Edge ";
             if (lang == 'D')
                 str = "Kante ";
 
-            for (int i = 0; i < edges.size(); i++) {
+            for (int i = 0; i < drawnEdges.size(); i++) {
                 String s;
                 if (i < 10)
                     s = str + i + " ";
@@ -1085,7 +1102,7 @@ public class Renet4 extends JFrame
                 TextField tf = new TextField(20);
                 //TextField tf = new TextField(8);
                 tf.setBackground(Color.white);
-                probabs[i] = tf;
+                probabilityTextFields[i] = tf;
                 Panel p = new Panel();
                 p.add(l);
                 p.add(tf);
@@ -1101,11 +1118,16 @@ public class Renet4 extends JFrame
         differentReliabilitiesOkBtn.setEnabled(true);
     }
 
+    /**
+     * Erstellt aus den Knoten und Kanten des gezeichneten Graphen ein Graph-Objekt
+     *
+     * @return das Graph-Objekt zum gezeichneten Graph
+     */
     private Graph makeGraph() {
         MyList nodeList = new MyList();
         MyList edgeList = new MyList();
 
-        MyIterator it = nodes.iterator();
+        MyIterator it = drawnNodes.iterator();
         int cnt = 0;
         while (it.hasNext()) {
             NodePoint np = (NodePoint) it.next();
@@ -1118,7 +1140,7 @@ public class Renet4 extends JFrame
             cnt++;
         }
         //fertig mit dem Eintragen von Knoten
-        it = edges.iterator();
+        it = drawnEdges.iterator();
         cnt = 0;
         while (it.hasNext()) {
             EdgeLine e = (EdgeLine) it.next();
@@ -1188,10 +1210,10 @@ public class Renet4 extends JFrame
                 int cnt1;
                 int edlnode1;
                 int edlnode2;
-                MyIterator it = nodes.iterator();
+                MyIterator it = drawnNodes.iterator();
                 while (it.hasNext()) {
                     NodePoint nps = (NodePoint) it.next();
-                    cnt1 = nodes.indexOf(nps);
+                    cnt1 = drawnNodes.indexOf(nps);
                     int px = nps.x;
                     int py = nps.y;
                     px = px + 10;
@@ -1202,13 +1224,13 @@ public class Renet4 extends JFrame
 
                         if (evt.isShiftDown()) //zum Löschen von Knoten
                         {
-                            nodes.remove(nps);
-                            for (int i = 0; i < edges.size(); i++) {
-                                EdgeLine edl = (EdgeLine) edges.get(i);
+                            drawnNodes.remove(nps);
+                            for (int i = 0; i < drawnEdges.size(); i++) {
+                                EdgeLine edl = (EdgeLine) drawnEdges.get(i);
                                 edlnode1 = edl.node1; //Knotennummern sichern
                                 edlnode2 = edl.node2;
                                 if (edl.node1 == cnt1 || edl.node2 == cnt1) {
-                                    edges.remove(edl);
+                                    drawnEdges.remove(edl);
                                     i = i - 1;
                                 } else {
                                     if (edl.node1 > cnt1)
@@ -1227,7 +1249,7 @@ public class Renet4 extends JFrame
                                 nps.k = true;
                             }
 
-                            nodes.set(cnt1, nps);
+                            drawnNodes.set(cnt1, nps);
                         }
                         netPanel.repaint();
                         return;
@@ -1245,7 +1267,7 @@ public class Renet4 extends JFrame
                     np.y = y1 + 20 - (y1 % 20) - 10;
                 if (evt.isMetaDown())
                     np.k = true;
-                nodes.add(np);
+                drawnNodes.add(np);
                 netPanel.repaint();
             } else {
                 int r = 5;
@@ -1253,7 +1275,7 @@ public class Renet4 extends JFrame
                 cntedge = 0;
                 int x3 = evt.getX();
                 int y3 = evt.getY();
-                MyIterator it = edges.iterator();
+                MyIterator it = drawnEdges.iterator();
                 while (it.hasNext()) {
                     EdgeLine edg = (EdgeLine) it.next();
                     int x1 = edg.x1;
@@ -1304,7 +1326,7 @@ public class Renet4 extends JFrame
                                                      public void actionPerformed(ActionEvent event) {
                                                          Button b = (Button) event.getSource();
                                                          b.getParent().setVisible(false);
-                                                         probabs[cntedge].setText(pf.getText());
+                                                         probabilityTextFields[cntedge].setText(pf.getText());
                                                          ((Frame) (b.getParent()).getParent()).dispose();
                                                      }
                                                  }
@@ -1352,7 +1374,7 @@ public class Renet4 extends JFrame
                                                      public void actionPerformed(ActionEvent event) {
                                                          Button b = (Button) event.getSource();
                                                          b.getParent().setVisible(false);
-                                                         probabs[cntedge].setText(pf.getText());
+                                                         probabilityTextFields[cntedge].setText(pf.getText());
                                                          ((Frame) (b.getParent()).getParent()).dispose();
                                                      }
                                                  }
@@ -1400,7 +1422,7 @@ public class Renet4 extends JFrame
                                                      public void actionPerformed(ActionEvent event) {
                                                          Button b = (Button) event.getSource();
                                                          b.getParent().setVisible(false);
-                                                         probabs[cntedge].setText(pf.getText());
+                                                         probabilityTextFields[cntedge].setText(pf.getText());
                                                          ((Frame) (b.getParent()).getParent()).dispose();
                                                      }
                                                  }
@@ -1431,7 +1453,7 @@ public class Renet4 extends JFrame
             int x = evt.getX();
             int y = evt.getY();
             int cnt;
-            MyIterator it = nodes.iterator();
+            MyIterator it = drawnNodes.iterator();
             while (it.hasNext()) {
                 NodePoint np = (NodePoint) it.next();
                 int px = np.x;
@@ -1441,7 +1463,7 @@ public class Renet4 extends JFrame
                 int dx = x - px;
                 int dy = y - py;
                 if ((dx * dx + dy * dy) <= 100) {
-                    cnt = nodes.indexOf(np);
+                    cnt = drawnNodes.indexOf(np);
                     el = new EdgeLine();
                     el.x1 = px;
                     el.y1 = py;
@@ -1461,7 +1483,7 @@ public class Renet4 extends JFrame
             int x = evt.getX();
             int y = evt.getY();
             int cnt;
-            MyIterator it = nodes.iterator();
+            MyIterator it = drawnNodes.iterator();
             while (it.hasNext()) {
                 NodePoint np = (NodePoint) it.next();
                 int px = np.x;
@@ -1470,12 +1492,12 @@ public class Renet4 extends JFrame
                 py = py + 10;
                 int dx = x - px;
                 int dy = y - py;
-                if ((dx * dx + dy * dy) <= 100 && el.node1 != nodes.indexOf(np)) {
-                    cnt = nodes.indexOf(np);
+                if ((dx * dx + dy * dy) <= 100 && el.node1 != drawnNodes.indexOf(np)) {
+                    cnt = drawnNodes.indexOf(np);
                     el.x2 = px;
                     el.y2 = py;
                     el.node2 = cnt;
-                    edges.add(el);
+                    drawnEdges.add(el);
                     valid = true;
 
                     int lx = el.x2 - el.x1;
@@ -1537,7 +1559,10 @@ public class Renet4 extends JFrame
     }
 
 
-    //Zuverlaessigkeitsberechnung mit nur einem Algorithmus
+    /**
+     * Zuverlaessigkeitsberechnung mit nur einem Algorithmus Bei einem zusammenhängenden Graphen wird Heidtmanns
+     * Algorithmus verwendet, sonst die Faktorisierungsmethode
+     */
     public void calculate_reliability_faster() {
         resultText = "Calculating...";
         result.setText(resultText);
@@ -1554,12 +1579,12 @@ public class Renet4 extends JFrame
         // Wahrscheinlichkeiten neu zuordnen. 
         /*br = (MyList)graph.getEdgelist().clone();
         br_fact = (MyList)graphfact.getEdgelist().clone();
-		for(int k=0; k<probs.length;k++)
+		for(int k=0; k<edgeProbabilities.length;k++)
 		{
 		    Edge e = (Edge)br.get(k);
-		    e.prob = probs[k];
+		    e.prob = edgeProbabilities[k];
 		    Edge e2 = (Edge)br_fact.get(k);
-		    e2.prob = probs[k];
+		    e2.prob = edgeProbabilities[k];
 		}*/
 
         if (graphConnected) {
@@ -1572,8 +1597,10 @@ public class Renet4 extends JFrame
         result.setText(resultText);
     }
 
-    //Zuverlaessigkeitsberechnung mit 3 Algorithmen (ReNeT)
-    public void calculate_reliability() {
+    /**
+     * Zuverlaessigkeitsberechnung mit 3 Algorithmen (ReNeT)
+     */
+    public void calculate_reliability_3_Algorithms() {
         counterFact = 0;
         graphfact.level = 0;
         generated_Graphs = new MyList();
@@ -1593,8 +1620,8 @@ public class Renet4 extends JFrame
         if (lang == 'D')
             resultText = "Die Zuverlaessigkeit des Netzes wird mit der Methode der Faktorisierung berechnet (keine Reduktion):\nAnzahl Faktorisierungen: " + counterFact + "\nP=" + factProb + "\nDie Zuverlaessigkeit des Netzes ist:\n" + probfact;
         resultText = resultText + "\n\n-------------------------\n\n";
-        decomB.setEnabled(true);
-        resilienceB.setEnabled(true);
+        calcReliabilityBtn.setEnabled(true);
+        resilienceBtn.setEnabled(true);
 
         zer = new Zerleg(graph);
         zer.start();
@@ -1603,9 +1630,9 @@ public class Renet4 extends JFrame
         } catch (InterruptedException e) {
         }
 
-        for (int i = 0; i < probs.length; i++) {
+        for (int i = 0; i < edgeProbabilities.length; i++) {
             Edge e = (Edge) br.get(i);
-            e.prob = probs[i];
+            e.prob = edgeProbabilities[i];
         }
         //die IW jeder Kante zuweisen
         Util.getProbability(graph);
@@ -1696,8 +1723,8 @@ public class Renet4 extends JFrame
 
         }
         result.setText(resultText);
-        viewB.setEnabled(true);
-        //decomB.setEnabled(false);	
+        viewFactorTreeBtn.setEnabled(true);
+        //calcReliabilityBtn.setEnabled(false);
     }
 
 
@@ -1719,9 +1746,9 @@ public class Renet4 extends JFrame
         } catch (InterruptedException e) {
         }
 
-        for (int i = 0; i < probs.length; i++) {
+        for (int i = 0; i < edgeProbabilities.length; i++) {
             Edge e = (Edge) br.get(i);
-            e.prob = probs[i];
+            e.prob = edgeProbabilities[i];
         }
         //die IW jeder Kante zuweisen
         Util.getProbability(graph);
@@ -1771,11 +1798,11 @@ public class Renet4 extends JFrame
             //resultText="Schritt " + counter + " von " + combinations;
             //resultText = resultText+str1+"\n"+str2+prob;
 
-            decomB.setEnabled(true);
-            resilienceB.setEnabled(true);
+            calcReliabilityBtn.setEnabled(true);
+            resilienceBtn.setEnabled(true);
 
             //result.setText(resultText);
-            viewB.setEnabled(true);
+            viewFactorTreeBtn.setEnabled(true);
         }
         long runningTime = new Date().getTime() - start;
         System.out.println("Laufzeit Heidtmann: " + runningTime);
@@ -1804,9 +1831,9 @@ public class Renet4 extends JFrame
         probfact = Util.getProbabilityFact(graphfact, 0);
 
         Util.drawTreeofGraphs(graphfact);
-        decomB.setEnabled(true);
-        resilienceB.setEnabled(true);
-        viewB.setEnabled(true);
+        calcReliabilityBtn.setEnabled(true);
+        resilienceBtn.setEnabled(true);
+        viewFactorTreeBtn.setEnabled(true);
 
         long runningTime = new Date().getTime() - start;
         System.out.println("Laufzeit Fact: " + runningTime);
@@ -1864,7 +1891,7 @@ public class Renet4 extends JFrame
         result.setText(resultText);
 
         //Anzahl der Knoten     		
-        total_nodes = nodes.size();
+        total_nodes = drawnNodes.size();
 
         //Anzahl der K-Knoten
         c_nodes = 0;
@@ -1872,7 +1899,7 @@ public class Renet4 extends JFrame
         // Sicherung der K-Knotenliste
         String cNodeList = "";
         for (int i = 0; i < total_nodes; i++) {
-            NodePoint nodeSave = (NodePoint) nodes.get(i);
+            NodePoint nodeSave = (NodePoint) drawnNodes.get(i);
             if (nodeSave.k) {
                 c_nodes++;
                 cNodeList = cNodeList + "1";
@@ -1933,7 +1960,7 @@ public class Renet4 extends JFrame
             // Für jeden Knoten: Falls er in der aktuellen Kombination enthalten ist, setze ihn auf "K-Knoten".
             for (int i = 0; i < total_nodes; i++) {
                 // Entsprechenden Knoten holen
-                NodePoint node1 = (NodePoint) nodes.get(i);
+                NodePoint node1 = (NodePoint) drawnNodes.get(i);
                 //com.resinet.model.Node node1 = (com.resinet.model.Node)graph.nd.get(i);
 
                 // Dann auf true, falls K-Knoten
@@ -1944,7 +1971,7 @@ public class Renet4 extends JFrame
                 }
 
                 // Schreibe jeden Knoten neu in die Knotenliste.
-                nodes.set(i, node1);
+                drawnNodes.set(i, node1);
                 //graph.nd.set(i, node1);
 
             }
@@ -1962,11 +1989,11 @@ public class Renet4 extends JFrame
             // Wahrscheinlichkeiten neu zuordnen.
             br = (MyList) graph.getEdgelist().clone();
             br_fact = (MyList) graphfact.getEdgelist().clone();
-            for (int i = 0; i < probs.length; i++) {
+            for (int i = 0; i < edgeProbabilities.length; i++) {
                 Edge e = (Edge) br.get(i);
-                e.prob = probs[i];
+                e.prob = edgeProbabilities[i];
                 Edge e2 = (Edge) br_fact.get(i);
-                e2.prob = probs[i];
+                e2.prob = edgeProbabilities[i];
             }
 
             // Berechne die Zuverlässigkeit für die aktuelle Kombination und addiere sie zur bisherigen Summe. 
@@ -1986,7 +2013,7 @@ public class Renet4 extends JFrame
         //K-Knotenliste zurücksetzen
         for (int i = 0; i < total_nodes; i++) {
             // Entsprechenden Knoten holen
-            NodePoint nodeReset = (NodePoint) nodes.get(i);
+            NodePoint nodeReset = (NodePoint) drawnNodes.get(i);
 
             // Dann auf true, falls K-Knoten
             if (cNodeList.charAt(i) == '1') {
@@ -1996,7 +2023,7 @@ public class Renet4 extends JFrame
             }
 
             // Schreibe jeden Knoten neu in die Knotenliste.
-            nodes.set(i, nodeReset);
+            drawnNodes.set(i, nodeReset);
         }
 
         try {
@@ -2085,7 +2112,7 @@ public class Renet4 extends JFrame
                 Double yCoordinate = Double.parseDouble(actRow.substring(position + 10, position + 16));
                 node1.y = (int) (yCoordinate * panelHeight);
 
-                nodes.add(node1);
+                drawnNodes.add(node1);
             }
 
             //Zeile überspringen: *Arcs oder *Edges
@@ -2135,11 +2162,11 @@ public class Renet4 extends JFrame
                 edge1.node1 = Integer.parseInt(startnode) - 1;
                 edge1.node2 = Integer.parseInt(endnode) - 1;
 
-                NodePoint startNodePoint = (NodePoint) nodes.get(edge1.node1);
+                NodePoint startNodePoint = (NodePoint) drawnNodes.get(edge1.node1);
                 edge1.x1 = startNodePoint.x + 10;
                 edge1.y1 = startNodePoint.y + 10;
 
-                NodePoint endNodePoint = (NodePoint) nodes.get(edge1.node2);
+                NodePoint endNodePoint = (NodePoint) drawnNodes.get(edge1.node2);
                 edge1.x2 = endNodePoint.x + 10;
                 edge1.y2 = endNodePoint.y + 10;
 
@@ -2148,7 +2175,7 @@ public class Renet4 extends JFrame
                 edge1.x0 = edge1.x2 - labelX / 2;
                 edge1.y0 = edge1.y2 - labelY / 2;
 
-                edges.add(edge1);
+                drawnEdges.add(edge1);
             }
 
         } catch (Exception e) {
@@ -2229,13 +2256,13 @@ public class Renet4 extends JFrame
 
         try {
             writer = new FileWriter(path);
-            writer.write("*Vertices " + nodes.size());
+            writer.write("*Vertices " + drawnNodes.size());
 
 
-            int nodesDigitsCount = String.valueOf(nodes.size()).length();
+            int nodesDigitsCount = String.valueOf(drawnNodes.size()).length();
 
             //Für jeden Knoten eine Zeile schreiben
-            for (int i = 1; i < nodes.size() + 1; i++) {
+            for (int i = 1; i < drawnNodes.size() + 1; i++) {
                 writer.append(System.getProperty("line.separator"));
 
                 int digitsCurrentNode = String.valueOf(i).length();
@@ -2257,7 +2284,7 @@ public class Renet4 extends JFrame
                     writer.write(" ");
                 }
 
-                NodePoint node = (NodePoint) nodes.get(i - 1);
+                NodePoint node = (NodePoint) drawnNodes.get(i - 1);
                 double xCoordinate = (double) node.x;
                 double yCoordinate = (double) node.y;
 
@@ -2295,17 +2322,17 @@ public class Renet4 extends JFrame
             writer.write("*Edges");
 
             //Für jede Kante eine Zeile
-            for (int i = 0; i < edges.size(); i++) {
+            for (int i = 0; i < drawnEdges.size(); i++) {
                 writer.append(System.getProperty("line.separator"));
-                EdgeLine edge = (EdgeLine) edges.get(i);
+                EdgeLine edge = (EdgeLine) drawnEdges.get(i);
                 String node1 = Integer.toString(edge.node1 + 1);
                 String node2 = Integer.toString(edge.node2 + 1);
 
-                while (node1.length() < Integer.toString(nodes.size()).length() + 1) {
+                while (node1.length() < Integer.toString(drawnNodes.size()).length() + 1) {
                     node1 = " " + node1;
                 }
 
-                while (node2.length() < Integer.toString(nodes.size()).length() + 1) {
+                while (node2.length() < Integer.toString(drawnNodes.size()).length() + 1) {
                     node2 = " " + node2;
                 }
                 writer.write(node1 + " " + node2 + " 1");
@@ -2364,6 +2391,7 @@ public class Renet4 extends JFrame
     public int calculationSeriesMode = 0; //1 = resilience, 2 = reliability;
     public boolean onlyReliabilityFast;
 
+    //Für die Serienberechnung in Schritten
     public void calculationSeries() {
         //Sicherungskopien
         Graph graphSave = null;
@@ -2378,7 +2406,7 @@ public class Renet4 extends JFrame
             System.err.println(e2.toString());
         }
 
-        float[] probsSave = probs.clone();
+        float[] probsSave = edgeProbabilities.clone();
 
         //Dialog zum Datei auswählen
         JFileChooser chooseSaveFile = new JFileChooser();
@@ -2434,8 +2462,8 @@ public class Renet4 extends JFrame
                 BigDecimal reliability = i;
 
                 //Neue/aktuelle Wahrscheinlichkeiten zuweisen
-                for (int j = 0; j < probs.length; j++) {
-                    probs[j] = reliability.floatValue();
+                for (int j = 0; j < edgeProbabilities.length; j++) {
+                    edgeProbabilities[j] = reliability.floatValue();
                 }
 
                 if (calculationSeriesMode == 1) //Resilienz
@@ -2446,11 +2474,11 @@ public class Renet4 extends JFrame
                     // Wahrscheinlichkeiten neu zuordnen. (wird in calculate_resilience() auch gemacht)
                     br = (MyList) graph.getEdgelist().clone();
                     br_fact = (MyList) graphfact.getEdgelist().clone();
-                    for (int k = 0; k < probs.length; k++) {
+                    for (int k = 0; k < edgeProbabilities.length; k++) {
                         Edge e = (Edge) br.get(k);
-                        e.prob = probs[k];
+                        e.prob = edgeProbabilities[k];
                         Edge e2 = (Edge) br_fact.get(k);
-                        e2.prob = probs[k];
+                        e2.prob = edgeProbabilities[k];
                     }
 
                     if (graphConnected) {
@@ -2506,7 +2534,7 @@ public class Renet4 extends JFrame
             System.err.println(e2.toString());
         }
 
-        probs = probsSave.clone();
+        edgeProbabilities = probsSave.clone();
 
 
         calculationSeriesMode = 0;
@@ -2514,11 +2542,11 @@ public class Renet4 extends JFrame
         // Wahrscheinlichkeiten neu zuordnen.
         br = (MyList) graph.getEdgelist().clone();
         br_fact = (MyList) graphfact.getEdgelist().clone();
-        for (int i = 0; i < probs.length; i++) {
+        for (int i = 0; i < edgeProbabilities.length; i++) {
             Edge e = (Edge) br.get(i);
-            e.prob = probs[i];
+            e.prob = edgeProbabilities[i];
             Edge e2 = (Edge) br_fact.get(i);
-            e2.prob = probs[i];
+            e2.prob = edgeProbabilities[i];
         }
 
         resultText = "Calculation series finished. Please check your output file for the results.";

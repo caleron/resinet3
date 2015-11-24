@@ -29,7 +29,7 @@ public class NetPanel extends Panel {
 
         imgGraphics.fillRect(0, 0, 625, getHeight());
 
-        MyIterator iterator = renet4.nodes.iterator();
+        MyIterator iterator = renet4.drawnNodes.iterator();
         int count = 0;
         while (iterator.hasNext()) {
             imgGraphics.setColor(Color.black);
@@ -52,11 +52,11 @@ public class NetPanel extends Panel {
         }
 
         imgGraphics.setColor(Color.black);
-        iterator = renet4.edges.iterator();
+        iterator = renet4.drawnEdges.iterator();
         while (iterator.hasNext()) {
             EdgeLine e = (EdgeLine) iterator.next();
             imgGraphics.drawLine(e.x1, e.y1, e.x2, e.y2);
-            String s = String.valueOf(renet4.edges.indexOf(e));
+            String s = String.valueOf(renet4.drawnEdges.indexOf(e));
             imgGraphics.drawString(s, e.x0, e.y0);
         }
 
