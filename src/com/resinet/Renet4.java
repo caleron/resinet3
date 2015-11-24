@@ -44,7 +44,8 @@ public class Renet4 extends JFrame
     boolean probability_mode = false;
     MyMouseListener drawMouseListener;
     MyMouseMotionListener drawMouseMoveListener;
-    TextField[] probabilityTextFields;
+    TextField[] edgeProbabilityTextFields;
+    TextField[] nodeProbabilityTextFields;
     float[] edgeProbabilities;
     float prob;
     float probfact;
@@ -216,13 +217,13 @@ public class Renet4 extends JFrame
         GridBagConstraints drawBGbc = makegbc(0, 1, 1, 1, "west");
         headerPanel.add(drawBtn, drawBGbc);
 
-        differentReliabilitiesOkBtn = new Button("Ok (edges have different reliabilities)");
+        differentReliabilitiesOkBtn = new Button("Ok (components with different reliabilities)");
         differentReliabilitiesOkBtn.setEnabled(false);
         differentReliabilitiesOkBtn.addActionListener(this);
         GridBagConstraints ok1BGbc = makegbc(1, 1, 1, 1, "west");
         headerPanel.add(differentReliabilitiesOkBtn, ok1BGbc);
 
-        sameReliabilityOkBtn = new Button("Ok (all edges have the same reliability)");
+        sameReliabilityOkBtn = new Button("Ok (components with same reliability)");
         sameReliabilityOkBtn.setEnabled(false);
         sameReliabilityOkBtn.addActionListener(this);
         GridBagConstraints sameReliabilityBGbc = makegbc(2, 1, 1, 1, "west");
@@ -585,12 +586,12 @@ public class Renet4 extends JFrame
         }
 
         if (button == probabilitiesOkBtn) {
-            int n = probabilityTextFields.length;
+            int n = edgeProbabilityTextFields.length;
             edgeProbabilities = new float[n];
             MyList edgesWithMissingProbability = new MyList();
 
             for (int i = 0; i < n; i++) {
-                String s = probabilityTextFields[i].getText();
+                String s = edgeProbabilityTextFields[i].getText();
                 if (!textIsProbability(s))
                     edgesWithMissingProbability.add(String.valueOf(i));
             }
@@ -654,8 +655,8 @@ public class Renet4 extends JFrame
             }
 
             for (int i = 0; i < n; i++) {
-                probabilityTextFields[i].setEditable(false);
-                String s = probabilityTextFields[i].getText();
+                edgeProbabilityTextFields[i].setEditable(false);
+                String s = edgeProbabilityTextFields[i].getText();
                 Float fo = Float.valueOf(s);
                 edgeProbabilities[i] = fo;
             }
@@ -670,7 +671,7 @@ public class Renet4 extends JFrame
             resilienceBtn.setEnabled(true);
 
             //TODO knotenwahrscheinlichkeiten zuweisen
-		/*Wahrscheinlichkeiten neu zuordnen.*/
+        /*Wahrscheinlichkeiten neu zuordnen.*/
             br = (MyList) graph.getEdgelist().clone();
             br_fact = (MyList) graphfact.getEdgelist().clone();
             for (int i = 0; i < edgeProbabilities.length; i++) {
@@ -682,8 +683,8 @@ public class Renet4 extends JFrame
 
             //End value und step size zuordnen
             //TODO dies kann eigentlich in den Block mit sameReliability
-            if (probabilityTextFields[0].getText().length() != 0) {
-                startValue = new BigDecimal(probabilityTextFields[0].getText());
+            if (edgeProbabilityTextFields[0].getText().length() != 0) {
+                startValue = new BigDecimal(edgeProbabilityTextFields[0].getText());
                 System.out.println("StartValue: " + startValue);
             }
 
@@ -714,9 +715,9 @@ public class Renet4 extends JFrame
             calcReliabilityBtn.setEnabled(false);
             resilienceBtn.setEnabled(false);
             edgeProbabilities = null;
-            for (int i = 0; i < probabilityTextFields.length; i++) {
-                probabilityTextFields[i].setText(null);
-                probabilityTextFields[i].setEditable(true);
+            for (int i = 0; i < edgeProbabilityTextFields.length; i++) {
+                edgeProbabilityTextFields[i].setText(null);
+                edgeProbabilityTextFields[i].setEditable(true);
             }
 
             if (endProbabilityTextField != null) {
@@ -839,6 +840,7 @@ public class Renet4 extends JFrame
 
     /**
      * Prüft, ob der gegebene String eine (Gleitkomma)Zahl zwischen 0 und 1 ist
+     *
      * @param str der zu überprüfende String
      * @return Boolean, ob der Text eine Wahrscheinlichkeit ist
      */
@@ -1023,9 +1025,8 @@ public class Renet4 extends JFrame
         resetGraphBtn.setEnabled(true);
         probability_mode = true;
 
-        //TODO Eingabefelder für Knotenwahrscheinlichkeiten erzeugen
-
         int edgeCount = drawnEdges.size();
+        int nodeCount = drawnNodes.size();
         //probPanel.setSize(probPanel.getPreferredSize());
         //System.out.println(probPanel.getSize());
         /*Da drawnEdges.size() sich geaendert hat, muss hier die
@@ -1041,24 +1042,38 @@ public class Renet4 extends JFrame
             probPanel.setSize(600, 179);
             probPanel.removeAll();
             //probPanel.setLayout(new GridLayout(1, 1));
-            probPanel.setLayout(new GridLayout(4, 2));
-            probabilityTextFields = new TextField[edgeCount];
+            probPanel.setLayout(new GridLayout(6, 2));
+
+            edgeProbabilityTextFields = new TextField[edgeCount];
+            nodeProbabilityTextFields = new TextField[nodeCount];
             String str = "Reliability of every edge: ";
             if (lang == 'D') {
                 str = "Intaktwahrscheinlichkeit: ";
             }
 
-            Label l = new Label(str, Label.RIGHT);
-            TextField tf = new TextField(20);
-            tf.setBackground(Color.white);
+            //Kantenwahrscheinlichkeiten
+            Label edgeProbLabel = new Label(str, Label.RIGHT);
+            TextField edgeProbtextField = new TextField(20);
+            edgeProbtextField.setBackground(Color.white);
             for (int i = 0; i < drawnEdges.size(); i++) {
-                probabilityTextFields[i] = tf;
+                edgeProbabilityTextFields[i] = edgeProbtextField;
             }
-            Panel p = new Panel();
-            p.add(l);
-            p.add(tf);
-            probPanel.add(p);
+            Panel edgeProbPanel = new Panel();
+            edgeProbPanel.add(edgeProbLabel);
+            edgeProbPanel.add(edgeProbtextField);
+            probPanel.add(edgeProbPanel);
 
+            //Kantenwahrscheinlichkeiten
+            Label nodeProbLabel = new Label("Reliability of every node:", Label.RIGHT);
+            TextField nodeProbtextField = new TextField(20);
+            nodeProbtextField.setBackground(Color.white);
+            for (int i = 0; i < drawnNodes.size(); i++) {
+                nodeProbabilityTextFields[i] = nodeProbtextField;
+            }
+            Panel nodeProbPanel = new Panel();
+            nodeProbPanel.add(nodeProbLabel);
+            nodeProbPanel.add(nodeProbtextField);
+            probPanel.add(nodeProbPanel);
 
             String str1 = "Optional for calculation series: ";
             Label l1 = new Label(str1, Label.RIGHT);
@@ -1083,31 +1098,23 @@ public class Renet4 extends JFrame
             p2.add(textfieldStepsize);
             probPanel.add(p2);
         } else {
+
             probPanel.setSize(probPanel.getPreferredSize());
             probPanel.removeAll();
-            probPanel.setLayout(new GridLayout(edgeCount / 2 + 1, 2));
-            //probPanel.setLayout(new GridLayout(0, 3));
-            probabilityTextFields = new TextField[edgeCount];
-            String str = "Edge ";
-            if (lang == 'D')
-                str = "Kante ";
+            //probPanel.setLayout(new GridLayout((edgeCount + nodeCount) / 2 + 1, 2));
+            probPanel.setLayout(new GridLayout(0, 2));
+
+            edgeProbabilityTextFields = new TextField[edgeCount];
+            nodeProbabilityTextFields = new TextField[nodeCount];
 
             for (int i = 0; i < drawnEdges.size(); i++) {
-                String s;
-                if (i < 10)
-                    s = str + i + " ";
-                else
-                    s = str + i;
-                Label l = new Label(s, Label.RIGHT);
-                TextField tf = new TextField(20);
-                //TextField tf = new TextField(8);
-                tf.setBackground(Color.white);
-                probabilityTextFields[i] = tf;
-                Panel p = new Panel();
-                p.add(l);
-                p.add(tf);
-                probPanel.add(p);
+                addFieldToProbPanel(i, false);
             }
+
+            for (int i = 0; i < drawnNodes.size(); i++) {
+                addFieldToProbPanel(i, true);
+            }
+
             probScrollPane.validate();
         }
         probPanel.validate();
@@ -1116,6 +1123,34 @@ public class Renet4 extends JFrame
         probabilitiesOkBtn.setEnabled(true);
         sameReliabilityOkBtn.setEnabled(true);
         differentReliabilitiesOkBtn.setEnabled(true);
+    }
+
+    /**
+     * Fügt dem Wahrscheinlichkeitspanel ein Panel für die Wahrscheinlichkeit einer Komponente hinzu
+     * @param number Nummer des Felds
+     * @param isNodeProb True, wenn das Feld für einen Knoten ist, false bei Kante
+     */
+    private void addFieldToProbPanel(int number, boolean isNodeProb) {
+        String text;
+        String type = isNodeProb ? "Node " : "Edge";
+        if (number < 10)
+            text = type + number + " ";
+        else
+            text = type + number;
+
+        Label label = new Label(text, Label.RIGHT);
+        TextField textField = new TextField(20);
+        textField.setBackground(Color.white);
+
+        if (isNodeProb) {
+            nodeProbabilityTextFields[number] = textField;
+        } else {
+            edgeProbabilityTextFields[number] = textField;
+        }
+        Panel panel = new Panel();
+        panel.add(label);
+        panel.add(textField);
+        probPanel.add(panel);
     }
 
     /**
@@ -1326,7 +1361,7 @@ public class Renet4 extends JFrame
                                                      public void actionPerformed(ActionEvent event) {
                                                          Button b = (Button) event.getSource();
                                                          b.getParent().setVisible(false);
-                                                         probabilityTextFields[cntedge].setText(pf.getText());
+                                                         edgeProbabilityTextFields[cntedge].setText(pf.getText());
                                                          ((Frame) (b.getParent()).getParent()).dispose();
                                                      }
                                                  }
@@ -1374,7 +1409,7 @@ public class Renet4 extends JFrame
                                                      public void actionPerformed(ActionEvent event) {
                                                          Button b = (Button) event.getSource();
                                                          b.getParent().setVisible(false);
-                                                         probabilityTextFields[cntedge].setText(pf.getText());
+                                                         edgeProbabilityTextFields[cntedge].setText(pf.getText());
                                                          ((Frame) (b.getParent()).getParent()).dispose();
                                                      }
                                                  }
@@ -1422,7 +1457,7 @@ public class Renet4 extends JFrame
                                                      public void actionPerformed(ActionEvent event) {
                                                          Button b = (Button) event.getSource();
                                                          b.getParent().setVisible(false);
-                                                         probabilityTextFields[cntedge].setText(pf.getText());
+                                                         edgeProbabilityTextFields[cntedge].setText(pf.getText());
                                                          ((Frame) (b.getParent()).getParent()).dispose();
                                                      }
                                                  }
