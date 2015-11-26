@@ -67,13 +67,7 @@ public class Renet4 extends JFrame
     int smallest_y_pos;
     int highest_y_pos;
     int cntedge;
-    /*
-    Diese Listen sind Klone der Kantenlisten des Graphen, aber halten anscheinend die selben Referenzen auf Kanten
-    wie die Kantenliste des Graphen, also eine flache Kopie.
-     Wozu das ganze? Keine Ahnung.
-     */
-    //TODO zuweisung dieser variablen vereinfachen also neue Funktion oder so
-    private MyList br, br_fact;
+
     Zerleg zer;
 
     String enText, deText, resultTextEn;
@@ -706,15 +700,7 @@ public class Renet4 extends JFrame
 
             //TODO knotenwahrscheinlichkeiten zuweisen
         /*Wahrscheinlichkeiten neu zuordnen.*/
-            br = (MyList) graph.getEdgelist().clone();
-            br_fact = (MyList) graphfact.getEdgelist().clone();
-            for (int i = 0; i < edgeProbabilities.length; i++) {
-                Edge e = (Edge) br.get(i);
-                e.prob = edgeProbabilities[i];
-                Edge e2 = (Edge) br_fact.get(i);
-                e2.prob = edgeProbabilities[i];
-            }
-
+            reassignProbabilities();
 
 
             //End value und step size zuordnen
@@ -849,6 +835,53 @@ public class Renet4 extends JFrame
                 }
             }
 
+        }
+    }
+
+    /**
+     * Weist alle Wahrscheinlichkeiten aus den Eingabefeldern den Elementen im Graphen neu zu
+     */
+    private void reassignProbabilities() {
+        reassignProbabilites(false);
+    }
+
+    /**
+     * Weist alle Wahrscheinlichkeiten aus den Eingabefeldern den Elementen im Graphen neu zu Berücksichtigt auf Wunsch
+     * nur den "normalen" Graphen
+     *
+     * @param onlyNormalGraph bei true wird der Faktorisierungsgraph ignoriert
+     */
+    private void reassignProbabilites(boolean onlyNormalGraph) {
+        /*
+        Diese Listen sind Klone der Kantenlisten des Graphen, aber halten anscheinend die selben Referenzen auf Kanten
+        wie die Kantenliste des Graphen, also eine flache Kopie.
+        Wozu das ganze? Keine Ahnung.
+        */
+        MyList edgeList = graph.getEdgelist();
+        MyList factEdgeList = graphfact.getEdgelist();
+        //Kantenwahrscheinlichkeiten
+        for (int i = 0; i < edgeProbabilities.length; i++) {
+            Edge e = (Edge) edgeList.get(i);
+            e.prob = edgeProbabilities[i];
+
+            if (!onlyNormalGraph) {
+                Edge e2 = (Edge) factEdgeList.get(i);
+                e2.prob = edgeProbabilities[i];
+            }
+        }
+
+        MyList nodeList = graph.getNodelist();
+        MyList factNodeList = graphfact.getNodelist();
+
+        //Knotenwahrscheinlichkeiten
+        for (int i = 0; i < nodeProbabilities.length; i++) {
+            Node e = (Node) nodeList.get(i);
+            e.prob = nodeProbabilities[i];
+
+            if (!onlyNormalGraph) {
+                Node e2 = (Node) factNodeList.get(i);
+                e2.prob = nodeProbabilities[i];
+            }
         }
     }
 
@@ -1163,7 +1196,8 @@ public class Renet4 extends JFrame
 
     /**
      * Fügt dem Wahrscheinlichkeitspanel ein Panel für die Wahrscheinlichkeit einer Komponente hinzu
-     * @param number Nummer des Felds
+     *
+     * @param number     Nummer des Felds
      * @param isNodeProb True, wenn das Feld für einen Knoten ist, false bei Kante
      */
     private void addFieldToProbPanel(int number, boolean isNodeProb) {
@@ -1648,11 +1682,11 @@ public class Renet4 extends JFrame
         }
 
         // Wahrscheinlichkeiten neu zuordnen. 
-        /*br = (MyList)graph.getEdgelist().clone();
+        /*edgeList = (MyList)graph.getEdgelist().clone();
         br_fact = (MyList)graphfact.getEdgelist().clone();
 		for(int k=0; k<edgeProbabilities.length;k++)
 		{
-		    Edge e = (Edge)br.get(k);
+		    Edge e = (Edge)edgeList.get(k);
 		    e.prob = edgeProbabilities[k];
 		    Edge e2 = (Edge)br_fact.get(k);
 		    e2.prob = edgeProbabilities[k];
@@ -1701,16 +1735,14 @@ public class Renet4 extends JFrame
         } catch (InterruptedException e) {
         }
 
-        for (int i = 0; i < edgeProbabilities.length; i++) {
-            Edge e = (Edge) br.get(i);
-            e.prob = edgeProbabilities[i];
-        }
+        reassignProbabilites(true);
+
         //die IW jeder Kante zuweisen
         Util.getProbability(graph);
-        if (graph.br.size() == 1) {
+        if (graph.edgeList.size() == 1) {
             Edge e = (Edge) graph.getEdgelist().get(0);
             if ((e.left_node.c_node == true) && (e.right_node.c_node == true))
-                prob = ((Edge) graph.br.get(0)).prob;
+                prob = ((Edge) graph.edgeList.get(0)).prob;
             else prob = 0;
             resultText = "The reduced network contains only one edge.\nThe reliability of the network is:\nP=" + prob;
             if (lang == 'D')
@@ -1817,16 +1849,14 @@ public class Renet4 extends JFrame
         } catch (InterruptedException e) {
         }
 
-        for (int i = 0; i < edgeProbabilities.length; i++) {
-            Edge e = (Edge) br.get(i);
-            e.prob = edgeProbabilities[i];
-        }
+        reassignProbabilites(true);
+
         //die IW jeder Kante zuweisen
         Util.getProbability(graph);
-        if (graph.br.size() == 1) {
+        if (graph.edgeList.size() == 1) {
             Edge e = (Edge) graph.getEdgelist().get(0);
             if ((e.left_node.c_node == true) && (e.right_node.c_node == true))
-                prob = ((Edge) graph.br.get(0)).prob;
+                prob = ((Edge) graph.edgeList.get(0)).prob;
             else prob = 0;
             resultText = "The reduced network contains only one edge.\nThe reliability of the network is:\nP=" + prob;
             if (lang == 'D')
@@ -2032,7 +2062,7 @@ public class Renet4 extends JFrame
             for (int i = 0; i < total_nodes; i++) {
                 // Entsprechenden Knoten holen
                 NodePoint node1 = (NodePoint) drawnNodes.get(i);
-                //com.resinet.model.Node node1 = (com.resinet.model.Node)graph.nd.get(i);
+                //com.resinet.model.Node node1 = (com.resinet.model.Node)graph.nodeList.get(i);
 
                 // Dann auf true, falls K-Knoten
                 if (d.contains(i)) {
@@ -2043,7 +2073,7 @@ public class Renet4 extends JFrame
 
                 // Schreibe jeden Knoten neu in die Knotenliste.
                 drawnNodes.set(i, node1);
-                //graph.nd.set(i, node1);
+                //graph.nodeList.set(i, node1);
 
             }
 
@@ -2058,14 +2088,7 @@ public class Renet4 extends JFrame
 
 
             // Wahrscheinlichkeiten neu zuordnen.
-            br = (MyList) graph.getEdgelist().clone();
-            br_fact = (MyList) graphfact.getEdgelist().clone();
-            for (int i = 0; i < edgeProbabilities.length; i++) {
-                Edge e = (Edge) br.get(i);
-                e.prob = edgeProbabilities[i];
-                Edge e2 = (Edge) br_fact.get(i);
-                e2.prob = edgeProbabilities[i];
-            }
+            reassignProbabilities();
 
             // Berechne die Zuverlässigkeit für die aktuelle Kombination und addiere sie zur bisherigen Summe. 
             if (resilienceMode == 2) {
@@ -2543,14 +2566,7 @@ public class Renet4 extends JFrame
                 } else //Reliability
                 {
                     // Wahrscheinlichkeiten neu zuordnen. (wird in calculate_resilience() auch gemacht)
-                    br = (MyList) graph.getEdgelist().clone();
-                    br_fact = (MyList) graphfact.getEdgelist().clone();
-                    for (int k = 0; k < edgeProbabilities.length; k++) {
-                        Edge e = (Edge) br.get(k);
-                        e.prob = edgeProbabilities[k];
-                        Edge e2 = (Edge) br_fact.get(k);
-                        e2.prob = edgeProbabilities[k];
-                    }
+                    reassignProbabilities();
 
                     if (graphConnected) {
                         heidtmanns_reliability();
@@ -2610,14 +2626,7 @@ public class Renet4 extends JFrame
         calculationSeriesMode = 0;
 
         // Wahrscheinlichkeiten neu zuordnen.
-        br = (MyList) graph.getEdgelist().clone();
-        br_fact = (MyList) graphfact.getEdgelist().clone();
-        for (int i = 0; i < edgeProbabilities.length; i++) {
-            Edge e = (Edge) br.get(i);
-            e.prob = edgeProbabilities[i];
-            Edge e2 = (Edge) br_fact.get(i);
-            e2.prob = edgeProbabilities[i];
-        }
+        reassignProbabilities();
 
         resultText = "Calculation series finished. Please check your output file for the results.";
         result.setText(resultText);

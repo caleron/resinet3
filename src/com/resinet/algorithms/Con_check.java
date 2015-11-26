@@ -52,7 +52,7 @@ public class Con_check {
         int j;
         MyList nd;
 
-        nd = g.nd;
+        nd = g.nodeList;
 
         Node node = (Node) nd.get(i);
         node.marked = true;
@@ -94,7 +94,7 @@ public class Con_check {
     }
 
     private static void reset_mark(Graph g) {
-        MyIterator it = g.nd.iterator();
+        MyIterator it = g.nodeList.iterator();
 
         while (it.hasNext()) {
             Node node = (Node) it.next();
@@ -104,7 +104,7 @@ public class Con_check {
 
     public static int check(Graph g) {
         MyList nd;
-        nd = g.nd;
+        nd = g.nodeList;
 
         reset_mark(g);
 

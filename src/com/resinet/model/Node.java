@@ -24,6 +24,9 @@ public class Node implements Serializable {
     public boolean b_marked = false;
     //mark fuer K-Baum (com.resinet.model.KTree.java)
 
+    //Intaktwahrscheinlichkeit
+    public float prob;
+
     public boolean useless = false;
 
     public Node(int node_no) {

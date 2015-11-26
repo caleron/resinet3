@@ -86,8 +86,8 @@ public class Util {
 
     public static void skpReduce(Graph g, boolean factorisation) {
 
-        MyList nd = g.nd;
-        MyList br = g.br;
+        MyList nd = g.nodeList;
+        MyList br = g.edgeList;
         boolean reduced = true;
         boolean a = false;
         boolean b = false;
@@ -558,14 +558,14 @@ public class Util {
                 size = nd.size();
             }
         }
-    /*for(int i=0; i<nd.size(); i++)
+    /*for(int i=0; i<nodeList.size(); i++)
         {
-		com.resinet.model.Node node = (com.resinet.model.Node)nd.get(i);
+		com.resinet.model.Node node = (com.resinet.model.Node)nodeList.get(i);
 		node.node_no=i;
 	    }
-	for(int i=0; i<br.size(); i++)
+	for(int i=0; i<edgeList.size(); i++)
 	    {
-		Edge edge = (Edge)br.get(i);
+		Edge edge = (Edge)edgeList.get(i);
 		edge.edge_no=i;
 	    }*/
     }
@@ -574,7 +574,7 @@ public class Util {
     public static void getProbability(Graph g) {
         g.kprob = 1f;
         g.reducetype = "";
-        MyIterator it = g.br.iterator();
+        MyIterator it = g.edgeList.iterator();
         while (it.hasNext()) {
             Edge edge = (Edge) it.next();
             edge.prob = getEdgeProbability(edge, g);
@@ -584,7 +584,7 @@ public class Util {
 
 
     public static float getProbabilityFact(Graph g, int level) {
-	/*Zuverlässigkeiten der beiden sich durch die Faktorisierung ergebenden Netze*/
+	/*ZuverlÃ¤ssigkeiten der beiden sich durch die Faktorisierung ergebenden Netze*/
         float prob = 1;
         float p1, p2;
 
@@ -596,7 +596,7 @@ public class Util {
         p1 = 0;
         p2 = 0;
 
-	/*Falls das Netz aus einer Kante besteht, gib die Intaktwahrscheinlichkeit dieser Kante zurück.*/
+	/*Falls das Netz aus einer Kante besteht, gib die Intaktwahrscheinlichkeit dieser Kante zurÃ¼ck.*/
         if (g.getEdgelist().size() == 1) {
             Edge e = (Edge) g.getEdgelist().get(0);
             if ((e.left_node.c_node == false) || (e.right_node.c_node == false))
@@ -605,17 +605,17 @@ public class Util {
             return ((Edge) g.getEdgelist().get(0)).prob;
         }
 
-	/*Sonst beginne mit der Faktorisierung. Klone hierzu zunächst das Netz zweimal.*/
+	/*Sonst beginne mit der Faktorisierung. Klone hierzu zunÃ¤chst das Netz zweimal.*/
         g1 = null;
         g2 = null;
         int c_node_cnt = 0;
 
         boolean c_node_reduce = false;
 
-	/*c_node_reduce wird true gesetzt, falls nur noch zwei Konnektionsknoten vorhanden, deren verbindende Kante gewählt wurde.*/
+	/*c_node_reduce wird true gesetzt, falls nur noch zwei Konnektionsknoten vorhanden, deren verbindende Kante gewÃ¤hlt wurde.*/
         boolean c_nodes_only = false;
 
-	/*i_reduced wird true, wenn eine Reduktion stattfindet. Wichtig, um zu prüfen, ob es keine Kanten aus bizusammenhängenden Teilen des Netzes mehr gibt, nach denen faktorisiert werden könnte.*/
+	/*i_reduced wird true, wenn eine Reduktion stattfindet. Wichtig, um zu prÃ¼fen, ob es keine Kanten aus bizusammenhÃ¤ngenden Teilen des Netzes mehr gibt, nach denen faktorisiert werden kÃ¶nnte.*/
         boolean i_reduced = false;
 
         try {
@@ -632,12 +632,12 @@ public class Util {
                 if (con_check == 1 || con_check == 2) {
                     g1.delete_part_of_Graph();
                     i = i - 1;
-                } //Entferne überflüssige Teile des Netzes.
+                } //Entferne Ã¼berflÃ¼ssige Teile des Netzes.
                 if (con_check == (-1))
                     reducableEdges.add(new Integer(edge.edge_no));
             }
 
-		/*Prüfe, ob mindestens eine der Kanten, die sich in reducableEdges als reduzierbar gemerkt wurden nach dem Entfernen der überflüssigen Komponenten noch im Netz vorhanden ist und reduziere nach dieser.*/
+		/*PrÃ¼fe, ob mindestens eine der Kanten, die sich in reducableEdges als reduzierbar gemerkt wurden nach dem Entfernen der Ã¼berflÃ¼ssigen Komponenten noch im Netz vorhanden ist und reduziere nach dieser.*/
             MyIterator it = reducableEdges.iterator();
             while (it.hasNext()) {
                 edgenr = ((Integer) it.next()).intValue();
@@ -647,7 +647,7 @@ public class Util {
                     edgenr = (-2);
             }
 
-		/* Clone den um überflüssige Komponenten bereinigten Graphen g1. */
+		/* Clone den um Ã¼berflÃ¼ssige Komponenten bereinigten Graphen g1. */
             try {
                 g2 = (Graph) Util.serialClone(g1);
             } //Klonen des Graphen
@@ -657,7 +657,7 @@ public class Util {
                 System.err.println(e2.toString());
             }
 
-		/*Konnektionsknoten zählen.*/
+		/*Konnektionsknoten zÃ¤hlen.*/
             MyIterator it_c = g1.getNodelist().iterator();
             while (it_c.hasNext()) {
                 Node n = (Node) it_c.next();
@@ -673,7 +673,7 @@ public class Util {
                 Renet4.counterFact = Renet4.counterFact + 1;
 
                 if (c_node_cnt == 2 && e.left_node.c_node == true && e.right_node.c_node == true) {
-                    c_node_reduce = true; //nur noch zwei Konnektionsknoten, deren verbindende Kante gewählt wurde.
+                    c_node_reduce = true; //nur noch zwei Konnektionsknoten, deren verbindende Kante gewÃ¤hlt wurde.
                     i_reduced = true; //Eine Reduktion hat stattgefunden.
                 } else {
                     g1.reduce_Edge_i(e);
@@ -690,7 +690,7 @@ public class Util {
 
 
 
-	/*Berechnung der Zuverlässgkeit durch Faktorisierung*/
+	/*Berechnung der ZuverlÃ¤ssgkeit durch Faktorisierung*/
 
         if (c_node_reduce == true) //Fall 1
         {

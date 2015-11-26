@@ -32,7 +32,7 @@ public class Tree extends Thread {
         Node node;
         int i;
 
-        MyIterator it = this.graph.nd.iterator();
+        MyIterator it = this.graph.nodeList.iterator();
         while (it.hasNext()) {
             Node node2 = (Node) it.next();
             if (node2.c_node == true) {
@@ -328,14 +328,14 @@ Da es sich hier um ein k-von-n Problem handelt, wobei k<=n, wird der
 Algorithmus von Kohlas leicht modifiziert.
 
 Line 231: Jedesmal, nachdem eine neue Kante e in den aktuellen Baum b hinzu-
-gefuegt wurde, wird geprüft, ob die letzte Kante, d.h. e.left, eine s.graph. Endkante
+gefuegt wurde, wird geprï¿½ft, ob die letzte Kante, d.h. e.left, eine s.graph. Endkante
 und der dazugehoerige Knoten ein NICHT-Konnectionsknoten ist. Falls ja, wird 
 weiter geprueft, ob der Knoten bereits erreicht wurde (w.reached == true). Falls
 ja, wird die Schleife abgebrochen und kein Baum ausgegeben.
 
 Line 342:
 Wenn der Knoten w ein Nicht-K-Knoten ist und w.reached == true, w aber er kein
-Endknoten ist, wird überprueft, ob alle Knoten bzw. Kanten UNTER w "use-
+Endknoten ist, wird ï¿½berprueft, ob alle Knoten bzw. Kanten UNTER w "use-
 less" sind, d.h. Nicht-k-Knoten. Wenn der Knoten EINMAL useless 
 ist, wird der Knoten beim Loeschen als "reached"-Knoten gekenn-
 zeichnet und erst bei erneutem Hinzufuegen die Attribute "reached" 
