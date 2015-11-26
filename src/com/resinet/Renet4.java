@@ -47,6 +47,7 @@ public class Renet4 extends JFrame
     TextField[] edgeProbabilityTextFields;
     TextField[] nodeProbabilityTextFields;
     float[] edgeProbabilities;
+    float[] nodeProbabilities;
     float prob;
     float probfact;
     String resultText;
@@ -66,7 +67,13 @@ public class Renet4 extends JFrame
     int smallest_y_pos;
     int highest_y_pos;
     int cntedge;
-    MyList br, br_fact, brc;
+    /*
+    Diese Listen sind Klone der Kantenlisten des Graphen, aber halten anscheinend die selben Referenzen auf Kanten
+    wie die Kantenliste des Graphen, also eine flache Kopie.
+     Wozu das ganze? Keine Ahnung.
+     */
+    //TODO zuweisung dieser variablen vereinfachen also neue Funktion oder so
+    private MyList br, br_fact;
     Zerleg zer;
 
     String enText, deText, resultTextEn;
@@ -303,7 +310,7 @@ public class Renet4 extends JFrame
         add(netPanel, panel2Gbc);
         reduceText = "";
         enText = "On this panel you can draw your network model after a click on the \"Draw\" button.\nPress the left button to draw a node and the right button to draw a connection-node. Delete a node by holding the <shift>-key an pressing the left button.\nTo draw an edge press the left button when the mouse pointer is on a node and hold it. Then drag the mouse to another node and release it. For deleting an edge delete its corresponding drawnNodes.\nAfter you have finished, click the \"Ok\" button.\n\nYou can also import a previously created network (ResiNeT or Pajek) by clicking the \"Load\" button. To turn an existing node into a connection-node hold the Ctrl-Key while left-clicking on the node.";
-        deText = "Hier koennen Sie Ihr Netz eingeben. Klicken Sie dazu zunaechst auf \"Zeichnen\".\nEinen \"normalen\" Knoten erzeugen Sie, indem Sie die linke Maustaste betaetigen, einen K-Knoten durch Betaetigen der rechten Maustaste. Loeschen Sie einen Knoten, indem Sie die <shift>-Taste halten und die linke Maustaste betaetigen.\nUm eine Kante zu zeichnen, klicken Sie mit der linken Maustaste auf einen Knoten, halten diese solange gedrueckt, bis sich der Mauszeiger ueber dem Knoten befindet, zu dem die Kante fuehren soll. Eine Kante kann durch das Löschen ihrer inzidenten Knoten geloescht werden.\nHaben Sie Ihr Netz komplett eingegeben, klicken Sie bitte auf \"Ok\".\n";
+        deText = "Hier koennen Sie Ihr Netz eingeben. Klicken Sie dazu zunaechst auf \"Zeichnen\".\nEinen \"normalen\" Knoten erzeugen Sie, indem Sie die linke Maustaste betaetigen, einen K-Knoten durch Betaetigen der rechten Maustaste. Loeschen Sie einen Knoten, indem Sie die <shift>-Taste halten und die linke Maustaste betaetigen.\nUm eine Kante zu zeichnen, klicken Sie mit der linken Maustaste auf einen Knoten, halten diese solange gedrueckt, bis sich der Mauszeiger ueber dem Knoten befindet, zu dem die Kante fuehren soll. Eine Kante kann durch das LÃ¶schen ihrer inzidenten Knoten geloescht werden.\nHaben Sie Ihr Netz komplett eingegeben, klicken Sie bitte auf \"Ok\".\n";
         text = new TextArea(enText, 19, 85, TextArea.SCROLLBARS_NONE);
         text.setBackground(Color.white);
         text.setEditable(false);
@@ -438,9 +445,9 @@ public class Renet4 extends JFrame
                 //headerPanel
                 headerLabel.setText(" Bitte geben Sie hier Ihr Netz ein:");
                 drawBtn.setLabel("Zeichnen");
-                differentReliabilitiesOkBtn.setLabel("Ok (Verschiedene Kantenzuverlässigkeiten)");
-                sameReliabilityOkBtn.setLabel("Ok (Einheitliche Kantenzuverlässigkeit)");
-                resetGraphBtn.setLabel("Zurücksetzen");
+                differentReliabilitiesOkBtn.setLabel("Ok (Verschiedene KantenzuverlÃ¤ssigkeiten)");
+                sameReliabilityOkBtn.setLabel("Ok (Einheitliche KantenzuverlÃ¤ssigkeit)");
+                resetGraphBtn.setLabel("ZurÃ¼cksetzen");
                 headerPanel.invalidate();
 
                 //netPanel
@@ -450,7 +457,7 @@ public class Renet4 extends JFrame
                 label2.setText("   Nun geben Sie bitte die Intaktwahrscheinlichkeit jeder Kante ein:");
 
                 //probabilitiesBtnPanel
-                resetProbabilitiesBtn.setLabel("Zurücksetzen");
+                resetProbabilitiesBtn.setLabel("ZurÃ¼cksetzen");
                 probabilitiesBtnPanel.invalidate();
 
                 //reliabilityPanel
@@ -490,7 +497,7 @@ public class Renet4 extends JFrame
             sameReliability = true;
             resetGraphBtn.setEnabled(true);
             sameReliabilityOkBtn.setEnabled(true);
-            reliabilityButtonOk();
+            checkGraphAndBuildProbPanel();
             differentReliabilitiesOkBtn.setEnabled(true);
             calcReliabilityBtn.setEnabled(false);
             resilienceBtn.setEnabled(false);
@@ -546,7 +553,7 @@ public class Renet4 extends JFrame
             sameReliability = false;
             resetGraphBtn.setEnabled(true);
             sameReliabilityOkBtn.setEnabled(true);
-            reliabilityButtonOk();
+            checkGraphAndBuildProbPanel();
             differentReliabilitiesOkBtn.setEnabled(true);
             calcReliabilityBtn.setEnabled(false);
             resilienceBtn.setEnabled(false);
@@ -586,27 +593,37 @@ public class Renet4 extends JFrame
         }
 
         if (button == probabilitiesOkBtn) {
-            int n = edgeProbabilityTextFields.length;
-            edgeProbabilities = new float[n];
-            MyList edgesWithMissingProbability = new MyList();
+            int edgeCount = edgeProbabilityTextFields.length;
+            int nodeCount = nodeProbabilityTextFields.length;
+            edgeProbabilities = new float[edgeCount];
+            nodeProbabilities = new float[nodeCount];
 
-            for (int i = 0; i < n; i++) {
+            MyList edgesWithMissingProbability = new MyList();
+            MyList nodesWithMissingProbability = new MyList();
+
+            for (int i = 0; i < edgeCount; i++) {
                 String s = edgeProbabilityTextFields[i].getText();
                 if (!textIsProbability(s))
                     edgesWithMissingProbability.add(String.valueOf(i));
             }
 
+            for (int i = 0; i < nodeCount; i++) {
+                String s = nodeProbabilityTextFields[i].getText();
+                if (!textIsProbability(s))
+                    nodesWithMissingProbability.add(String.valueOf(i));
+            }
+
             if (sameReliability) {
                 String sEnd = endProbabilityTextField.getText();
                 if (sEnd.length() != 0) {
-                    for (int i = 0; i < n; i++) {
+                    for (int i = 0; i < edgeCount; i++) {
                         if (!textIsProbability(sEnd))
                             edgesWithMissingProbability.add(String.valueOf(i));
                     }
                 }
             }
 
-            if (edgesWithMissingProbability.size() != 0) {
+            if (edgesWithMissingProbability.size() != 0 || nodesWithMissingProbability.size() != 0) {
                 //Dieser Block zeigt nur ein Hinweisfenster an, falls Wahrscheinlichkeiten fehlen
                 MyIterator it = edgesWithMissingProbability.iterator();
                 String missingProbabilityEdges = (String) it.next();
@@ -614,7 +631,17 @@ public class Renet4 extends JFrame
                     String s2 = (String) it.next();
                     missingProbabilityEdges = missingProbabilityEdges + ", " + s2;
                 }
-                String str = "The reliability of an edge is a probability, thus\nit must be a number in format x.xxxxxx which is\nless than or equal to 1. Please check the in-\nput for edge\n" + missingProbabilityEdges;
+
+                it = nodesWithMissingProbability.iterator();
+                String missingProbabilityNodes = (String) it.next();
+                while (it.hasNext()) {
+                    String s2 = (String) it.next();
+                    missingProbabilityNodes = missingProbabilityNodes + ", " + s2;
+                }
+
+                String str = "The reliability of an edge is a probability, thus\nit must be a number in format x.xxxxxx " +
+                        "which is\nless than or equal to 1. Please check the in-\nput for edge\n" + missingProbabilityEdges +
+                        "\n and for node\n" + missingProbabilityNodes;
 
                 if (lang == 'D')
                     str = "Die Intaktwahrscheinlichkeit einer Kante muss eine Zahl kleiner oder gleich 1 im Format x.xxxxxx sein. Bitte ueberpruefen Sie die Eingabe bei Kante:\n" + missingProbabilityEdges;
@@ -654,11 +681,18 @@ public class Renet4 extends JFrame
                 return;
             }
 
-            for (int i = 0; i < n; i++) {
+            for (int i = 0; i < edgeCount; i++) {
                 edgeProbabilityTextFields[i].setEditable(false);
                 String s = edgeProbabilityTextFields[i].getText();
                 Float fo = Float.valueOf(s);
                 edgeProbabilities[i] = fo;
+            }
+
+            for (int i = 0; i < nodeCount; i++) {
+                nodeProbabilityTextFields[i].setEditable(false);
+                String s = nodeProbabilityTextFields[i].getText();
+                Float fo = Float.valueOf(s);
+                nodeProbabilities[i] = fo;
             }
 
             resetProbabilitiesBtn.setEnabled(true);
@@ -680,6 +714,8 @@ public class Renet4 extends JFrame
                 Edge e2 = (Edge) br_fact.get(i);
                 e2.prob = edgeProbabilities[i];
             }
+
+
 
             //End value und step size zuordnen
             //TODO dies kann eigentlich in den Block mit sameReliability
@@ -839,9 +875,9 @@ public class Renet4 extends JFrame
     }
 
     /**
-     * Prüft, ob der gegebene String eine (Gleitkomma)Zahl zwischen 0 und 1 ist
+     * PrÃ¼ft, ob der gegebene String eine (Gleitkomma)Zahl zwischen 0 und 1 ist
      *
-     * @param str der zu überprüfende String
+     * @param str der zu Ã¼berprÃ¼fende String
      * @return Boolean, ob der Text eine Wahrscheinlichkeit ist
      */
     private boolean textIsProbability(String str) {
@@ -882,9 +918,9 @@ public class Renet4 extends JFrame
     }
 
     /**
-     * Prüft den Graphen und baut die Anzeige mit den Textfeldern für die Wahrscheinlichkeiten auf
+     * PrÃ¼ft den Graphen und baut die Anzeige mit den Textfeldern fÃ¼r die Wahrscheinlichkeiten auf
      */
-    public void reliabilityButtonOk() {
+    public void checkGraphAndBuildProbPanel() {
         if (drawnEdges.size() == 0) {
             //Dieser Block zeigt ein Hinweisfenster an, wenn keine Knoten vorhanden sind und bricht die Methode ab
             String str = "Your Network does not contain edges!";
@@ -978,7 +1014,7 @@ public class Renet4 extends JFrame
 
         //Genug Knoten bzw. Konnektionsknoten vorhanden, weiter gehts
 
-		/*Ermittle kleinste und größte Positionswerte der Knoten.*/
+		/*Ermittle kleinste und grÃ¶ÃŸte Positionswerte der Knoten.*/
         smallest_x_pos = 2000;
         highest_x_pos = 0;
         smallest_y_pos = 2000;
@@ -1002,7 +1038,7 @@ public class Renet4 extends JFrame
 		/*Erzeuge Graphen.*/
         graph = makeGraph();
 
-		/*Clone Graphen für Faktorisierung.*/
+		/*Clone Graphen fÃ¼r Faktorisierung.*/
         try {
             graphfact = (Graph) Util.serialClone(graph); //clone Graphen
         } catch (java.io.IOException e1) {
@@ -1126,9 +1162,9 @@ public class Renet4 extends JFrame
     }
 
     /**
-     * Fügt dem Wahrscheinlichkeitspanel ein Panel für die Wahrscheinlichkeit einer Komponente hinzu
+     * FÃ¼gt dem Wahrscheinlichkeitspanel ein Panel fÃ¼r die Wahrscheinlichkeit einer Komponente hinzu
      * @param number Nummer des Felds
-     * @param isNodeProb True, wenn das Feld für einen Knoten ist, false bei Kante
+     * @param isNodeProb True, wenn das Feld fÃ¼r einen Knoten ist, false bei Kante
      */
     private void addFieldToProbPanel(int number, boolean isNodeProb) {
         String text;
@@ -1257,7 +1293,7 @@ public class Renet4 extends JFrame
                     int dy = y1 - py;
                     if ((dx * dx + dy * dy) <= 100) {
 
-                        if (evt.isShiftDown()) //zum Löschen von Knoten
+                        if (evt.isShiftDown()) //zum LÃ¶schen von Knoten
                         {
                             drawnNodes.remove(nps);
                             for (int i = 0; i < drawnEdges.size(); i++) {
@@ -1587,7 +1623,7 @@ public class Renet4 extends JFrame
         }
 
 
-        public void msgAreaClear() //inhalt löschen 
+        public void msgAreaClear() //inhalt lÃ¶schen 
         {
             msgArea.setText("");
         }
@@ -1595,17 +1631,17 @@ public class Renet4 extends JFrame
 
 
     /**
-     * Zuverlaessigkeitsberechnung mit nur einem Algorithmus Bei einem zusammenhängenden Graphen wird Heidtmanns
+     * Zuverlaessigkeitsberechnung mit nur einem Algorithmus Bei einem zusammenhÃ¤ngenden Graphen wird Heidtmanns
      * Algorithmus verwendet, sonst die Faktorisierungsmethode
      */
     public void calculate_reliability_faster() {
         resultText = "Calculating...";
         result.setText(resultText);
 
-        //Prüfen ob das Netz zusammenhängt
+        //PrÃ¼fen ob das Netz zusammenhÃ¤ngt
         boolean graphConnected;
         if (Con_check.check(graph) == -1) {
-            //com.resinet.model.Graph ist zusammenhängend
+            //com.resinet.model.Graph ist zusammenhÃ¤ngend
             graphConnected = true;
         } else {
             graphConnected = false;
@@ -1943,9 +1979,9 @@ public class Renet4 extends JFrame
             }
         }
 
-        //Prüfen ob das Netz zusammenhängt
+        //PrÃ¼fen ob das Netz zusammenhÃ¤ngt
         if (Con_check.check(graph) == -1) {
-            //com.resinet.model.Graph ist zusammenhängend
+            //com.resinet.model.Graph ist zusammenhÃ¤ngend
             resilienceMode = 2;
         } else {
             resilienceMode = 1;
@@ -1966,17 +2002,17 @@ public class Renet4 extends JFrame
         // Berechne Anzahl der Kombinationen
         combinations = binomial(total_nodes, c_nodes);
 
-        // Erzeuge leere Menge für die Knotenmengen.
+        // Erzeuge leere Menge fÃ¼r die Knotenmengen.
         Set set1 = new HashSet();
 
-        //Hier werden alle Kombinationen an Binärstrings erzeugt, die k Einsen und n-k Nullen haben
+        //Hier werden alle Kombinationen an BinÃ¤rstrings erzeugt, die k Einsen und n-k Nullen haben
         Set<String> combinationStrings = generateCombinations(cNodeList);
 
         for (String binary : combinationStrings) {
             // Erzeuge neue Teilmenge
             Set subset = new HashSet();
 
-            // Für jeden Knoten: Wenn in der Binärzahl an der Stelle j eine 1 steht, füge den Knoten j der Teilmenge hinzu.
+            // FÃ¼r jeden Knoten: Wenn in der BinÃ¤rzahl an der Stelle j eine 1 steht, fÃ¼ge den Knoten j der Teilmenge hinzu.
             for (int j = 0; j < total_nodes; j++) {
                 if (binary.charAt(j) == '1') {
                     subset.add(j);
@@ -1988,11 +2024,11 @@ public class Renet4 extends JFrame
         counter = 0;
         result_resilience = 0;
 
-        // Für jede Kombination der K-Knoten
+        // FÃ¼r jede Kombination der K-Knoten
         for (Object c : set1) {
             HashSet d = (HashSet) c;
 
-            // Für jeden Knoten: Falls er in der aktuellen Kombination enthalten ist, setze ihn auf "K-Knoten".
+            // FÃ¼r jeden Knoten: Falls er in der aktuellen Kombination enthalten ist, setze ihn auf "K-Knoten".
             for (int i = 0; i < total_nodes; i++) {
                 // Entsprechenden Knoten holen
                 NodePoint node1 = (NodePoint) drawnNodes.get(i);
@@ -2011,7 +2047,7 @@ public class Renet4 extends JFrame
 
             }
 
-            // Erhöhe pro Kombination den Zähler um 1.
+            // ErhÃ¶he pro Kombination den ZÃ¤hler um 1.
             counter++;
 
             if (resilienceMode == 2) {
@@ -2031,7 +2067,7 @@ public class Renet4 extends JFrame
                 e2.prob = edgeProbabilities[i];
             }
 
-            // Berechne die Zuverlässigkeit für die aktuelle Kombination und addiere sie zur bisherigen Summe. 
+            // Berechne die ZuverlÃ¤ssigkeit fÃ¼r die aktuelle Kombination und addiere sie zur bisherigen Summe. 
             if (resilienceMode == 2) {
                 result_resilience = result_resilience + heidtmanns_reliability();
             } else {
@@ -2042,10 +2078,10 @@ public class Renet4 extends JFrame
 
         test_Summe = result_resilience;
 
-        // Teile die Summe der Zuverlässigkeiten durch die Anzahl der Kombinationen.
+        // Teile die Summe der ZuverlÃ¤ssigkeiten durch die Anzahl der Kombinationen.
         result_resilience = result_resilience / combinations.longValue();
 
-        //K-Knotenliste zurücksetzen
+        //K-Knotenliste zurÃ¼cksetzen
         for (int i = 0; i < total_nodes; i++) {
             // Entsprechenden Knoten holen
             NodePoint nodeReset = (NodePoint) drawnNodes.get(i);
@@ -2102,7 +2138,7 @@ public class Renet4 extends JFrame
 
     //Methode zum Einlesen von Netzen aus Textdateien im Pajek-Format
     public void inputNet() {
-        //Dialog zum Datei auswählen
+        //Dialog zum Datei auswÃ¤hlen
         JFileChooser chooseFile = new JFileChooser();
         chooseFile.setDialogTitle("Open File");
         chooseFile.setFileFilter(new FileNameExtensionFilter("Pajek-Networks", "txt", "net"));
@@ -2114,7 +2150,7 @@ public class Renet4 extends JFrame
             return;
         }
 
-        //Ab hier zeilenweises Einlesen der ausgewählten Datei
+        //Ab hier zeilenweises Einlesen der ausgewÃ¤hlten Datei
         String actRow;
         LineNumberReader lineReader = null;
 
@@ -2150,7 +2186,7 @@ public class Renet4 extends JFrame
                 drawnNodes.add(node1);
             }
 
-            //Zeile überspringen: *Arcs oder *Edges
+            //Zeile Ã¼berspringen: *Arcs oder *Edges
             lineReader.readLine();
 
             //Lies Kanten aus
@@ -2192,7 +2228,7 @@ public class Renet4 extends JFrame
                     position++;
                 }
 
-                //Füge aktuelle Kante inkl. Start- und Endknoten hinzu
+                //FÃ¼ge aktuelle Kante inkl. Start- und Endknoten hinzu
                 EdgeLine edge1 = new EdgeLine();
                 edge1.node1 = Integer.parseInt(startnode) - 1;
                 edge1.node2 = Integer.parseInt(endnode) - 1;
@@ -2260,7 +2296,7 @@ public class Renet4 extends JFrame
     }
 
     public void exportNet() {
-        //Dialog zum Datei auswählen
+        //Dialog zum Datei auswÃ¤hlen
         JFileChooser chooseSaveFile = new JFileChooser();
         chooseSaveFile.setDialogType(JFileChooser.SAVE_DIALOG);
 
@@ -2296,7 +2332,7 @@ public class Renet4 extends JFrame
 
             int nodesDigitsCount = String.valueOf(drawnNodes.size()).length();
 
-            //Für jeden Knoten eine Zeile schreiben
+            //FÃ¼r jeden Knoten eine Zeile schreiben
             for (int i = 1; i < drawnNodes.size() + 1; i++) {
                 writer.append(System.getProperty("line.separator"));
 
@@ -2304,7 +2340,7 @@ public class Renet4 extends JFrame
                 int addSpaces = nodesDigitsCount - digitsCurrentNode;
                 int spacesLength = 0;
 
-                //Leerzeichen vorne auffüllen
+                //Leerzeichen vorne auffÃ¼llen
                 for (int j = 0; j < addSpaces + 1; j++) {
                     writer.write(" ");
                     spacesLength++;
@@ -2314,7 +2350,7 @@ public class Renet4 extends JFrame
                 String nodesNumber = Integer.toString(i) + " \"v" + Integer.toString(i) + "\"";
                 writer.write(nodesNumber);
 
-                //Nochmal so viele Leerzeichen auffüllen bis Position 46 erreicht ist
+                //Nochmal so viele Leerzeichen auffÃ¼llen bis Position 46 erreicht ist
                 for (int k = 0; k < (46 - spacesLength - nodesNumber.length()); k++) {
                     writer.write(" ");
                 }
@@ -2340,7 +2376,7 @@ public class Renet4 extends JFrame
                 String xCoordinateString = Double.toString(xCoordinate);
                 String yCoordinateString = Double.toString(yCoordinate);
 
-                // Stellen auffüllen, z.b. 0.25 => 0.2500
+                // Stellen auffÃ¼llen, z.b. 0.25 => 0.2500
                 while (xCoordinateString.length() < 6) {
                     xCoordinateString = xCoordinateString + "0";
                 }
@@ -2356,7 +2392,7 @@ public class Renet4 extends JFrame
             writer.append(System.getProperty("line.separator"));
             writer.write("*Edges");
 
-            //Für jede Kante eine Zeile
+            //FÃ¼r jede Kante eine Zeile
             for (int i = 0; i < drawnEdges.size(); i++) {
                 writer.append(System.getProperty("line.separator"));
                 EdgeLine edge = (EdgeLine) drawnEdges.get(i);
@@ -2426,7 +2462,7 @@ public class Renet4 extends JFrame
     public int calculationSeriesMode = 0; //1 = resilience, 2 = reliability;
     public boolean onlyReliabilityFast;
 
-    //Für die Serienberechnung in Schritten
+    //FÃ¼r die Serienberechnung in Schritten
     public void calculationSeries() {
         //Sicherungskopien
         Graph graphSave = null;
@@ -2443,7 +2479,7 @@ public class Renet4 extends JFrame
 
         float[] probsSave = edgeProbabilities.clone();
 
-        //Dialog zum Datei auswählen
+        //Dialog zum Datei auswÃ¤hlen
         JFileChooser chooseSaveFile = new JFileChooser();
         chooseSaveFile.setDialogType(JFileChooser.SAVE_DIALOG);
 
@@ -2476,10 +2512,10 @@ public class Renet4 extends JFrame
 
             writer.append(System.getProperty("line.separator"));
 
-            //Prüfen ob das Netz zusammenhängt
+            //PrÃ¼fen ob das Netz zusammenhÃ¤ngt
             boolean graphConnected;
             if (Con_check.check(graph) == -1) {
-                //com.resinet.model.Graph ist zusammenhängend
+                //com.resinet.model.Graph ist zusammenhÃ¤ngend
                 graphConnected = true;
             } else {
                 graphConnected = false;
@@ -2552,13 +2588,12 @@ public class Renet4 extends JFrame
 
 
         } catch (IOException e) {
-            // TODO Auto-generated catch block
             e.printStackTrace();
             return;
         }
 
 
-        //Setze den intern gespeicherten Graphen auf Anfangszustand zurück
+        //Setze den intern gespeicherten Graphen auf Anfangszustand zurÃ¼ck
         try {
 
             graph = (Graph) Util.serialClone(graphSave); //clone Graphen
