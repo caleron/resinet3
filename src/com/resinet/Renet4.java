@@ -742,6 +742,11 @@ public class Renet4 extends JFrame
                 edgeProbabilityTextFields[i].setEditable(true);
             }
 
+            for (int i = 0; i < nodeProbabilityTextFields.length; i++) {
+                nodeProbabilityTextFields[i].setText(null);
+                nodeProbabilityTextFields[i].setEditable(true);
+            }
+
             if (endProbabilityTextField != null) {
                 endProbabilityTextField.setText(null);
             }
@@ -808,7 +813,7 @@ public class Renet4 extends JFrame
                 calculationSeriesMode = 0;
                 calculate_resilience();
 
-                resultText = "The network has " + total_nodes + " drawnNodes, containing " + c_nodes + " c-drawnNodes.\n" + "There are " + combinations + " combinations.\n" + "The resilience of the network is: " + result_resilience;
+                resultText = "The network has " + total_nodes + " Nodes, containing " + c_nodes + " c-Nodes.\n" + "There are " + combinations + " combinations.\n" + "The resilience of the network is: " + result_resilience;
                 //resultText = "Das Netz hat " + total_nodes + " Knoten, davon " + c_nodes + " K-Knoten.\n" + "Es gibt also " + combinations + " Kombinationen.\n" + "Die Resilienz des Netzes ist: " + result_resilience;		
                 result.setText(resultText);
             }
@@ -885,6 +890,7 @@ public class Renet4 extends JFrame
         }
     }
 
+    //Alte Funktion
     private float getP(MySet hs) {
         float p = 1;
         MyIterator it = hs.iterator();
@@ -894,6 +900,74 @@ public class Renet4 extends JFrame
         }
         return p;
     }
+
+    private float getPathProbability(MySet hs, boolean onlyInnerNodes) {
+        float p = 1;
+        ArrayList<Node> consideredNodes = new ArrayList<>();
+        ArrayList<Node> appearedNodes = new ArrayList<>();
+
+        String output = "Pfad";
+
+        MyIterator it = hs.iterator();
+        while (it.hasNext()) {
+            Edge e = (Edge) it.next();
+            p = p * e.prob;
+            output += " e" + e.edge_no;
+            //TODO testen
+
+            if (onlyInnerNodes) {
+                if (appearedNodes.contains(e.left_node) && !consideredNodes.contains(e.left_node)) {
+                    consideredNodes.add(e.left_node);
+                    p = p * e.left_node.prob;
+                    output += " n" + e.left_node.node_no;
+                } else if (!appearedNodes.contains(e.left_node)) {
+                    appearedNodes.add(e.left_node);
+                } else if(consideredNodes.contains(e.left_node)) {
+                    System.out.println("ERROR");
+                }
+
+                if (appearedNodes.contains(e.right_node) && !consideredNodes.contains(e.right_node)) {
+                    consideredNodes.add(e.right_node);
+                    p = p * e.right_node.prob;
+                    output += " n" + e.right_node.node_no;
+                } else if (!appearedNodes.contains(e.right_node)) {
+                    appearedNodes.add(e.right_node);
+                } else if(consideredNodes.contains(e.right_node)) {
+                    System.out.println("ERROR");
+                }
+            } else {
+                if (!consideredNodes.contains(e.left_node)) {
+                    consideredNodes.add(e.left_node);
+                    p = p * e.left_node.prob;
+                    output += " n" + e.left_node.node_no;
+                }
+
+                if (!consideredNodes.contains(e.right_node)) {
+                    consideredNodes.add(e.right_node);
+                    p = p * e.right_node.prob;
+                    output += " n" + e.right_node.node_no;
+                }
+            }
+        }
+        System.out.println(Float.toString(p) + " für " + output);
+        return p;
+    }
+    /*
+    p mit Knoten-P = 1 und Kanten-P = 0.9
+    0.97848
+
+    p mit allen P = 0.9, sollte laut Taschenrechner etwa 0.76 sein
+    0.7069346
+
+    Nach Formel von Heidtmann sollten die Bestandteile sein (bei allen p=0.9)
+    n0 e0 n1 e1 n2 = 0,59049
+
+    n0 e2 n3 e3 n2  * (1- e0 n1 e1) = 0,59049 * (1-0,729)
+
+    n0 e0 n1 e4 n3 e3 n2 * (1- e1) * (1-e2) = 0,4782969 * 0.9 * 0.9
+
+    n0 e2 n3 e4 n1 e1 n2 * (1-e0) * (1-e3) = 0,4782969 * 0,9 * 0,9
+     */
 
     private String getNo(MySet hs) {
         String s;
@@ -1756,13 +1830,13 @@ public class Renet4 extends JFrame
                 MyList al = (MyList) it.next();
                 MySet hs = (MySet) al.get(0);
                 float p;
-                p = getP(hs);
+                p = getPathProbability(hs, false);
                 String s = getNo(hs);
                 for (int i = 1; i < al.size(); i++) {
                     MySet hs1 = (MySet) al.get(i);
                     if (hs1.isEmpty())
                         continue;
-                    p = p * (1 - getP(hs1));
+                    p = p * (1 - getPathProbability(hs1, true));
                     String s2 = getNo(hs1);
                     if (s2.lastIndexOf('r') == 0) {
                         s2 = s2.replace('r', 'u');
@@ -1842,6 +1916,7 @@ public class Renet4 extends JFrame
             result.setText(resultText);
         }
 
+
         zer = new Zerleg(graph);
         zer.start();
         try {
@@ -1849,6 +1924,8 @@ public class Renet4 extends JFrame
         } catch (InterruptedException e) {
         }
 
+        //Die Zerlegung verbraucht die meiste Zeit, beim Testnetz etwa 300ms, während der Rest nur max 1 ms braucht
+        System.out.println("Laufzeit Heidtmann bis Zerlegung: " + ((new Date()).getTime() - start));
         reassignProbabilites(true);
 
         //die IW jeder Kante zuweisen
@@ -1863,24 +1940,27 @@ public class Renet4 extends JFrame
                 resultText = "Das reduzierte Netz enthaelt nur eine Kante. Die Zuverlaessigkeit des Netzes ist:\nP=" + prob;
         } else {
             prob = 0;
-
             int count = 0;
             MyIterator it = zer.hz.iterator();
             while (it.hasNext()) {
+                System.out.println("Neuer Pfad");
                 MyList al = (MyList) it.next();
                 MySet hs = (MySet) al.get(0);
                 float p;
-                p = getP(hs);
+                //hs enthält hier anscheinend einen Pfad im Graphen zwischen den K-Knoten
+                //TODO genauer untersuchen
+                //p = getP(hs);
+                p = getPathProbability(hs, false);
 
                 for (int i = 1; i < al.size(); i++) {
                     MySet hs1 = (MySet) al.get(i);
                     if (hs1.isEmpty())
                         continue;
-                    p = p * (1 - getP(hs1));
+                    //p = p * (1 - getP(hs1));
+                    p = p * (1 - getPathProbability(hs1, true));
 
 
                 }
-
                 count++;
                 prob = prob + p;
 

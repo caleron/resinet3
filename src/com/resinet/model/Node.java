@@ -9,12 +9,14 @@ public class Node implements Serializable {
     public boolean c_node = false;
     // Kennzeichen fuer Konnektionsknoten
 
+    //Attribut für KTree
     public Node left, right;
-
+    //Anliegende Kanten
     public MyList node_edge = new MyList();
 
     public int xposition;
     public int yposition;
+    //Grad des Knotens, d.h. Anzahl anliegender Kanten
     public int degree = 0;
 
     int kt_nd = -1;

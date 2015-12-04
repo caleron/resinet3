@@ -132,7 +132,7 @@ public class Zerleg extends Thread {
                     }
                 }
             }
-
+            int pathCount = 0;
             for (int i = 1; i <= trs.size(); i++) {
                 MyList listK = new MyList();
                 MySet setI0 = (MySet) trs.get(i - 1);
@@ -154,7 +154,9 @@ public class Zerleg extends Thread {
                         }
                     }
                 }
+                pathCount++;
             }
+            System.out.println("Anzahl Pfade: " + pathCount);
         }
 
         private void hZer(MyList listK, int k, int i) {

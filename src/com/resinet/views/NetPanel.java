@@ -41,7 +41,7 @@ public class NetPanel extends Panel {
                 imgGraphics.drawOval(x, y, 20, 20);
             else {
                 imgGraphics.fillOval(x, y, 20, 20);
-                //Textfarbe weiﬂ, da jetzt Hintergrund schwarz ist
+                //Textfarbe wei√ü, da jetzt Hintergrund schwarz ist
                 imgGraphics.setColor(Color.white);
             }
             if (count < 10)
