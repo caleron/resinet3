@@ -912,13 +912,18 @@ public class Renet4 extends JFrame
     }
 
     private String getNo(MySet hs) {
-        String s;
+        String s = "";
         MyIterator it = hs.iterator();
-        Edge e = (Edge) it.next();
-        s = "r" + String.valueOf(e.edge_no);
+
         while (it.hasNext()) {
-            e = (Edge) it.next();
-            s = s + "r" + e.edge_no;
+            Object obj = it.next();
+            if (obj instanceof Edge) {
+                Edge e = (Edge) obj;
+                s += " r" + e.edge_no;
+            } else {
+                Node n = ((Node) obj);
+                s += " n" + n.node_no;
+            }
         }
         return s;
     }
@@ -1782,6 +1787,7 @@ public class Renet4 extends JFrame
                     String s2 = getNo(hs1);
                     if (s2.lastIndexOf('r') == 0) {
                         s2 = s2.replace('r', 'u');
+                        s2 = s2.replace('n', 'v');
                         s = s + s2;
                     } else
                         s = s + "(1-" + s2 + ")";
@@ -1814,16 +1820,30 @@ public class Renet4 extends JFrame
                 float pi = 1;
                 MyIterator it1 = si.iterator();
                 while (it1.hasNext()) {
-                    Edge e = (Edge) it1.next();
-                    pi = pi * e.prob;
-                    s = s + "r" + String.valueOf(e.edge_no);
+                    Object obj = it1.next();
+                    if (obj instanceof Edge) {
+                        Edge e = (Edge) obj;
+                        pi = pi * e.prob;
+                        s = s + "r" + String.valueOf(e.edge_no);
+                    } else {
+                        Node n = (Node) obj;
+                        pi = pi * n.prob;
+                        s = s + "r" + String.valueOf(n.node_no);
+                    }
                 }
                 float pd = 1;
                 MyIterator it2 = sd.iterator();
                 while (it2.hasNext()) {
-                    Edge e = (Edge) it2.next();
-                    pd = pd * (1 - e.prob);
-                    s = s + "u" + String.valueOf(e.edge_no);
+                    Object obj = it2.next();
+                    if (obj instanceof Edge) {
+                        Edge e = (Edge) obj;
+                        pd = pd * (1 - e.prob);
+                        s = s + "u" + String.valueOf(e.edge_no);
+                    } else {
+                        Node n = (Node) obj;
+                        pd = pd * (1 - n.prob);
+                        s = s + "v" + String.valueOf(n.node_no);
+                    }
                 }
                 prob = prob + pi * pd;
                 s = s + '+';
