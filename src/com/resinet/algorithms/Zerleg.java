@@ -13,6 +13,11 @@ public class Zerleg extends Thread {
     MyList trs;
 
     public MySet az;
+    /**
+     * Enthält alle Zerlegungen nach Heidtmann.
+     * Ein Element ist eine Liste aus Pfaden, wobei der erste Pfad der hin-Pfad ist und die weiteren
+     * Pfade die Ergebnisse aus dem Disjunktmachen mit den bisherigen Pfaden sind
+     */
     public MySet hz;
 
     AZerleg azer;
@@ -166,6 +171,7 @@ public class Zerleg extends Thread {
                 MyList al = cloneList(listK);
                 hz.add(al);
             } else {
+                //setIi ist der vorherige Pfad
                 MySet setIi = (MySet) trs.get(i - 1);
                 boolean disjoint = false;
 

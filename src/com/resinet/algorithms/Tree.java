@@ -9,6 +9,8 @@ import com.resinet.util.MyIterator;
 import com.resinet.util.MyList;
 import com.resinet.util.MySet;
 
+import java.util.ArrayList;
+
 public class Tree extends Thread {
     Graph graph;
     KTree b;
@@ -153,6 +155,55 @@ public class Tree extends Thread {
             }
             e = e.right;
         }
+
+
+        ArrayList<Node> consideredNodes = new ArrayList<>();
+        ArrayList<Node> appearedNodes = new ArrayList<>();
+
+
+        MySet treeCopy = (MySet) ktree.clone();
+
+        MyIterator it = treeCopy.iterator();
+        String output = "Pfad";
+        while (it.hasNext()) {
+            Edge edge = (Edge) it.next();
+            output += " e" + edge.edge_no;
+            //TODO testen
+
+            if (appearedNodes.contains(edge.left_node) && !consideredNodes.contains(edge.left_node)) {
+                consideredNodes.add(edge.left_node);
+                ktree.add(edge.left_node);
+                output += " n" + edge.left_node.node_no;
+            } else if (!appearedNodes.contains(edge.left_node)) {
+                appearedNodes.add(edge.left_node);
+            } else if (consideredNodes.contains(edge.left_node)) {
+                System.out.println("ERROR");
+            }
+
+            if (appearedNodes.contains(edge.right_node) && !consideredNodes.contains(edge.right_node)) {
+                consideredNodes.add(edge.right_node);
+                ktree.add(edge.right_node);
+                output += " n" + edge.right_node.node_no;
+            } else if (!appearedNodes.contains(edge.right_node)) {
+                appearedNodes.add(edge.right_node);
+            } else if (consideredNodes.contains(edge.right_node)) {
+                System.out.println("ERROR");
+            }
+
+            if (!consideredNodes.contains(edge.left_node) && edge.left_node.c_node) {
+                consideredNodes.add(edge.left_node);
+                ktree.add(edge.left_node);
+                output += " n" + edge.left_node.node_no;
+            }
+
+            if (!consideredNodes.contains(edge.right_node) && edge.right_node.c_node) {
+                consideredNodes.add(edge.right_node);
+                ktree.add(edge.right_node);
+                output += " n" + edge.right_node.node_no;
+            }
+        }
+        System.out.println(output);
+
         synchronized (trs) {
             if (!trs.contains(ktree)) {
                 trs.add(ktree);
