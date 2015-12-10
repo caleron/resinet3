@@ -69,6 +69,7 @@ public class Renet4 extends JFrame
     private Image logo;
     private Checkbox reliabilityCompareCheckBox;
 
+    private static Renet4 mainFrame;
 
     //Fuers Logo
     public void paint(Graphics g) {
@@ -80,10 +81,10 @@ public class Renet4 extends JFrame
     }
 
     public static void main(String[] args) {
-        Renet4 r = new Renet4();
-        r.pack();
-        r.setSize(700, 825);
-        r.setVisible(true);
+        mainFrame = new Renet4();
+        mainFrame.pack();
+        mainFrame.setSize(700, 825);
+        mainFrame.setVisible(true);
     }
 
     private void init() {
@@ -326,33 +327,32 @@ public class Renet4 extends JFrame
         gbc.gridy = y;
         gbc.gridwidth = width;
         gbc.gridheight = height;
-        switch (anchor)
-        {
+        switch (anchor) {
             case "center":
                 gbc.anchor = GridBagConstraints.CENTER;
                 break;
             case "north":
                 gbc.anchor = GridBagConstraints.NORTH;
                 break;
-            case  "northeast":
+            case "northeast":
                 gbc.anchor = GridBagConstraints.NORTHEAST;
                 break;
-            case  "east":
+            case "east":
                 gbc.anchor = GridBagConstraints.EAST;
                 break;
-            case  "southeast":
+            case "southeast":
                 gbc.anchor = GridBagConstraints.SOUTHEAST;
                 break;
-            case  "south":
+            case "south":
                 gbc.anchor = GridBagConstraints.SOUTH;
                 break;
-            case  "southwest":
+            case "southwest":
                 gbc.anchor = GridBagConstraints.SOUTHWEST;
                 break;
-            case  "west":
+            case "west":
                 gbc.anchor = GridBagConstraints.WEST;
                 break;
-            case  "northwest":
+            case "northwest":
                 gbc.anchor = GridBagConstraints.NORTHWEST;
                 break;
         }
@@ -523,7 +523,7 @@ public class Renet4 extends JFrame
                         "which is\nless than or equal to 1. Please check the in-\nput for edge\n" + missingProbabilityEdges +
                         "\n and for node\n" + missingProbabilityNodes;
 
-               //Toolkit.getDefaultToolkit().beep();
+                //Toolkit.getDefaultToolkit().beep();
                 Frame frame = new Frame("Warning!");
                 frame.setLayout(new BorderLayout());
                 frame.addWindowListener(
@@ -1154,11 +1154,7 @@ public class Renet4 extends JFrame
 
                         //Vorhandene Knoten zu K-Knoten machen
                         if (evt.isControlDown()) {
-                            if (nps.k) {
-                                nps.k = false;
-                            } else if (!nps.k) {
-                                nps.k = true;
-                            }
+                            nps.k = !nps.k;
 
                             drawnNodes.set(cnt1, nps);
                         }
@@ -1211,46 +1207,7 @@ public class Renet4 extends JFrame
                     if (x1 == x2 && min_y1y2 <= y3 && y3 <= max_y1y2) {
                         dr = Math.abs(x3 - x1);
                         if (dr <= r) {
-                            String str = "Input reliability of Edge " + cntedge;
-
-                            Frame frame = new Frame("ReNeT");
-                            frame.setLayout(new BorderLayout());
-                            frame.addWindowListener(
-                                    new WindowAdapter() {
-                                        public void windowClosing(WindowEvent event) {
-                                            Frame f = (Frame) event.getSource();
-                                            f.setVisible(false);
-                                            f.dispose();
-                                        }
-                                    });
-
-                            TextField tf = new TextField(str);
-                            tf.setEditable(false);
-                            pf = new TextField(10);
-                            Panel buttonPanel = new Panel();
-                            Panel bp = new Panel();
-                            buttonPanel.setLayout(new GridBagLayout());
-                            bp.setLayout(new GridBagLayout());
-                            Button bn = new Button("Ok");
-                            bn.addActionListener(new ActionListener() {
-                                                     public void actionPerformed(ActionEvent event) {
-                                                         Button b = (Button) event.getSource();
-                                                         b.getParent().setVisible(false);
-                                                         edgeProbabilityTextFields[cntedge].setText(pf.getText());
-                                                         ((Frame) (b.getParent()).getParent()).dispose();
-                                                     }
-                                                 }
-                            );
-                            GridBagConstraints bnGbc = makegbc(2, 0, 1, 1, "center");
-                            buttonPanel.add(bn, bnGbc);
-                            bp.add(pf, bnGbc);
-                            Point location = probPanel.getLocationOnScreen();
-                            frame.setLocation(location);
-                            frame.setVisible(true);
-                            frame.setSize(270, 140);
-                            frame.add("South", buttonPanel);
-                            frame.add("North", tf);
-                            frame.add("Center", bp);
+                            showInputEdgeProbDialog(cntedge);
                             break;
                         }
                     }
@@ -1258,46 +1215,7 @@ public class Renet4 extends JFrame
                     if (y1 == y2 && min_x1x2 <= x3 && x3 <= max_x1x2) {
                         dr = Math.abs(y3 - y1);
                         if (dr <= r) {
-                            String str = "Input reliability of Edge " + cntedge;
-
-                            Frame frame = new Frame("ReNeT");
-                            frame.setLayout(new BorderLayout());
-                            frame.addWindowListener(
-                                    new WindowAdapter() {
-                                        public void windowClosing(WindowEvent event) {
-                                            Frame f = (Frame) event.getSource();
-                                            f.setVisible(false);
-                                            f.dispose();
-                                        }
-                                    });
-
-                            TextField tf = new TextField(str);
-                            tf.setEditable(false);
-                            pf = new TextField(10);
-                            Panel buttonPanel = new Panel();
-                            Panel bp = new Panel();
-                            buttonPanel.setLayout(new GridBagLayout());
-                            bp.setLayout(new GridBagLayout());
-                            Button bn = new Button("Ok");
-                            bn.addActionListener(new ActionListener() {
-                                                     public void actionPerformed(ActionEvent event) {
-                                                         Button b = (Button) event.getSource();
-                                                         b.getParent().setVisible(false);
-                                                         edgeProbabilityTextFields[cntedge].setText(pf.getText());
-                                                         ((Frame) (b.getParent()).getParent()).dispose();
-                                                     }
-                                                 }
-                            );
-                            GridBagConstraints bnGbc = makegbc(2, 0, 1, 1, "center");
-                            buttonPanel.add(bn, bnGbc);
-                            bp.add(pf, bnGbc);
-                            Point location = probPanel.getLocationOnScreen();
-                            frame.setLocation(location);
-                            frame.setVisible(true);
-                            frame.setSize(270, 140);
-                            frame.add("South", buttonPanel);
-                            frame.add("North", tf);
-                            frame.add("Center", bp);
+                            showInputEdgeProbDialog(cntedge);
                             break;
                         }
                     }
@@ -1305,52 +1223,21 @@ public class Renet4 extends JFrame
                     if (x1 != x2 && y1 != y2 && min_x1x2 <= x3 && x3 <= max_x1x2 && min_y1y2 <= y3 && y3 <= max_y1y2) {
                         dr = Math.sqrt(Math.pow(x3 - x1 - ((x3 - x1 + (-x3 * diff_y2y1 + y3 * diff_x2x1 + x1 * diff_y2y1 - y1 * diff_x2x1) / (diff_y2y1 + Math.pow(diff_x2x1, 2) / diff_y2y1)) / diff_x2x1) * diff_x2x1, 2) + Math.pow(y3 - y1 - ((x3 - x1 + (-x3 * diff_y2y1 + y3 * diff_x2x1 + x1 * diff_y2y1 - y1 * diff_x2x1) / (diff_y2y1 + Math.pow(diff_x2x1, 2) / diff_y2y1)) / diff_x2x1) * diff_y2y1, 2));
                         if (dr <= r) {
-                            String str = "Input reliability of Edge " + cntedge;
-
-                            Frame frame = new Frame("ReNeT");
-                            frame.setLayout(new BorderLayout());
-                            frame.addWindowListener(
-                                    new WindowAdapter() {
-                                        public void windowClosing(WindowEvent event) {
-                                            Frame f = (Frame) event.getSource();
-                                            f.setVisible(false);
-                                            f.dispose();
-                                        }
-                                    });
-
-                            TextField tf = new TextField(str);
-                            tf.setEditable(false);
-                            pf = new TextField(10);
-                            Panel buttonPanel = new Panel();
-                            Panel bp = new Panel();
-                            buttonPanel.setLayout(new GridBagLayout());
-                            bp.setLayout(new GridBagLayout());
-                            Button bn = new Button("Ok");
-                            bn.addActionListener(new ActionListener() {
-                                                     public void actionPerformed(ActionEvent event) {
-                                                         Button b = (Button) event.getSource();
-                                                         b.getParent().setVisible(false);
-                                                         edgeProbabilityTextFields[cntedge].setText(pf.getText());
-                                                         ((Frame) (b.getParent()).getParent()).dispose();
-                                                     }
-                                                 }
-                            );
-                            GridBagConstraints bnGbc = makegbc(2, 0, 1, 1, "center");
-                            buttonPanel.add(bn, bnGbc);
-                            bp.add(pf, bnGbc);
-                            Point location = probPanel.getLocationOnScreen();
-                            frame.setLocation(location);
-                            frame.setVisible(true);
-                            frame.setSize(270, 140);
-                            frame.add("South", buttonPanel);
-                            frame.add("North", tf);
-                            frame.add("Center", bp);
+                            showInputEdgeProbDialog(cntedge);
                             break;
                         }
                     }
                     cntedge++;
                 }
                 netPanel.repaint();
+            }
+        }
+
+        private void showInputEdgeProbDialog(int edgeNumber) {
+            String str = "Input reliability of Edge " + edgeNumber;
+            String res = JOptionPane.showInputDialog(mainFrame, str);
+            if (res != null && res.length() > 0) {
+                edgeProbabilityTextFields[edgeNumber].setText(res);
             }
         }
 
