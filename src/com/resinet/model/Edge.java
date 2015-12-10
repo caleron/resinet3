@@ -4,7 +4,7 @@ import java.io.Serializable;
 
 public class Edge implements Serializable {
 
-    public int edge_no;
+    public final int edge_no;
     public Node left_node;
     public Node right_node;
     // Knoten einer Kante

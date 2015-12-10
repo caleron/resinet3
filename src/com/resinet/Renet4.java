@@ -55,11 +55,6 @@ public class Renet4 extends JFrame
     public static MyList generated_Graphs;
     public float graph_width;
     public float graph_height;
-    private int smallest_x_pos;
-    private int highest_x_pos;
-    private int smallest_y_pos;
-    private int highest_y_pos;
-    private int cntedge;
 
     private Zerleg zer;
 
@@ -115,23 +110,11 @@ public class Renet4 extends JFrame
 
         initHeaderPanel();
 
-        /*Panel halt1 = new Panel();
-        GridBagConstraints halt1Gbc = makegbc(0, 7, 1, 1, "west");
-        add(halt1, halt1Gbc);*/
         initReliabilityPanelHeader();
         initProbabilitiesPanel();
 
-        /*Panel halt2 = new Panel();
-        GridBagConstraints halt2Gbc = makegbc(0, 14, 1, 1, "west");
-        add(halt2, halt2Gbc);*/
-
         initReliabilityPanel();
         initResiliencePanel();
-
-        //reliabilityPanel.add(reliabilityCompareCheckBox);
-
-        //reliabilityPanel.add(calcReliabilityBtn, decomBGbc);
-        //reliabilityPanel.add(resilienceBtn, resilienceBGbc);
 
         initOutputTextPanel();
     }
@@ -142,8 +125,6 @@ public class Renet4 extends JFrame
         GridBagConstraints panel7Gbc = makegbc(0, 17, 1, 4, "west");
         add(outputTextPanel, panel7Gbc);
 
-        //result = new TextArea(" ", 10, 80, TextArea.SCROLLBARS_VERTICAL_ONLY);
-        //result = new TextArea(" ", 3, 85, TextArea.SCROLLBARS_NONE);
         result = new TextArea(" ", 3, 85, TextArea.SCROLLBARS_VERTICAL_ONLY);
         result.setEditable(false);
         outputTextPanel.add(result);
@@ -272,7 +253,6 @@ public class Renet4 extends JFrame
         netPanel.setBackground(Color.white);
         netPanel.setSize(625, 315);
 
-        //netPanel.setSize(600, 200);
         netPanel.setVisible(true);
         GridBagConstraints panel2Gbc = makegbc(0, 6, 1, 1, "west");
         add(netPanel, panel2Gbc);
@@ -297,17 +277,9 @@ public class Renet4 extends JFrame
         reliabilityPanel.setLayout(new GridBagLayout());
         add(reliabilityPanel, panel6Gbc);
 
-        /*Panel halt3 = new Panel();
-        GridBagConstraints halt3Gbc = makegbc(0, 1, 1, 3, "west");
-        reliabilityPanel.add(halt3, halt3Gbc);*/
-
         calcReliabilityBtn = new Button("Calculate the reliability of the network");
         calcReliabilityBtn.setEnabled(false);
         calcReliabilityBtn.addActionListener(this);
-
-        //GridBagConstraints resilienceBGbc = makegbc(0, 4, 1, 1, "southwest");
-        GridBagConstraints resilienceBGbc = makegbc(2, 0, 1, 1, "west");
-        GridBagConstraints decomBGbc = makegbc(1, 0, 1, 1, "west");
 
         Panel reliabilityButtons = new Panel();
         reliabilityButtons.setLayout(new FlowLayout(FlowLayout.CENTER));
@@ -315,7 +287,6 @@ public class Renet4 extends JFrame
 
         reliabilityCompareCheckBox = new Checkbox("Compare 3 algorithms");
         reliabilityButtons.add(reliabilityCompareCheckBox);
-        //reliabilityButtons.add(resilienceBtn);
         reliabilityPanel.add(reliabilityButtons);
 
         reliabilityPanel.setBackground(backgroundColor);
@@ -810,10 +781,10 @@ public class Renet4 extends JFrame
         //Genug Knoten bzw. Konnektionsknoten vorhanden, weiter gehts
 
 		/*Ermittle kleinste und größte Positionswerte der Knoten.*/
-        smallest_x_pos = 2000;
-        highest_x_pos = 0;
-        smallest_y_pos = 2000;
-        highest_y_pos = 0;
+        int smallest_x_pos = 2000;
+        int highest_x_pos = 0;
+        int smallest_y_pos = 2000;
+        int highest_y_pos = 0;
         np = drawnNodes.iterator();
         while (np.hasNext()) {
             NodePoint n = (NodePoint) np.next();
@@ -836,10 +807,8 @@ public class Renet4 extends JFrame
 		/*Clone Graphen für Faktorisierung.*/
         try {
             graphfact = (Graph) Util.serialClone(graph); //clone Graphen
-        } catch (java.io.IOException e1) {
+        } catch (IOException | ClassNotFoundException e1) {
             System.err.println(e1.toString());
-        } catch (java.lang.ClassNotFoundException e2) {
-            System.err.println(e2.toString());
         }
 
 		/*Passe Positionierung des Graphen an.*/
@@ -1029,8 +998,6 @@ public class Renet4 extends JFrame
                 int x1 = evt.getX();
                 int y1 = evt.getY();
                 int cnt1;
-                int edlnode1;
-                int edlnode2;
                 MyIterator it = drawnNodes.iterator();
                 while (it.hasNext()) {
                     NodePoint nps = (NodePoint) it.next();
@@ -1048,8 +1015,7 @@ public class Renet4 extends JFrame
                             drawnNodes.remove(nps);
                             for (int i = 0; i < drawnEdges.size(); i++) {
                                 EdgeLine edl = (EdgeLine) drawnEdges.get(i);
-                                edlnode1 = edl.node1; //Knotennummern sichern
-                                edlnode2 = edl.node2;
+
                                 if (edl.node1 == cnt1 || edl.node2 == cnt1) {
                                     drawnEdges.remove(edl);
                                     i = i - 1;
@@ -1089,7 +1055,7 @@ public class Renet4 extends JFrame
             } else {
                 int r = 5;
                 double dr;
-                cntedge = 0;
+                int cntedge = 0;
                 int x3 = evt.getX();
                 int y3 = evt.getY();
                 MyIterator it = drawnEdges.iterator();
@@ -1293,7 +1259,7 @@ public class Renet4 extends JFrame
         zer.start();
         try {
             zer.join();
-        } catch (InterruptedException e) {
+        } catch (InterruptedException ignored) {
         }
 
         reassignProbabilites(true);
@@ -1557,7 +1523,6 @@ public class Renet4 extends JFrame
     private BigInteger combinations;
     private float result_resilience;
     private int counter;
-    private int resilienceMode; // 1 => Fact; 2 => Heidtmann
 
     // Hauptmethode, die den Algorithmus zur Berechnung der Resilienz beinhaltet.
     private void calculate_resilience() {
@@ -1585,6 +1550,7 @@ public class Renet4 extends JFrame
         }
 
         //Prüfen ob das Netz zusammenhängt
+        int resilienceMode;
         if (Con_check.check(graph) == -1) {
             //com.resinet.model.Graph ist zusammenhängend
             resilienceMode = 2;
