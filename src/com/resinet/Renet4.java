@@ -524,37 +524,8 @@ public class Renet4 extends JFrame
                         "\n and for node\n" + missingProbabilityNodes;
 
                 //Toolkit.getDefaultToolkit().beep();
-                Frame frame = new Frame("Warning!");
-                frame.setLayout(new BorderLayout());
-                frame.addWindowListener(
-                        new WindowAdapter() {
-                            public void windowClosing(WindowEvent event) {
-                                Frame f = (Frame) event.getSource();
-                                f.setVisible(false);
-                                f.dispose();
-                            }
-                        }
-                );
-                TextArea ta = new TextArea(str, 50, 40, TextArea.SCROLLBARS_NONE);
-                frame.add("Center", ta);
-                Panel buttonPanel = new Panel();
-                buttonPanel.setLayout(new GridBagLayout());
-                Button bn = new Button("Ok");
-                bn.addActionListener(new ActionListener() {
-                                         public void actionPerformed(ActionEvent event) {
-                                             Button b = (Button) event.getSource();
-                                             b.getParent().setVisible(false);
-                                             ((Frame) (b.getParent()).getParent()).dispose();
-                                         }
-                                     }
-                );
-                GridBagConstraints bnGbc = makegbc(2, 0, 1, 1, "center");
-                buttonPanel.add(bn, bnGbc);
-                frame.add("South", buttonPanel);
-                Point location = probPanel.getLocationOnScreen();
-                frame.setLocation(location);
-                frame.setVisible(true);
-                frame.setSize(370, 200);
+                JOptionPane.showMessageDialog(mainFrame, str, "Warning!", JOptionPane.ERROR_MESSAGE);
+
                 return;
             }
 
@@ -814,38 +785,8 @@ public class Renet4 extends JFrame
             String str = "Your Network does not contain edges!";
 
             Toolkit.getDefaultToolkit().beep();
-            Frame frame = new Frame("Warning!");
-            frame.setLayout(new BorderLayout());
-            frame.addWindowListener(
-                    new WindowAdapter() {
-                        public void windowClosing(WindowEvent event) {
-                            Frame f = (Frame) event.getSource();
-                            f.setVisible(false);
-                            f.dispose();
-                        }
-                    }
-            );
 
-            TextArea ta = new TextArea(str, 50, 40, TextArea.SCROLLBARS_NONE);
-            frame.add("Center", ta);
-            Panel buttonPanel = new Panel();
-            buttonPanel.setLayout(new GridBagLayout());
-            Button bn = new Button("Ok");
-            bn.addActionListener(new ActionListener() {
-                                     public void actionPerformed(ActionEvent event) {
-                                         Button b = (Button) event.getSource();
-                                         b.getParent().setVisible(false);
-                                         ((Frame) (b.getParent()).getParent()).dispose();
-                                     }
-                                 }
-            );
-            GridBagConstraints bnGbc = makegbc(2, 0, 1, 1, "center");
-            buttonPanel.add(bn, bnGbc);
-            frame.add("South", buttonPanel);
-            Point location = probPanel.getLocationOnScreen();
-            frame.setLocation(location);
-            frame.setVisible(true);
-            frame.setSize(370, 200);
+            JOptionPane.showMessageDialog(mainFrame, str, "Warning!", JOptionPane.ERROR_MESSAGE);
             return;
         }
 
@@ -862,38 +803,7 @@ public class Renet4 extends JFrame
             //Der Code in diesem Block zeigt nur ein Hinweisfenster an und bricht die Funktion ab
             String str = "Your Network does not contain at least 2 c-drawnNodes! You can draw a new c-node by pressing the right mouse button. If you want to transform an existing node into a c-node, please hold the Ctrl-Key on your keyboard while left-clicking on the node.";
 
-            Frame frame = new Frame("Warning!");
-            frame.setLayout(new BorderLayout());
-            frame.addWindowListener(
-                    new WindowAdapter() {
-                        public void windowClosing(WindowEvent event) {
-                            Frame f = (Frame) event.getSource();
-                            f.setVisible(false);
-                            f.dispose();
-                        }
-                    }
-            );
-
-            TextArea ta = new TextArea(str, 50, 40, TextArea.SCROLLBARS_NONE);
-            frame.add("Center", ta);
-            Panel buttonPanel = new Panel();
-            buttonPanel.setLayout(new GridBagLayout());
-            Button bn = new Button("Ok");
-            bn.addActionListener(new ActionListener() {
-                                     public void actionPerformed(ActionEvent event) {
-                                         Button b = (Button) event.getSource();
-                                         b.getParent().setVisible(false);
-                                         ((Frame) (b.getParent()).getParent()).dispose();
-                                     }
-                                 }
-            );
-            GridBagConstraints bnGbc = makegbc(2, 0, 1, 1, "center");
-            buttonPanel.add(bn, bnGbc);
-            frame.add("South", buttonPanel);
-            Point location = probPanel.getLocationOnScreen();
-            frame.setLocation(location);
-            frame.setVisible(true);
-            frame.setSize(370, 200);
+            JOptionPane.showMessageDialog(mainFrame, str, "Warning!", JOptionPane.ERROR_MESSAGE);
             return;
         }
 
@@ -1935,41 +1845,9 @@ public class Renet4 extends JFrame
 
     private void inputError() {
         //Error-Popup ausgeben
-
         String str = "Your input was invalid! Please choose a valid file created by Pajek or ResiNeT.";
-        Frame frame = new Frame("Warning!");
-        frame.setLayout(new BorderLayout());
-        frame.addWindowListener(
-                new WindowAdapter() {
-                    public void windowClosing(WindowEvent event) {
-                        Frame f = (Frame) event.getSource();
-                        f.setVisible(false);
-                        f.dispose();
-                    }
-                }
-        );
 
-        TextArea ta = new TextArea(str, 50, 40, TextArea.SCROLLBARS_NONE);
-        frame.add("Center", ta);
-        Panel buttonPanel = new Panel();
-        buttonPanel.setLayout(new GridBagLayout());
-        Button bn = new Button("Ok");
-        bn.addActionListener(new ActionListener() {
-                                 public void actionPerformed(ActionEvent event) {
-                                     Button b = (Button) event.getSource();
-                                     b.getParent().setVisible(false);
-                                     ((Frame) (b.getParent()).getParent()).dispose();
-                                 }
-                             }
-        );
-        GridBagConstraints bnGbc = makegbc(2, 0, 1, 1, "center");
-        buttonPanel.add(bn, bnGbc);
-        frame.add("South", buttonPanel);
-        Point location = netPanel.getLocationOnScreen();
-        frame.setLocation(location);
-        frame.setVisible(true);
-        frame.setSize(370, 200);
-
+        JOptionPane.showMessageDialog(mainFrame, str, "Warning!", JOptionPane.ERROR_MESSAGE);
     }
 
     private void exportNet() {
@@ -2097,38 +1975,8 @@ public class Renet4 extends JFrame
     private void exportError() {
         //Error-Popup ausgeben
         String str = "Your output was invalid! Please choose a valid filepath and use the file extension '.net'.";
-        Frame frame = new Frame("Warning!");
-        frame.setLayout(new BorderLayout());
-        frame.addWindowListener(
-                new WindowAdapter() {
-                    public void windowClosing(WindowEvent event) {
-                        Frame f = (Frame) event.getSource();
-                        f.setVisible(false);
-                        f.dispose();
-                    }
-                }
-        );
 
-        TextArea ta = new TextArea(str, 50, 40, TextArea.SCROLLBARS_NONE);
-        frame.add("Center", ta);
-        Panel buttonPanel = new Panel();
-        buttonPanel.setLayout(new GridBagLayout());
-        Button bn = new Button("Ok");
-        bn.addActionListener(new ActionListener() {
-                                 public void actionPerformed(ActionEvent event) {
-                                     Button b = (Button) event.getSource();
-                                     b.getParent().setVisible(false);
-                                     ((Frame) (b.getParent()).getParent()).dispose();
-                                 }
-                             }
-        );
-        GridBagConstraints bnGbc = makegbc(2, 0, 1, 1, "center");
-        buttonPanel.add(bn, bnGbc);
-        frame.add("South", buttonPanel);
-        Point location = netPanel.getLocationOnScreen();
-        frame.setLocation(location);
-        frame.setVisible(true);
-        frame.setSize(370, 200);
+        JOptionPane.showMessageDialog(mainFrame, str, "Warning!", JOptionPane.ERROR_MESSAGE);
     }
 
 
