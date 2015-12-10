@@ -1,9 +1,10 @@
 package com.resinet.model;/* com.resinet.model.KTree.java */
 
 public class KTree {
-    public int count_nd = 0;
-    public int count_br = 0;
-    public Node last_nd, first_nd;
+    private int count_nd = 0;
+    private int count_br = 0;
+    private Node last_nd;
+    public Node first_nd;
     public Edge last_br, first_br;
 
 

@@ -10,7 +10,7 @@ public class Con_check {
     /*Vom Knoten "node" aus wird eine Tiefensuche durchgefuehrt. Der Rueckgabewert ist true, 
     falls in der Menge der erreichbaren Knoten mindestens ein Konnektionsknoten enthalten ist. 
     boolean c_node_reached prueft, ob ein Konnektionsknoten erreicht wurde.*/
-    public static boolean depth_search(Graph g, Node node) {
+    private static boolean depth_search(Graph g, Node node) {
         node.marked = true;
         //boolean any_other_c_node = false;
         boolean c_node_reached = false;
@@ -19,7 +19,7 @@ public class Con_check {
         while (it.hasNext()) {
             Node next = null;
             Edge edge = (Edge) it.next();
-            if (edge.marked != true) //Um eine Kante bei der Tiefensuche auslassen zu koennen.
+            if (!edge.marked) //Um eine Kante bei der Tiefensuche auslassen zu koennen.
             {
                 try {
                     if (!edge.left_node.equals(node))
@@ -33,8 +33,8 @@ public class Con_check {
                     else
                         System.out.println("left_node is null " + edge.right_node.node_no);
                 }
-                if (next.marked == false) {
-                    if (c_node_reached == false)
+                if (!next.marked) {
+                    if (!c_node_reached)
                         c_node_reached = depth_search(g, next);
                     else
                         depth_search(g, next);
@@ -46,7 +46,7 @@ public class Con_check {
     }
 
 
-    public static void depth_search(Graph g, int i)
+    private static void depth_search(Graph g, int i)
     // von Knoten i aus wird eine Tiefensuche durchgefuehrt.
     {
         int j;
@@ -69,7 +69,7 @@ public class Con_check {
             else
                 n = edge.right_node.node_no;
             Node next_node = (Node) nd.get(n);
-            if (next_node.marked == false)
+            if (!next_node.marked)
                 depth_search(g, n);
 
         }
@@ -83,7 +83,7 @@ public class Con_check {
             node.marked = false;
         }
 
-        if (without_edges == false) {
+        if (!without_edges) {
             it = g.getEdgelist().iterator();
             while (it.hasNext()) {
                 Edge edge = (Edge) it.next();
@@ -114,9 +114,8 @@ public class Con_check {
         MyIterator it = nd.iterator();
         while (it.hasNext()) {
             Node node = (Node) it.next();
-            if (node.marked == false) {
-                int k = nd.indexOf(node);
-                return (k);
+            if (!node.marked) {
+                return (nd.indexOf(node));
             }
         }
         return (-1);
@@ -151,13 +150,13 @@ public class Con_check {
 
         right_part_contains_c_node = depth_search(g, n1);//, false);
 
-        if (n2.marked == true) //Der Knoten wurde erreicht.
+        if (n2.marked) //Der Knoten wurde erreicht.
             return (-1);
-        if (right_part_contains_c_node == false)
+        if (!right_part_contains_c_node)
             return 1;
         reset_mark(g, true);
         left_part_contains_c_node = depth_search(g, n2);//, false);
-        if (left_part_contains_c_node == false)
+        if (!left_part_contains_c_node)
             return 2;
         if (edge_cnt > 1)
             return (-1);

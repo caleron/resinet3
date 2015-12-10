@@ -6,7 +6,7 @@ import java.util.Vector;
 import java.io.Serializable;
 
 public class MyList implements Cloneable, Serializable {
-    Vector v;
+    private Vector v;
 
     public MyList() {
         v = new Vector();
@@ -23,37 +23,31 @@ public class MyList implements Cloneable, Serializable {
 
     public MyIterator iterator() {
         Enumeration e = v.elements();
-        MyIterator it = new MyIterator(e);
-        return it;
+        return new MyIterator(e);
     }
 
     public void add(int i, Object o) {
         v.insertElementAt(o, i);
     }
 
-    public boolean add(Object o) {
+    public void add(Object o) {
         v.addElement(o);
-        return true;
     }
 
     public Object get(int i) {
-        Object o = v.elementAt(i);
-        return o;
+        return v.elementAt(i);
     }
 
     public int indexOf(Object o) {
-        int i = v.indexOf(o);
-        return i;
+        return v.indexOf(o);
     }
 
     public int size() {
-        int i = v.size();
-        return i;
+        return v.size();
     }
 
     public boolean isEmpty() {
-        boolean b = v.isEmpty();
-        return b;
+        return v.isEmpty();
     }
 
     public Object remove(int i) {
@@ -63,8 +57,7 @@ public class MyList implements Cloneable, Serializable {
     }
 
     public boolean remove(Object o) {
-        boolean b = v.removeElement(o);
-        return b;
+        return v.removeElement(o);
     }
 
     public Object set(int i, Object o) {

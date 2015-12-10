@@ -9,8 +9,6 @@ import com.resinet.util.MyIterator;
 
 public class NetPanel extends Panel {
     private Renet4 renet4;
-    private Image dbImage;
-    private Graphics dbGraphics;
 
     public NetPanel(Renet4 renet4) {
         this.renet4 = renet4;
@@ -69,16 +67,7 @@ public class NetPanel extends Panel {
 
     @Override
     public void update(Graphics g) {
-        /*if (dbImage == null) {
-            dbImage = createImage(this.getSize().width, this.getSize().height);
-            dbGraphics = dbImage.getGraphics();
-        }
-        dbGraphics.setColor(getBackground());
-        dbGraphics.fillRect(0, 0, this.getSize().width, this.getSize().height);
-        dbGraphics.setColor(getForeground());*/
-        //paint(dbGraphics);
         paint(g);
-        //g.drawImage(dbImage, 0, 0, this);
     }
     //ueberschreiben der Methode update, um den Bildschirm nicht zu loeschen
 }

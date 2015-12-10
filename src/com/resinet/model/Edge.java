@@ -32,8 +32,6 @@ public class Edge implements Serializable {
     public float prob;
     //Intaktwahrscheinlichkeit der Kante
 
-    public int m = 0;
-
     public Edge(int edge_no) {
         this.edge_no = edge_no;
         parent_edges = new Edge[6];

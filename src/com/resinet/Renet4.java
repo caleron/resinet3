@@ -23,60 +23,51 @@ import javax.swing.filechooser.FileNameExtensionFilter;
 
 public class Renet4 extends JFrame
         implements ActionListener {
-    Panel headerPanel, reliabilityPanelHeader, probabilitiesBtnPanel, reliabilityPanel, outputTextPanel;
-    static Panel output;
-    FlagPanel flagPanel;
-    public NetPanel netPanel;
-    ProbPanel probPanel;
-    Label label0, headerLabel, label2;
-    TextArea text;
-    TextField pf, endProbabilityTextField, textfieldStepsize;
-    Button drawBtn, resetGraphBtn, differentReliabilitiesOkBtn, sameReliabilityOkBtn, resetProbabilitiesBtn, probabilitiesOkBtn, calcReliabilityBtn, resilienceBtn, viewFactorTreeBtn, inputNetBtn, exportNetBtn;
-    boolean sameReliability, inputNetBoolean;
-    Choice ch;
-    char lang = 'E';
-    String s1, s2;
+    private NetPanel netPanel;
+    private ProbPanel probPanel;
+    private TextArea text;
+    private TextField pf, endProbabilityTextField, textfieldStepsize;
+    private Button drawBtn, resetGraphBtn, differentReliabilitiesOkBtn, sameReliabilityOkBtn, resetProbabilitiesBtn,
+            probabilitiesOkBtn, calcReliabilityBtn, resilienceBtn, inputNetBtn, exportNetBtn;
+    private boolean sameReliability;
 
     public MyList drawnNodes;
     public MyList drawnEdges;
     public EdgeLine el;
     public boolean valid = false;
-    boolean probability_mode = false;
-    MyMouseListener drawMouseListener;
-    MyMouseMotionListener drawMouseMoveListener;
-    TextField[] edgeProbabilityTextFields;
-    TextField[] nodeProbabilityTextFields;
-    float[] edgeProbabilities;
-    float[] nodeProbabilities;
-    float prob;
-    float probfact;
-    String resultText;
-    TextArea result;
-    MyList nd;
-    public static String reduceText;
+    private boolean probability_mode = false;
+    private MyMouseListener drawMouseListener;
+    private MyMouseMotionListener drawMouseMoveListener;
+    private TextField[] edgeProbabilityTextFields;
+    private TextField[] nodeProbabilityTextFields;
+    private float[] edgeProbabilities;
+    private float[] nodeProbabilities;
+    private float prob;
+    private float probfact;
+    private String resultText;
+    private TextArea result;
+
     public static String factProb;
     public static int counterFact;
 
-    Graph graphfact;
-    Graph graph;
+    private Graph graphfact;
+    private Graph graph;
     public static MyList generated_Graphs;
     public float graph_width;
     public float graph_height;
-    int smallest_x_pos;
-    int highest_x_pos;
-    int smallest_y_pos;
-    int highest_y_pos;
-    int cntedge;
+    private int smallest_x_pos;
+    private int highest_x_pos;
+    private int smallest_y_pos;
+    private int highest_y_pos;
+    private int cntedge;
 
-    Zerleg zer;
+    private Zerleg zer;
 
-    String enText, deText, resultTextEn;
+    private Color backgroundColor = new Color(85, 143, 180);
 
-    Color backgroundColor = new Color(85, 143, 180);
-
-    ScrollPane probScrollPane;
-    Image logo;
-    Checkbox reliabilityCompareCheckBox;
+    private ScrollPane probScrollPane;
+    private Image logo;
+    private Checkbox reliabilityCompareCheckBox;
 
 
     //Fuers Logo
@@ -84,7 +75,7 @@ public class Renet4 extends JFrame
         g.drawImage(logo, 270, 30, this);
     }
 
-    public Renet4() {
+    private Renet4() {
         init();
     }
 
@@ -95,7 +86,7 @@ public class Renet4 extends JFrame
         r.setVisible(true);
     }
 
-    public void init() {
+    private void init() {
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
         drawnNodes = new MyList();
@@ -119,15 +110,6 @@ public class Renet4 extends JFrame
         GridBagConstraints halt0Gbc = makegbc(0, 0, 1, 1, "west");
         add(halt0, halt0Gbc);
 
-        flagPanel = new FlagPanel();
-        GridBagConstraints flagPanelGbc = makegbc(0, 0, 1, 5, "center");
-        //GridBagConstraints flagPanelGbc = makegbc(0, 0, 1, 4, "center");
-        flagPanelGbc.fill = GridBagConstraints.BOTH;
-        //add(flagPanel, flagPanelGbc);
-
-        //Sprachenauswahl nicht sichtbar!
-        //flagPanel.setVisible(false);
-
         initNetPanel();
 
         initHeaderPanel();
@@ -150,19 +132,11 @@ public class Renet4 extends JFrame
         //reliabilityPanel.add(calcReliabilityBtn, decomBGbc);
         //reliabilityPanel.add(resilienceBtn, resilienceBGbc);
 
-        // Fuer ResiNeT2 ist der Button nicht sichtbar
-        viewFactorTreeBtn = new Button("View Tree of Factorisation");
-        viewFactorTreeBtn.setEnabled(false);
-        viewFactorTreeBtn.addActionListener(this);
-        viewFactorTreeBtn.setVisible(false);
-
-        //GridBagConstraints viewBGbc = makegbc(2, 0, 1, 1, "northwest");
-        //reliabilityPanel.add(viewFactorTreeBtn, viewBGbc);
         initOutputTextPanel();
     }
 
     private void initOutputTextPanel() {
-        outputTextPanel = new Panel();
+        Panel outputTextPanel = new Panel();
         //GridBagConstraints panel7Gbc = makegbc(0, 16, 1, 4, "west" );
         GridBagConstraints panel7Gbc = makegbc(0, 17, 1, 4, "west");
         add(outputTextPanel, panel7Gbc);
@@ -177,13 +151,13 @@ public class Renet4 extends JFrame
 
     private void initReliabilityPanelHeader() {
         //Panel unter dem Netzwerkgraphen
-        reliabilityPanelHeader = new Panel();
+        Panel reliabilityPanelHeader = new Panel();
         reliabilityPanelHeader.setLayout(new GridLayout(1, 1));
         GridBagConstraints panel3Gbc = makegbc(0, 7, 1, 1, "west");
         panel3Gbc.fill = GridBagConstraints.HORIZONTAL;
         add(reliabilityPanelHeader, panel3Gbc);
         reliabilityPanelHeader.setBackground(backgroundColor);
-        label2 = new Label("   Now you can input the reliability of every edge:", Label.LEFT);
+        Label label2 = new Label("   Now you can input the reliability of every edge:", Label.LEFT);
         reliabilityPanelHeader.add(label2);
     }
 
@@ -201,7 +175,7 @@ public class Renet4 extends JFrame
     }
 
     private void initHeaderPanel() {
-        headerPanel = new Panel();
+        Panel headerPanel = new Panel();
         headerPanel.setBackground(backgroundColor);
         GridBagConstraints panel1Gbc = makegbc(0, 5, 1, 1, "west");
         add(headerPanel, panel1Gbc);
@@ -209,7 +183,7 @@ public class Renet4 extends JFrame
         GridBagLayout headerPanelLayout = new GridBagLayout();
         headerPanel.setLayout(headerPanelLayout);
 
-        headerLabel = new Label("Please input your network model:");
+        Label headerLabel = new Label("Please input your network model:");
         GridBagConstraints label1Gbc = makegbc(0, 0, 4, 1, "west");
         headerPanel.add(headerLabel, label1Gbc);
 
@@ -243,7 +217,6 @@ public class Renet4 extends JFrame
         inputNetBtn.addActionListener(this);
         GridBagConstraints inputNetGbc = makegbc(4, 1, 1, 1, "west");
         headerPanel.add(inputNetBtn, inputNetGbc);
-        inputNetBoolean = false;
 
         //Button Output Network
         exportNetBtn = new Button("Save");
@@ -274,7 +247,7 @@ public class Renet4 extends JFrame
         GridBagConstraints spGbc = makegbc(0, 9, 1, 4, "west");
         add(probScrollPane, spGbc);
 
-        probabilitiesBtnPanel = new Panel();
+        Panel probabilitiesBtnPanel = new Panel();
         GridBagConstraints panel5Gbc = makegbc(0, 13, 1, 1, "west");
         probabilitiesBtnPanel.setLayout(new FlowLayout(FlowLayout.LEFT));
         panel5Gbc.fill = GridBagConstraints.HORIZONTAL;
@@ -302,17 +275,23 @@ public class Renet4 extends JFrame
         netPanel.setVisible(true);
         GridBagConstraints panel2Gbc = makegbc(0, 6, 1, 1, "west");
         add(netPanel, panel2Gbc);
-        reduceText = "";
-        enText = "On this panel you can draw your network model after a click on the \"Draw\" button.\nPress the left button to draw a node and the right button to draw a connection-node. Delete a node by holding the <shift>-key an pressing the left button.\nTo draw an edge press the left button when the mouse pointer is on a node and hold it. Then drag the mouse to another node and release it. For deleting an edge delete its corresponding drawnNodes.\nAfter you have finished, click the \"Ok\" button.\n\nYou can also import a previously created network (ResiNeT or Pajek) by clicking the \"Load\" button. To turn an existing node into a connection-node hold the Ctrl-Key while left-clicking on the node.";
-        deText = "Hier koennen Sie Ihr Netz eingeben. Klicken Sie dazu zunaechst auf \"Zeichnen\".\nEinen \"normalen\" Knoten erzeugen Sie, indem Sie die linke Maustaste betaetigen, einen K-Knoten durch Betaetigen der rechten Maustaste. Loeschen Sie einen Knoten, indem Sie die <shift>-Taste halten und die linke Maustaste betaetigen.\nUm eine Kante zu zeichnen, klicken Sie mit der linken Maustaste auf einen Knoten, halten diese solange gedrueckt, bis sich der Mauszeiger ueber dem Knoten befindet, zu dem die Kante fuehren soll. Eine Kante kann durch das Löschen ihrer inzidenten Knoten geloescht werden.\nHaben Sie Ihr Netz komplett eingegeben, klicken Sie bitte auf \"Ok\".\n";
-        text = new TextArea(enText, 19, 85, TextArea.SCROLLBARS_NONE);
+        String notetext = "On this panel you can draw your network model after a click on the \"Draw\" button.\n" +
+                "Press the left button to draw a node and the right button to draw a connection-node. " +
+                "Delete a node by holding the <shift>-key an pressing the left button.\nTo draw an edge press the " +
+                "left button when the mouse pointer is on a node and hold it. Then drag the mouse to another " +
+                "node and release it. For deleting an edge delete its corresponding drawnNodes.\nAfter you have " +
+                "finished, click the \"Ok\" button.\n\nYou can also import a previously created network " +
+                "(ResiNeT or Pajek) by clicking the \"Load\" button. To turn an existing node into a connection-node " +
+                "hold the Ctrl-Key while left-clicking on the node.";
+
+        text = new TextArea(notetext, 19, 85, TextArea.SCROLLBARS_NONE);
         text.setBackground(Color.white);
         text.setEditable(false);
         netPanel.add(text);
     }
 
     private void initReliabilityPanel() {
-        reliabilityPanel = new Panel();
+        Panel reliabilityPanel = new Panel();
         GridBagConstraints panel6Gbc = makegbc(0, 15, 1, 1, "west");
         reliabilityPanel.setLayout(new GridBagLayout());
         add(reliabilityPanel, panel6Gbc);
@@ -347,128 +326,39 @@ public class Renet4 extends JFrame
         gbc.gridy = y;
         gbc.gridwidth = width;
         gbc.gridheight = height;
-        if (anchor == "center")
-            gbc.anchor = GridBagConstraints.CENTER;
-
-        if (anchor == "north")
-            gbc.anchor = GridBagConstraints.NORTH;
-
-        if (anchor == "northeast")
-            gbc.anchor = GridBagConstraints.NORTHEAST;
-
-        if (anchor == "east")
-            gbc.anchor = GridBagConstraints.EAST;
-
-        if (anchor == "southeast")
-            gbc.anchor = GridBagConstraints.SOUTHEAST;
-
-        if (anchor == "south")
-            gbc.anchor = GridBagConstraints.SOUTH;
-
-        if (anchor == "southwest")
-            gbc.anchor = GridBagConstraints.SOUTHWEST;
-
-        if (anchor == "west")
-            gbc.anchor = GridBagConstraints.WEST;
-
-        if (anchor == "northwest")
-            gbc.anchor = GridBagConstraints.NORTHWEST;
-        gbc.insets = new Insets(1, 1, 1, 1);
-        return gbc;
-    }
-
-    //wird nicht verwendet
-    public void itemStateChanged(ItemEvent evt) {
-        Choice ch = (Choice) evt.getItemSelectable();
-        int i = ch.getSelectedIndex();
-        switch (i) {
-            case 0: {
-                lang = 'E';
-                result.setText(" ");
-                netPanel.add(text);
-                probPanel.removeAll();
-                drawBtn.setEnabled(true);
-
-                //flagPanel
-
-                flagPanel.s = "../img/uk.gif";
-                label0.setText("Select your language");
-                flagPanel.invalidate();
-
-
-                //headerPanel
-                headerLabel.setText("Please input your network model:");
-                drawBtn.setLabel("Draw");
-                differentReliabilitiesOkBtn.setLabel("Ok (edges have different reliabilities)");
-                sameReliabilityOkBtn.setLabel("Ok (all edges have the same reliability)");
-                resetGraphBtn.setLabel("Reset");
-                headerPanel.invalidate();
-
-                //netPanel
-                text.setText(enText);
-
-                //reliabilityPanelHeader
-                label2.setText("   Now you can input the reliability of every edge:");
-
-                //probabilitiesBtnPanel
-                resetProbabilitiesBtn.setLabel("Reset");
-                probabilitiesBtnPanel.invalidate();
-
-                //reliabilityPanel
-                //reduceB.setLabel("Reduce this network");
-                viewFactorTreeBtn.setLabel("View Tree of Factorisation");
-                calcReliabilityBtn.setLabel("Calculate the reliability of the network");
-                resilienceBtn.setLabel(" resilience of the network");
-                reliabilityPanel.invalidate();
-
-                validate();
+        switch (anchor)
+        {
+            case "center":
+                gbc.anchor = GridBagConstraints.CENTER;
                 break;
-            }
-            case 1: {
-                lang = 'D';
-                result.setText(" ");
-                netPanel.add(text);
-                probPanel.removeAll();
-                drawBtn.setEnabled(true);
-
-                //flagPanel
-                flagPanel.s = "../img/de.gif";
-                label0.setText("Bitte waehlen Sie Ihre Sprache aus");
-                flagPanel.invalidate();
-
-                //headerPanel
-                headerLabel.setText(" Bitte geben Sie hier Ihr Netz ein:");
-                drawBtn.setLabel("Zeichnen");
-                differentReliabilitiesOkBtn.setLabel("Ok (Verschiedene Kantenzuverlässigkeiten)");
-                sameReliabilityOkBtn.setLabel("Ok (Einheitliche Kantenzuverlässigkeit)");
-                resetGraphBtn.setLabel("Zurücksetzen");
-                headerPanel.invalidate();
-
-                //netPanel
-                text.setText(deText);
-
-                //reliabilityPanelHeader
-                label2.setText("   Nun geben Sie bitte die Intaktwahrscheinlichkeit jeder Kante ein:");
-
-                //probabilitiesBtnPanel
-                resetProbabilitiesBtn.setLabel("Zurücksetzen");
-                probabilitiesBtnPanel.invalidate();
-
-                //reliabilityPanel
-                //reduceB.setLabel("Das Netz reduzieren");
-                //viewFactorTreeBtn.setLabel("Anzeigen");
-                calcReliabilityBtn.setLabel("Die Zuverlaessigkeit des Netzes berechnen");
-                resilienceBtn.setLabel("Die Resilienz des Netzes berechnen");
-                viewFactorTreeBtn.setLabel("Faktorisierungsbaum anzeigen");
-                reliabilityPanel.invalidate();
-
-                validate();
+            case "north":
+                gbc.anchor = GridBagConstraints.NORTH;
                 break;
-            }
-            default:
-                flagPanel.s = "img/logo.jpg";
+            case  "northeast":
+                gbc.anchor = GridBagConstraints.NORTHEAST;
+                break;
+            case  "east":
+                gbc.anchor = GridBagConstraints.EAST;
+                break;
+            case  "southeast":
+                gbc.anchor = GridBagConstraints.SOUTHEAST;
+                break;
+            case  "south":
+                gbc.anchor = GridBagConstraints.SOUTH;
+                break;
+            case  "southwest":
+                gbc.anchor = GridBagConstraints.SOUTHWEST;
+                break;
+            case  "west":
+                gbc.anchor = GridBagConstraints.WEST;
+                break;
+            case  "northwest":
+                gbc.anchor = GridBagConstraints.NORTHWEST;
+                break;
         }
 
+        gbc.insets = new Insets(1, 1, 1, 1);
+        return gbc;
     }
 
     public void actionPerformed(ActionEvent evt) {
@@ -517,14 +407,12 @@ public class Renet4 extends JFrame
             probabilitiesOkBtn.setEnabled(false);
             calcReliabilityBtn.setEnabled(false);
             resilienceBtn.setEnabled(false);
-            viewFactorTreeBtn.setEnabled(false);
             //result.setText(" ");
             //reduceText = "";
             sameReliability = false;
             sameReliabilityOkBtn.setEnabled(true);
 
             //probPanel.removeAll();
-            inputNetBoolean = true;
             //resetGraphBtn.setEnabled(true);
 
             inputNet();
@@ -579,9 +467,7 @@ public class Renet4 extends JFrame
             probabilitiesOkBtn.setEnabled(false);
             calcReliabilityBtn.setEnabled(false);
             resilienceBtn.setEnabled(false);
-            viewFactorTreeBtn.setEnabled(false);
             result.setText(" ");
-            reduceText = "";
             sameReliability = false;
             sameReliabilityOkBtn.setEnabled(true);
         }
@@ -597,13 +483,13 @@ public class Renet4 extends JFrame
 
             for (int i = 0; i < edgeCount; i++) {
                 String s = edgeProbabilityTextFields[i].getText();
-                if (!textIsProbability(s))
+                if (textIsNotProbability(s))
                     edgesWithMissingProbability.add(String.valueOf(i));
             }
 
             for (int i = 0; i < nodeCount; i++) {
                 String s = nodeProbabilityTextFields[i].getText();
-                if (!textIsProbability(s))
+                if (textIsNotProbability(s))
                     nodesWithMissingProbability.add(String.valueOf(i));
             }
 
@@ -611,7 +497,7 @@ public class Renet4 extends JFrame
                 String sEnd = endProbabilityTextField.getText();
                 if (sEnd.length() != 0) {
                     for (int i = 0; i < edgeCount; i++) {
-                        if (!textIsProbability(sEnd))
+                        if (textIsNotProbability(sEnd))
                             edgesWithMissingProbability.add(String.valueOf(i));
                     }
                 }
@@ -637,10 +523,7 @@ public class Renet4 extends JFrame
                         "which is\nless than or equal to 1. Please check the in-\nput for edge\n" + missingProbabilityEdges +
                         "\n and for node\n" + missingProbabilityNodes;
 
-                if (lang == 'D')
-                    str = "Die Intaktwahrscheinlichkeit einer Kante muss eine Zahl kleiner oder gleich 1 im Format x.xxxxxx sein. Bitte ueberpruefen Sie die Eingabe bei Kante:\n" + missingProbabilityEdges;
-
-                //Toolkit.getDefaultToolkit().beep();
+               //Toolkit.getDefaultToolkit().beep();
                 Frame frame = new Frame("Warning!");
                 frame.setLayout(new BorderLayout());
                 frame.addWindowListener(
@@ -736,14 +619,14 @@ public class Renet4 extends JFrame
             calcReliabilityBtn.setEnabled(false);
             resilienceBtn.setEnabled(false);
             edgeProbabilities = null;
-            for (int i = 0; i < edgeProbabilityTextFields.length; i++) {
-                edgeProbabilityTextFields[i].setText(null);
-                edgeProbabilityTextFields[i].setEditable(true);
+            for (TextField edgeProbabilityTextField : edgeProbabilityTextFields) {
+                edgeProbabilityTextField.setText(null);
+                edgeProbabilityTextField.setEditable(true);
             }
 
-            for (int i = 0; i < nodeProbabilityTextFields.length; i++) {
-                nodeProbabilityTextFields[i].setText(null);
-                nodeProbabilityTextFields[i].setEditable(true);
+            for (TextField nodeProbabilityTextField : nodeProbabilityTextFields) {
+                nodeProbabilityTextField.setText(null);
+                nodeProbabilityTextField.setEditable(true);
             }
 
             if (endProbabilityTextField != null) {
@@ -757,53 +640,6 @@ public class Renet4 extends JFrame
 
         }
 
-        if (button == viewFactorTreeBtn) {
-            Frame frame = new Frame("Tree of Factorisation");
-            frame.setSize(800, 600);
-            frame.addWindowListener(
-                    new WindowAdapter() {
-                        public void windowClosing(WindowEvent event) {
-                            Frame f = (Frame) event.getSource();
-                            f.setVisible(false);
-                            f.dispose();
-                        }
-                    }
-            );
-            Panel output = new Panel();
-            output.setBackground(Color.white);
-            output.setLayout(null);
-            ScrollPane sp = new ScrollPane(ScrollPane.SCROLLBARS_AS_NEEDED);
-            sp.add(output);
-            Dimension prefSize = new Dimension(600, 400);
-            sp.setSize(prefSize);
-            float tree_width = 0;
-            float tree_depth = 0;
-
-            MyIterator ite = generated_Graphs.iterator();
-            while (ite.hasNext()) {
-                Graph g = (Graph) ite.next();
-                if (g.level > tree_depth)
-                    tree_depth = g.level;
-            }
-            tree_width = graphfact.left_offset + graphfact.right_offset;
-            output.setSize(new Dimension(Math.round((tree_width + 1) * (graph_width + 20)), Math.round((tree_depth + 1) * (graph_height + 100))));
-            drawTree(graphfact, graphfact.left_offset * (graph_width + 20), output);
-
-		/* Calculate the screen size */
-            Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
-        /* Center frame on the screen */
-            Dimension thisFrameSize = frame.getSize();
-            if (thisFrameSize.height > screenSize.height)
-                thisFrameSize.height = screenSize.height;
-            if (thisFrameSize.width > screenSize.width)
-                thisFrameSize.width = screenSize.width;
-            frame.setLocation((screenSize.width - thisFrameSize.width) / 2, (screenSize.height - thisFrameSize.height) / 2);
-            frame.add(sp);
-            frame.pack();
-            frame.setVisible(true);
-        }
-
-
         if (button == resilienceBtn) {
             if (!endValue.equals(BigDecimal.ZERO) && !stepSize.equals(BigDecimal.ZERO) && sameReliability) {
                 calculationSeriesMode = 1;
@@ -816,7 +652,6 @@ public class Renet4 extends JFrame
                 //resultText = "Das Netz hat " + total_nodes + " Knoten, davon " + c_nodes + " K-Knoten.\n" + "Es gibt also " + combinations + " Kombinationen.\n" + "Die Resilienz des Netzes ist: " + result_resilience;		
                 result.setText(resultText);
             }
-            viewFactorTreeBtn.setEnabled(true);
         }
 
 
@@ -889,11 +724,11 @@ public class Renet4 extends JFrame
         }
     }
 
-    private float getP(MySet hs) {
+    private float getPathProbability(MySet path) {
         float p = 1;
         String output = "Pfad";
 
-        MyIterator it = hs.iterator();
+        MyIterator it = path.iterator();
         while (it.hasNext()) {
             Object obj = it.next();
             if (obj instanceof Edge) {
@@ -933,7 +768,7 @@ public class Renet4 extends JFrame
      * @param str der zu überprüfende String
      * @return Boolean, ob der Text eine Wahrscheinlichkeit ist
      */
-    private boolean textIsProbability(String str) {
+    private boolean textIsNotProbability(String str) {
         boolean b = true;
         boolean temp = false;
         if (str.length() == 0)
@@ -967,18 +802,16 @@ public class Renet4 extends JFrame
                 }
             }
         }
-        return b;
+        return !b;
     }
 
     /**
      * Prüft den Graphen und baut die Anzeige mit den Textfeldern für die Wahrscheinlichkeiten auf
      */
-    public void checkGraphAndBuildProbPanel() {
+    private void checkGraphAndBuildProbPanel() {
         if (drawnEdges.size() == 0) {
             //Dieser Block zeigt ein Hinweisfenster an, wenn keine Knoten vorhanden sind und bricht die Methode ab
             String str = "Your Network does not contain edges!";
-            if (lang == 'D')
-                str = "Ihr Netz besitzt keine Kanten!";
 
             Toolkit.getDefaultToolkit().beep();
             Frame frame = new Frame("Warning!");
@@ -1021,15 +854,14 @@ public class Renet4 extends JFrame
         MyIterator np = drawnNodes.iterator();
         while (np.hasNext()) {
             NodePoint n = (NodePoint) np.next();
-            if (n.k == true)
+            if (n.k)
                 count = count + 1;
         }
 
         if (count < 2) {
             //Der Code in diesem Block zeigt nur ein Hinweisfenster an und bricht die Funktion ab
             String str = "Your Network does not contain at least 2 c-drawnNodes! You can draw a new c-node by pressing the right mouse button. If you want to transform an existing node into a c-node, please hold the Ctrl-Key on your keyboard while left-clicking on the node.";
-            if (lang == 'D')
-                str = "Ihr Netz besitzt nicht mindestens 2 Konnektionsknoten!";
+
             Frame frame = new Frame("Warning!");
             frame.setLayout(new BorderLayout());
             frame.addWindowListener(
@@ -1136,9 +968,6 @@ public class Renet4 extends JFrame
             edgeProbabilityTextFields = new TextField[edgeCount];
             nodeProbabilityTextFields = new TextField[nodeCount];
             String str = "Reliability of every edge: ";
-            if (lang == 'D') {
-                str = "Intaktwahrscheinlichkeit: ";
-            }
 
             //Kantenwahrscheinlichkeiten
             Label edgeProbLabel = new Label(str, Label.RIGHT);
@@ -1281,55 +1110,12 @@ public class Renet4 extends JFrame
             node2.add_Edge(edge);
             cnt++;
         }
-        Graph g = new Graph(nodeList, edgeList);
-        return g;
+        return new Graph(nodeList, edgeList);
     }
 
-    private void drawTree(Graph g, float pos, Panel outp) {
-        Graph child_left = null;
-        Graph child_right = null;
-
-        GraphPanel gp = new GraphPanel(this, g);
-        int xpos = Math.round(pos);
-        int ypos = Math.round(g.level * (graph_height + 100));
-        int width = Math.round(graph_width);
-        int height = Math.round(graph_height);
-        gp.setBounds(xpos, ypos, width, height);
-        outp.add(gp);
-
-        MyIterator it = g.child_Graphs.iterator();
-        while (it.hasNext()) {
-            Graph child = (Graph) it.next();
-            if (child.kind_of_reduction == 0)
-                child_left = child;
-            if (child.kind_of_reduction == 1)
-                child_right = child;
-        }
-
-        if (child_left != null) {
-            float x;
-            x = pos - (g.offset / 2) * graph_width - 20;
-            LinePanel lp = new LinePanel(Math.round(xpos - (x + width)) - 2, 100, 0, child_left.reduced_edge);
-            lp.setBounds(Math.round(x + width + 1), ypos + height + 1, Math.round(xpos - (x + width)) - 2, 100);
-            outp.add(lp);
-            drawTree(child_left, x, outp);
-        }
-
-        if (child_right != null) {
-            float x;
-            x = pos + (g.offset / 2) * graph_width + 20;
-            LinePanel lp = new LinePanel(Math.round(x - (xpos + width) - 2), 100, 1, child_right.reduced_edge);
-            lp.setBounds(xpos + width + 1, ypos + height + 1, Math.round(x - (xpos + width) - 2), 100);
-            outp.add(lp);
-            drawTree(child_right, x, outp);
-        }
-
-        return;
-    }
-
-    class MyMouseListener extends MouseAdapter {
+    private class MyMouseListener extends MouseAdapter {
         public void mouseClicked(MouseEvent evt) {
-            if (probability_mode == false) {
+            if (!probability_mode) {
                 int x1 = evt.getX();
                 int y1 = evt.getY();
                 int cnt1;
@@ -1368,9 +1154,9 @@ public class Renet4 extends JFrame
 
                         //Vorhandene Knoten zu K-Knoten machen
                         if (evt.isControlDown()) {
-                            if (nps.k == true) {
+                            if (nps.k) {
                                 nps.k = false;
-                            } else if (nps.k == false) {
+                            } else if (!nps.k) {
                                 nps.k = true;
                             }
 
@@ -1426,8 +1212,7 @@ public class Renet4 extends JFrame
                         dr = Math.abs(x3 - x1);
                         if (dr <= r) {
                             String str = "Input reliability of Edge " + cntedge;
-                            if (lang == 'D')
-                                str = "Intaktwahrscheinlichkeit von Kante " + cntedge;
+
                             Frame frame = new Frame("ReNeT");
                             frame.setLayout(new BorderLayout());
                             frame.addWindowListener(
@@ -1474,8 +1259,7 @@ public class Renet4 extends JFrame
                         dr = Math.abs(y3 - y1);
                         if (dr <= r) {
                             String str = "Input reliability of Edge " + cntedge;
-                            if (lang == 'D')
-                                str = "Intaktwahrscheinlichkeit von Kante " + cntedge;
+
                             Frame frame = new Frame("ReNeT");
                             frame.setLayout(new BorderLayout());
                             frame.addWindowListener(
@@ -1522,8 +1306,7 @@ public class Renet4 extends JFrame
                         dr = Math.sqrt(Math.pow(x3 - x1 - ((x3 - x1 + (-x3 * diff_y2y1 + y3 * diff_x2x1 + x1 * diff_y2y1 - y1 * diff_x2x1) / (diff_y2y1 + Math.pow(diff_x2x1, 2) / diff_y2y1)) / diff_x2x1) * diff_x2x1, 2) + Math.pow(y3 - y1 - ((x3 - x1 + (-x3 * diff_y2y1 + y3 * diff_x2x1 + x1 * diff_y2y1 - y1 * diff_x2x1) / (diff_y2y1 + Math.pow(diff_x2x1, 2) / diff_y2y1)) / diff_x2x1) * diff_y2y1, 2));
                         if (dr <= r) {
                             String str = "Input reliability of Edge " + cntedge;
-                            if (lang == 'D')
-                                str = "Intaktwahrscheinlichkeit von Kante " + cntedge;
+
                             Frame frame = new Frame("ReNeT");
                             frame.setLayout(new BorderLayout());
                             frame.addWindowListener(
@@ -1572,7 +1355,7 @@ public class Renet4 extends JFrame
         }
 
         public void mousePressed(MouseEvent evt) {
-            if (evt.isShiftDown() || probability_mode == true)
+            if (evt.isShiftDown() || probability_mode)
                 return;
             valid = false;
             int x = evt.getX();
@@ -1601,7 +1384,7 @@ public class Renet4 extends JFrame
         }
 
         public void mouseReleased(MouseEvent evt) {
-            if (!valid || evt.isShiftDown() || probability_mode == true)
+            if (!valid || evt.isShiftDown() || probability_mode)
                 return;
 
             valid = false;
@@ -1638,9 +1421,9 @@ public class Renet4 extends JFrame
         }
     }
 
-    class MyMouseMotionListener extends MouseMotionAdapter {
+    private class MyMouseMotionListener extends MouseMotionAdapter {
         public void mouseDragged(MouseEvent evt) {
-            if (valid && probability_mode == false) {
+            if (valid && !probability_mode) {
                 int x = evt.getX();
                 int y = evt.getY();
                 el.x2 = x;
@@ -1650,56 +1433,18 @@ public class Renet4 extends JFrame
         }
     }
 
-    class MessageFrame extends Frame {
-        String newline;
-        TextArea msgArea;
-
-        MessageFrame() {
-            super("Message Window");
-            setBounds(300, 100, 480, 200);
-            newline = new String(System.getProperty("line.separator"));
-            msgArea = new TextArea("Hier kommen die Text Ausaben:" + newline);
-            addWindowListener(new WindowAdapter() {
-                public void windowClosing(WindowEvent e) {
-                    //System.out.println("window Closing Event");
-                    destroy();
-                }
-            });
-        }
-
-        public void destroy() {
-            if (this.isVisible()) this.dispose();
-        }
-
-        public void msgOut(String s, boolean sysOut) //String ausgeben 
-        {
-            msgArea.append(s + newline);
-        }
-
-
-        public void msgAreaClear() //inhalt löschen 
-        {
-            msgArea.setText("");
-        }
-    }
-
-
     /**
      * Zuverlaessigkeitsberechnung mit nur einem Algorithmus Bei einem zusammenhängenden Graphen wird Heidtmanns
      * Algorithmus verwendet, sonst die Faktorisierungsmethode
      */
-    public void calculate_reliability_faster() {
+    private void calculate_reliability_faster() {
         resultText = "Calculating...";
         result.setText(resultText);
 
         //Prüfen ob das Netz zusammenhängt
         boolean graphConnected;
-        if (Con_check.check(graph) == -1) {
-            //com.resinet.model.Graph ist zusammenhängend
-            graphConnected = true;
-        } else {
-            graphConnected = false;
-        }
+        //com.resinet.model.Graph ist zusammenhängend
+        graphConnected = (Con_check.check(graph) == -1);
 
         // Wahrscheinlichkeiten neu zuordnen. 
         /*edgeList = (MyList)graph.getEdgelist().clone();
@@ -1725,7 +1470,7 @@ public class Renet4 extends JFrame
     /**
      * Zuverlaessigkeitsberechnung mit 3 Algorithmen (ReNeT)
      */
-    public void calculate_reliability_3_Algorithms() {
+    private void calculate_reliability_3_Algorithms() {
         counterFact = 0;
         graphfact.level = 0;
         generated_Graphs = new MyList();
@@ -1742,8 +1487,7 @@ public class Renet4 extends JFrame
         resultText = "Please use the scrollbar to scroll through the results. \n \n";
 
         resultText = resultText + "The reliability of the network is calculated using the method of factorisation (no reduction):\nNumber of factorisations: " + counterFact + "\nP=" + factProb + "\nThe reliability of the network is:\n" + probfact;
-        if (lang == 'D')
-            resultText = "Die Zuverlaessigkeit des Netzes wird mit der Methode der Faktorisierung berechnet (keine Reduktion):\nAnzahl Faktorisierungen: " + counterFact + "\nP=" + factProb + "\nDie Zuverlaessigkeit des Netzes ist:\n" + probfact;
+
         resultText = resultText + "\n\n-------------------------\n\n";
         calcReliabilityBtn.setEnabled(true);
         resilienceBtn.setEnabled(true);
@@ -1761,15 +1505,14 @@ public class Renet4 extends JFrame
         Util.getProbability(graph);
         if (graph.edgeList.size() == 1) {
             Edge e = (Edge) graph.getEdgelist().get(0);
-            if ((e.left_node.c_node == true) && (e.right_node.c_node == true)) {
+            if ((e.left_node.c_node) && (e.right_node.c_node)) {
                 prob = e.prob;
                 prob *= e.left_node.prob;
                 prob *= e.right_node.prob;
             } else
                 prob = 0;
             resultText = "The reduced network contains only one edge.\nThe reliability of the network is:\nP=" + prob;
-            if (lang == 'D')
-                resultText = "Das reduzierte Netz enthaelt nur eine Kante. Die Zuverlaessigkeit des Netzes ist:\nP=" + prob;
+
         } else {
             prob = 0;
             String str3 = "P=";
@@ -1779,13 +1522,13 @@ public class Renet4 extends JFrame
                 MyList al = (MyList) it.next();
                 MySet hs = (MySet) al.get(0);
                 float p;
-                p = getP(hs);
+                p = getPathProbability(hs);
                 String s = getNo(hs);
                 for (int i = 1; i < al.size(); i++) {
                     MySet hs1 = (MySet) al.get(i);
                     if (hs1.isEmpty())
                         continue;
-                    p = p * (1 - getP(hs1));
+                    p = p * (1 - getPathProbability(hs1));
                     String s2 = getNo(hs1);
                     if (s2.lastIndexOf('r') == 0) {
                         s2 = s2.replace('r', 'u');
@@ -1803,10 +1546,6 @@ public class Renet4 extends JFrame
             String str1 = "The network is decomposed with Heidtmann's Algorithm:\n";
             String str2 = "The reliability of the network is:\n";
 
-            if (lang == 'D') {
-                str1 = "Das Netz wird mit dem Algorithmus von Heidtmann zerlegt:\n";
-                str2 = "Die Zuverlaessigkeit des Netzes ist:\n";
-            }
             resultText = resultText + str1 + str3 + "\n" + str2 + prob;
 
             //now beginning to calculate the value from AZerleg
@@ -1856,22 +1595,18 @@ public class Renet4 extends JFrame
             }
             str1 = "The network is decomposed with Abraham's Algorithm:\n";
             str2 = "The reliability of the network is:\n";
-            if (lang == 'D') {
-                str1 = "Das Netz wird mit dem Algorithmus von Abraham zerlegt:\n";
-                str2 = "Die Zuverlaessigkeit des Netzes ist:\n";
-            }
+
             resultText = resultText + str1 + s + "\n" + str2 + prob;
 
         }
         result.setText(resultText);
-        viewFactorTreeBtn.setEnabled(true);
         //calcReliabilityBtn.setEnabled(false);
     }
 
 
 //////////////////Zuverlaessigkeitsberechnung nur mit Heidtmann's Algorithm //////////////////  
 
-    public float heidtmanns_reliability() {
+    private float heidtmanns_reliability() {
         long start = new Date().getTime();
 
 
@@ -1885,7 +1620,7 @@ public class Renet4 extends JFrame
         zer.start();
         try {
             zer.join();
-        } catch (InterruptedException e) {
+        } catch (InterruptedException ignored) {
         }
 
         //Die Zerlegung verbraucht die meiste Zeit, beim Testnetz etwa 300ms, während der Rest nur max 1 ms braucht
@@ -1896,14 +1631,13 @@ public class Renet4 extends JFrame
         Util.getProbability(graph);
         if (graph.edgeList.size() == 1) {
             Edge e = (Edge) graph.getEdgelist().get(0);
-            if ((e.left_node.c_node == true) && (e.right_node.c_node == true)) {
+            if ((e.left_node.c_node) && (e.right_node.c_node)) {
                 prob = e.prob;
                 prob *= e.left_node.prob;
                 prob *= e.right_node.prob;
             } else prob = 0;
             resultText = "The reduced network contains only one edge.\nThe reliability of the network is:\nP=" + prob;
-            if (lang == 'D')
-                resultText = "Das reduzierte Netz enthaelt nur eine Kante. Die Zuverlaessigkeit des Netzes ist:\nP=" + prob;
+
         } else {
             prob = 0;
             int count = 0;
@@ -1915,14 +1649,14 @@ public class Renet4 extends JFrame
                 float p;
                 //hs enthält hier anscheinend einen Pfad im Graphen zwischen den K-Knoten
                 //TODO genauer untersuchen
-                p = getP(hs);
+                p = getPathProbability(hs);
                 //p = getPathProbability(hs, false);
 
                 for (int i = 1; i < al.size(); i++) {
                     MySet hs1 = (MySet) al.get(i);
                     if (hs1.isEmpty())
                         continue;
-                    p = p * (1 - getP(hs1));
+                    p = p * (1 - getPathProbability(hs1));
                     //p = p * (1 - getPathProbability(hs1, true));
 
 
@@ -1950,7 +1684,6 @@ public class Renet4 extends JFrame
             resilienceBtn.setEnabled(true);
 
             //result.setText(resultText);
-            viewFactorTreeBtn.setEnabled(true);
         }
         long runningTime = new Date().getTime() - start;
         System.out.println("Laufzeit Heidtmann: " + runningTime);
@@ -1961,7 +1694,7 @@ public class Renet4 extends JFrame
 
 ////////////////// Zuverlaessigkeitsberechnung nur mit Faktorisierung //////////////////  
 
-    public float fact_reliability() {
+    private float fact_reliability() {
         long start = new Date().getTime();
 
         if (calculationSeriesMode == 0 && !onlyReliabilityFast) {
@@ -1981,7 +1714,6 @@ public class Renet4 extends JFrame
         Util.drawTreeofGraphs(graphfact);
         calcReliabilityBtn.setEnabled(true);
         resilienceBtn.setEnabled(true);
-        viewFactorTreeBtn.setEnabled(true);
 
         long runningTime = new Date().getTime() - start;
         System.out.println("Laufzeit Fact: " + runningTime);
@@ -1992,12 +1724,12 @@ public class Renet4 extends JFrame
 ///////////////////////////// Binomialkoeffizient ////////////////////////////////// 
 
 
-    public BigInteger binomial(long n, long k) {
+    private BigInteger binomial(long n, long k) {
 //    	long start = new Date().getTime();
         BigInteger binomialCoefficient = BigInteger.ONE;
 
         // Nutze die Symmetrie des Pascalschen Dreiecks um den Aufwand zu minimieren.
-        if (k > (long) (n / 2)) {
+        if (k > n / 2) {
             k = n - k;
         }
 
@@ -2023,16 +1755,15 @@ public class Renet4 extends JFrame
 ///////////////////////////// Resilienz //////////////////////////////////    
 
 
-    public int total_nodes;
-    public int c_nodes;
-    public BigInteger combinations;
-    public float result_resilience;
-    public float test_Summe;
-    public int counter;
-    public int resilienceMode; // 1 => Fact; 2 => Heidtmann
+    private int total_nodes;
+    private int c_nodes;
+    private BigInteger combinations;
+    private float result_resilience;
+    private int counter;
+    private int resilienceMode; // 1 => Fact; 2 => Heidtmann
 
     // Hauptmethode, die den Algorithmus zur Berechnung der Resilienz beinhaltet.
-    public void calculate_resilience() {
+    private void calculate_resilience() {
         long start = new Date().getTime();
 
         resultText = "Calculating...";
@@ -2112,11 +1843,7 @@ public class Renet4 extends JFrame
                 //com.resinet.model.Node node1 = (com.resinet.model.Node)graph.nodeList.get(i);
 
                 // Dann auf true, falls K-Knoten
-                if (d.contains(i)) {
-                    node1.k = true;
-                } else {
-                    node1.k = false;
-                }
+                node1.k = d.contains(i);
 
                 // Schreibe jeden Knoten neu in die Knotenliste.
                 drawnNodes.set(i, node1);
@@ -2146,8 +1873,6 @@ public class Renet4 extends JFrame
 
         }
 
-        test_Summe = result_resilience;
-
         // Teile die Summe der Zuverlässigkeiten durch die Anzahl der Kombinationen.
         result_resilience = result_resilience / combinations.longValue();
 
@@ -2157,11 +1882,7 @@ public class Renet4 extends JFrame
             NodePoint nodeReset = (NodePoint) drawnNodes.get(i);
 
             // Dann auf true, falls K-Knoten
-            if (cNodeList.charAt(i) == '1') {
-                nodeReset.k = true;
-            } else {
-                nodeReset.k = false;
-            }
+            nodeReset.k = cNodeList.charAt(i) == '1';
 
             // Schreibe jeden Knoten neu in die Knotenliste.
             drawnNodes.set(i, nodeReset);
@@ -2183,9 +1904,9 @@ public class Renet4 extends JFrame
 
 
     /// Hilfsmethode zum Erzeugen aller Kombinationen von K-Knoten
-    public Set<String> generateCombinations(String inputString) {
-        Set<String> combinationsSet = new HashSet<String>();
-        if (inputString == "")
+    private Set<String> generateCombinations(String inputString) {
+        Set<String> combinationsSet = new HashSet<>();
+        if (inputString.length() == 0)
             return combinationsSet;
 
         Character c = inputString.charAt(0);
@@ -2207,7 +1928,7 @@ public class Renet4 extends JFrame
     }
 
     //Methode zum Einlesen von Netzen aus Textdateien im Pajek-Format
-    public void inputNet() {
+    private void inputNet() {
         //Dialog zum Datei auswählen
         JFileChooser chooseFile = new JFileChooser();
         chooseFile.setDialogTitle("Open File");
@@ -2322,11 +2043,10 @@ public class Renet4 extends JFrame
         } catch (Exception e) {
             e.printStackTrace();
             inputError();
-            return;
         }
     }
 
-    public void inputError() {
+    private void inputError() {
         //Error-Popup ausgeben
 
         String str = "Your input was invalid! Please choose a valid file created by Pajek or ResiNeT.";
@@ -2365,7 +2085,7 @@ public class Renet4 extends JFrame
 
     }
 
-    public void exportNet() {
+    private void exportNet() {
         //Dialog zum Datei auswählen
         JFileChooser chooseSaveFile = new JFileChooser();
         chooseSaveFile.setDialogType(JFileChooser.SAVE_DIALOG);
@@ -2484,11 +2204,10 @@ public class Renet4 extends JFrame
         } catch (IOException e) {
             e.printStackTrace();
             exportError();
-            return;
         }
     }
 
-    public void exportError() {
+    private void exportError() {
         //Error-Popup ausgeben
         String str = "Your output was invalid! Please choose a valid filepath and use the file extension '.net'.";
         Frame frame = new Frame("Warning!");
@@ -2526,14 +2245,14 @@ public class Renet4 extends JFrame
     }
 
 
-    public BigDecimal startValue;
-    public BigDecimal endValue;
-    public BigDecimal stepSize;
-    public int calculationSeriesMode = 0; //1 = resilience, 2 = reliability;
-    public boolean onlyReliabilityFast;
+    private BigDecimal startValue;
+    private BigDecimal endValue;
+    private BigDecimal stepSize;
+    private int calculationSeriesMode = 0; //1 = resilience, 2 = reliability;
+    private boolean onlyReliabilityFast;
 
     //Für die Serienberechnung in Schritten
-    public void calculationSeries() {
+    private void calculationSeries() {
         //Sicherungskopien
         Graph graphSave = null;
         Graph graphSave2 = null;
@@ -2584,12 +2303,8 @@ public class Renet4 extends JFrame
 
             //Prüfen ob das Netz zusammenhängt
             boolean graphConnected;
-            if (Con_check.check(graph) == -1) {
-                //com.resinet.model.Graph ist zusammenhängend
-                graphConnected = true;
-            } else {
-                graphConnected = false;
-            }
+            //com.resinet.model.Graph ist zusammenhängend
+            graphConnected = Con_check.check(graph) == -1;
 
             //Ab hier Berechnungsserie
             int counter = 1;
@@ -2600,11 +2315,10 @@ public class Renet4 extends JFrame
                 result.setText(resultText);
                 counter++;
 
-                BigDecimal reliability = i;
-
+                //i ist reliability
                 //Neue/aktuelle Wahrscheinlichkeiten zuweisen
                 for (int j = 0; j < edgeProbabilities.length; j++) {
-                    edgeProbabilities[j] = reliability.floatValue();
+                    edgeProbabilities[j] = i.floatValue();
                 }
 
                 if (calculationSeriesMode == 1) //Resilienz
@@ -2624,7 +2338,7 @@ public class Renet4 extends JFrame
 
                 writer.append(System.getProperty("line.separator"));
 
-                String reliabilityString = reliability.toString();
+                String reliabilityString = i.toString();
 
                 while (reliabilityString.length() < stepSize.toString().length()) {
                     reliabilityString = reliabilityString + "0";

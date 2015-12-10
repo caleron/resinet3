@@ -8,9 +8,8 @@ import com.resinet.model.Graph;
 import com.resinet.model.ResultA;
 
 public class Zerleg extends Thread {
-    Graph g;
-    Tree ktrees;
-    MyList trs;
+    private Tree ktrees;
+    private MyList trs;
 
     public MySet az;
     /**
@@ -20,14 +19,14 @@ public class Zerleg extends Thread {
      */
     public MySet hz;
 
-    AZerleg azer;
-    HZerleg hzer;
+    private AZerleg azer;
+    private HZerleg hzer;
 
-    int azer_i, hzer_i;
+    private int azer_i;
+    private int hzer_i;
 
     public Zerleg(Graph graph) {
-        g = graph;
-        ktrees = new Tree(g);
+        ktrees = new Tree(graph);
         trs = ktrees.trs;
         azer = new AZerleg();
         hzer = new HZerleg();
@@ -44,7 +43,7 @@ public class Zerleg extends Thread {
             ktrees.join();
             azer.join();
             hzer.join();
-        } catch (Exception e) {
+        } catch (Exception ignored) {
         }
     }
 
@@ -59,7 +58,7 @@ public class Zerleg extends Thread {
                 synchronized (trs) {
                     try {
                         trs.wait(1000);
-                    } catch (InterruptedException e) {
+                    } catch (InterruptedException ignored) {
                     }
                 }
             }

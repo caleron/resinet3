@@ -14,11 +14,12 @@ import java.util.Random;
 import java.io.Serializable;
 
 public class Graph implements Serializable {
-    public int edge_quan;
+    private int edge_quan;
     public int node_quan;
 
-    public Random r = new Random();
-    public int n, m;
+    private Random r = new Random();
+    private int n;
+    public int m;
     public  float offset;
     public float left_offset, right_offset; //Die linke und rechte "Ausbreitung" des Subbaumes beim Zeichnen des Faktorisierungsbaumes
     public int level;
@@ -55,7 +56,7 @@ public class Graph implements Serializable {
         return c_size;
     }
 
-    public void node_generate(int x) {
+    private void node_generate(int x) {
         int m;
         if (x == 0) {
             do {
@@ -87,7 +88,7 @@ public class Graph implements Serializable {
         for (cnt = 0; cnt < n; cnt++) {
             c = Math.abs(r.nextInt()) % m;
 
-            while (((Node) nodeList.get(c)).c_node == true) {
+            while (((Node) nodeList.get(c)).c_node) {
                 c = Math.abs(r.nextInt()) % m;
             }
             Node node = (Node) nodeList.get(c);
@@ -97,7 +98,7 @@ public class Graph implements Serializable {
         }
     }
 
-    public void edge_generate() {
+    private void edge_generate() {
         //Ein com.resinet.model.Graph mit m Knoten hat max. sum m Kanten
         edgeList = new MyList();
         int i;
@@ -135,7 +136,7 @@ public class Graph implements Serializable {
             do {
                 j = Math.abs(r.nextInt()) % nodeList.size();
             }
-            while (z == j || ((Node) nodeList.get(j)).marked == false);
+            while (z == j || !((Node) nodeList.get(j)).marked);
             int s = edgeList.size();
             Edge edge = new Edge(s);
             Node node_z = (Node) nodeList.get(z);
@@ -236,7 +237,7 @@ public class Graph implements Serializable {
             }
 
 		/*Falls left ein Konnektionsknoten ist, wird right auch Konnektionsknoten.*/
-            if (left.c_node == true) {
+            if (left.c_node) {
                 right.c_node = true;
                 left.c_node = false;
             }
@@ -256,7 +257,7 @@ public class Graph implements Serializable {
         int delcnt = 0;
         for (int i = 0; i < nodeList.size(); i++) {
             Node node = (Node) nodeList.get(i);
-            if (node.marked == true) {
+            if (node.marked) {
                 delcnt = delcnt + delete_Node(node);
                 i = i - 1;
             }
@@ -344,7 +345,7 @@ public class Graph implements Serializable {
             for (int i = 0; i < m; i++) {
                 if (mx[i][j] == 1) {
                     Node node = (Node) nodeList.get(i);
-                    if (b == false)
+                    if (!b)
                         edge.left_node = node;
                     else
                         edge.right_node = node;

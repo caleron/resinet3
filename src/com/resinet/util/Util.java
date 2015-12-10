@@ -28,62 +28,6 @@ public class Util {
     }
 
 
-    public static Graph inputGraph(String str)
-            throws IOException {
-        int[][] mx;
-        int[] c;
-
-        FileReader f1 = new FileReader(str);
-        BufferedReader f2 = new BufferedReader(f1);
-        String line;
-        int s = 0;
-        int m, n;
-
-        line = f2.readLine();
-        m = line.length();
-        for (int i = 0; i < line.length(); i++) {
-            if (line.charAt(i) == ' ')
-                m--;
-        }
-        c = new int[m];
-        for (int i = 0; i < m; i++) {
-            if (line.charAt(i) == '1')
-                c[i] = 1;
-            else
-                c[i] = 0;
-        }
-
-        line = f2.readLine();
-        n = line.length();
-        for (int i = 0; i < line.length(); i++) {
-            if (line.charAt(i) == ' ')
-                n--;
-        }
-        mx = new int[m][n];
-        for (int i = 0; i < n; i++) {
-            if (line.charAt(i) == '1')
-                mx[0][i] = 1;
-            else
-                mx[0][i] = 0;
-        }
-
-        while ((line = f2.readLine()) != null) {
-            if (line.charAt(0) == ' ')
-                break;
-            s++;
-            for (int i = 0; i < n; i++) {
-                if (line.charAt(i) == '1')
-                    mx[s][i] = 1;
-                else
-                    mx[s][i] = 0;
-            }
-        }
-
-        Graph g = new Graph(c, mx);
-        return (g);
-    }
-
-
     public static void skpReduce(Graph g, boolean factorisation) {
 
         MyList nd = g.nodeList;
@@ -135,7 +79,7 @@ public class Util {
                                 g.delete_Node(node);
                                 g.add_Edge(edge3);
                                 reduced = true;
-                            } else if (node1.degree > 2 && node2.degree > 2 && factorisation == false) {
+                            } else if (node1.degree > 2 && node2.degree > 2 && !factorisation) {
                                 //Polygon-Ketten-Reduktion 1, 2, 3, 4
                                 Edge e1 = null;
                                 Edge e2 = null;
@@ -297,12 +241,10 @@ public class Util {
 
                                 Edge e21 = (Edge) node2.node_edge.get(0);
                                 Edge e22 = (Edge) node2.node_edge.get(1);
-                                Edge e1 = edge1;
-                                Edge e2 = edge2;
                                 Edge e3 = null;
                                 Edge e4 = null;
 
-                                if (e21.equals(e2))
+                                if (e21.equals(edge2))
                                     e3 = e22;
                                 else
                                     e3 = e21;
@@ -310,7 +252,7 @@ public class Util {
 
                                 if (node3.degree > 2 && !node3.c_node) {
                                     e4 = getCommonEdge(node1, node3);
-                                    if (e4 != null && factorisation == false) {
+                                    if (e4 != null && !factorisation) {
                                         //Polygon-Typ5
                                         Edge er = new Edge(-1);
                                         Edge es = new Edge(-1);
@@ -318,8 +260,8 @@ public class Util {
                                         er.rdcType = "R5";
                                         es.rdcType = "S5";
                                         et.rdcType = "T5";
-                                        g.delete_Edge(e1);
-                                        g.delete_Edge(e2);
+                                        g.delete_Edge(edge1);
+                                        g.delete_Edge(edge2);
                                         g.delete_Edge(e3);
                                         g.delete_Edge(e4);
                                         if (g.getCnodeSize() > 2) {
@@ -331,17 +273,17 @@ public class Util {
                                             et.left_node = node2;
                                             et.right_node = node3;
                                             et.r = er;
-                                            er.parent_edges[0] = e1;
-                                            er.parent_edges[1] = e2;
+                                            er.parent_edges[0] = edge1;
+                                            er.parent_edges[1] = edge2;
                                             er.parent_edges[2] = e3;
                                             er.parent_edges[3] = e4;
                                             g.wedgeIndex.add(er);
-                                            es.parent_edges[0] = e1;
-                                            es.parent_edges[1] = e2;
+                                            es.parent_edges[0] = edge1;
+                                            es.parent_edges[1] = edge2;
                                             es.parent_edges[2] = e3;
                                             es.parent_edges[3] = e4;
-                                            et.parent_edges[0] = e1;
-                                            et.parent_edges[1] = e2;
+                                            et.parent_edges[0] = edge1;
+                                            et.parent_edges[1] = edge2;
                                             et.parent_edges[2] = e3;
                                             et.parent_edges[3] = e4;
                                             g.add_Edge(er);
@@ -350,8 +292,8 @@ public class Util {
                                         } else if (g.getCnodeSize() == 2) {
                                             er.left_node = node1;
                                             er.right_node = node3;
-                                            er.parent_edges[0] = e1;
-                                            er.parent_edges[1] = e2;
+                                            er.parent_edges[0] = edge1;
+                                            er.parent_edges[1] = edge2;
                                             er.parent_edges[2] = e3;
                                             er.parent_edges[3] = e4;
                                             g.wedgeIndex.add(er);
@@ -363,7 +305,7 @@ public class Util {
                                         }
                                         reduced = true;
                                     }//if(e4!=null)
-                                    else if (e4 == null && factorisation == false) {
+                                    else if (e4 == null && !factorisation) {
                                         //guck mal, ob typ 6 oder 7 moeglich ist
                                         Node node4 = getCommonNode(node1, node3);
                                         if (node4 != null && node4.c_node) {
@@ -376,8 +318,8 @@ public class Util {
                                             er.rdcType = "R6";
                                             es.rdcType = "S6";
                                             et.rdcType = "T6";
-                                            g.delete_Edge(e1);
-                                            g.delete_Edge(e2);
+                                            g.delete_Edge(edge1);
+                                            g.delete_Edge(edge2);
                                             g.delete_Edge(e3);
                                             g.delete_Node(node4);
                                             er.left_node = node1;
@@ -386,20 +328,20 @@ public class Util {
                                             es.right_node = node2;
                                             et.left_node = node2;
                                             et.right_node = node3;
-                                            er.parent_edges[0] = e1;
-                                            er.parent_edges[1] = e2;
+                                            er.parent_edges[0] = edge1;
+                                            er.parent_edges[1] = edge2;
                                             er.parent_edges[2] = e3;
                                             er.parent_edges[3] = e4;
                                             er.parent_edges[4] = e5;
                                             g.wedgeIndex.add(er);
-                                            es.parent_edges[0] = e1;
-                                            es.parent_edges[1] = e2;
+                                            es.parent_edges[0] = edge1;
+                                            es.parent_edges[1] = edge2;
                                             es.parent_edges[2] = e3;
                                             es.parent_edges[3] = e4;
                                             es.parent_edges[4] = e5;
                                             es.r = er;
-                                            et.parent_edges[0] = e1;
-                                            et.parent_edges[1] = e2;
+                                            et.parent_edges[0] = edge1;
+                                            et.parent_edges[1] = edge2;
                                             et.parent_edges[2] = e3;
                                             et.parent_edges[3] = e4;
                                             et.parent_edges[4] = e5;
@@ -465,8 +407,8 @@ public class Util {
                                                 er.rdcType = "R7";
                                                 es.rdcType = "S7";
                                                 et.rdcType = "T7";
-                                                g.delete_Edge(e1);
-                                                g.delete_Edge(e2);
+                                                g.delete_Edge(edge1);
+                                                g.delete_Edge(edge2);
                                                 g.delete_Edge(e3);
                                                 g.delete_Node(node4);
                                                 g.delete_Node(node5);
@@ -476,22 +418,22 @@ public class Util {
                                                 es.right_node = node2;
                                                 et.left_node = node2;
                                                 et.right_node = node3;
-                                                er.parent_edges[0] = e1;
-                                                er.parent_edges[1] = e2;
+                                                er.parent_edges[0] = edge1;
+                                                er.parent_edges[1] = edge2;
                                                 er.parent_edges[2] = e3;
                                                 er.parent_edges[3] = e4;
                                                 er.parent_edges[4] = e5;
                                                 er.parent_edges[5] = e6;
                                                 g.wedgeIndex.add(er);
-                                                es.parent_edges[0] = e1;
-                                                es.parent_edges[1] = e2;
+                                                es.parent_edges[0] = edge1;
+                                                es.parent_edges[1] = edge2;
                                                 es.parent_edges[2] = e3;
                                                 es.parent_edges[3] = e4;
                                                 es.parent_edges[4] = e5;
                                                 es.parent_edges[5] = e6;
                                                 es.r = er;
-                                                et.parent_edges[0] = e1;
-                                                et.parent_edges[1] = e2;
+                                                et.parent_edges[0] = edge1;
+                                                et.parent_edges[1] = edge2;
                                                 et.parent_edges[2] = e3;
                                                 et.parent_edges[3] = e4;
                                                 et.parent_edges[4] = e5;
@@ -599,7 +541,7 @@ public class Util {
 	/*Falls das Netz aus einer Kante besteht, gib die Intaktwahrscheinlichkeit dieser Kante zurück.*/
         if (g.getEdgelist().size() == 1) {
             Edge e = (Edge) g.getEdgelist().get(0);
-            if ((e.left_node.c_node == false) || (e.right_node.c_node == false))
+            if ((!e.left_node.c_node) || (!e.right_node.c_node))
                 return 0;
             Renet4.factProb = Renet4.factProb + "r" + e.edge_no + ")";
             return ((Edge) g.getEdgelist().get(0)).prob;
@@ -634,13 +576,13 @@ public class Util {
                     i = i - 1;
                 } //Entferne überflüssige Teile des Netzes.
                 if (con_check == (-1))
-                    reducableEdges.add(new Integer(edge.edge_no));
+                    reducableEdges.add(edge.edge_no);
             }
 
 		/*Prüfe, ob mindestens eine der Kanten, die sich in reducableEdges als reduzierbar gemerkt wurden nach dem Entfernen der überflüssigen Komponenten noch im Netz vorhanden ist und reduziere nach dieser.*/
             MyIterator it = reducableEdges.iterator();
             while (it.hasNext()) {
-                edgenr = ((Integer) it.next()).intValue();
+                edgenr = (Integer) it.next();
                 if (g1.getEdge(edgenr) != null)
                     break;
                 else
@@ -661,7 +603,7 @@ public class Util {
             MyIterator it_c = g1.getNodelist().iterator();
             while (it_c.hasNext()) {
                 Node n = (Node) it_c.next();
-                if (n.c_node == true)
+                if (n.c_node)
                     c_node_cnt = c_node_cnt + 1;
             }
             if (g1.node_quan == c_node_cnt)
@@ -672,7 +614,7 @@ public class Util {
                 p1 = e.prob;
                 Renet4.counterFact = Renet4.counterFact + 1;
 
-                if (c_node_cnt == 2 && e.left_node.c_node == true && e.right_node.c_node == true) {
+                if (c_node_cnt == 2 && e.left_node.c_node && e.right_node.c_node) {
                     c_node_reduce = true; //nur noch zwei Konnektionsknoten, deren verbindende Kante gewählt wurde.
                     i_reduced = true; //Eine Reduktion hat stattgefunden.
                 } else {
@@ -692,7 +634,7 @@ public class Util {
 
 	/*Berechnung der Zuverlässgkeit durch Faktorisierung*/
 
-        if (c_node_reduce == true) //Fall 1
+        if (c_node_reduce) //Fall 1
         {
             g.child_Graphs.add(g2);
             g2.level = level + 1;
@@ -704,7 +646,7 @@ public class Util {
 
         }
 
-        if (c_node_reduce == false && i_reduced == true) //Fall 2
+        if (!c_node_reduce && i_reduced) //Fall 2
         {
             g.child_Graphs.add(g2);
             g2.level = level + 1;
@@ -722,7 +664,7 @@ public class Util {
             prob = prob + (1 - p2) * (getProbabilityFact(g2, level + 1));
         }
 
-        if (i_reduced == false) //Fall 3
+        if (!i_reduced) //Fall 3
         {
             int cnt = 0;
             MyIterator itprob = g1.getEdgelist().iterator();
@@ -1041,7 +983,7 @@ public class Util {
     }
 
 
-    public static Edge getCommonEdge(Node node1, Node node2) {
+    private static Edge getCommonEdge(Node node1, Node node2) {
         Edge e = null;
         MyIterator it = node1.node_edge.iterator();
         while (it.hasNext()) {
@@ -1054,7 +996,7 @@ public class Util {
         return e;
     }
 
-    public static Node getCommonNode(Node node1, Node node2) {
+    private static Node getCommonNode(Node node1, Node node2) {
         Node node3 = null;
         MySet nodes = new MySet();
         MyIterator it = node1.node_edge.iterator();
@@ -1082,7 +1024,7 @@ public class Util {
      * @param node a <code>com.resinet.model.Node</code> value
      * @return a <code>com.resinet.model.Node</code> value
      */
-    public static Node getOtherNode(Edge edge, Node node) {
+    private static Node getOtherNode(Edge edge, Node node) {
         Node node2 = null;
 
         if (node == edge.left_node)

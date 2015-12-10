@@ -11,14 +11,14 @@ import com.resinet.util.MySet;
 
 import java.util.ArrayList;
 
-public class Tree extends Thread {
-    Graph graph;
-    KTree b;
+class Tree extends Thread {
+    private Graph graph;
+    private KTree b;
     MyList trs;
     //Menge aller k-Baeume
-    Q q;
+    private Q q;
 
-    int ktr_i;
+    private int ktr_i;
     //Anzahl der K-Baeume
 
     public boolean dead = false;
@@ -37,7 +37,7 @@ public class Tree extends Thread {
         MyIterator it = this.graph.nodeList.iterator();
         while (it.hasNext()) {
             Node node2 = (Node) it.next();
-            if (node2.c_node == true) {
+            if (node2.c_node) {
                 node = node2;
                 b.add_Node(node);
                 outside_add(node);
@@ -55,7 +55,7 @@ public class Tree extends Thread {
         dead = true;
         try {
             sleep(300);
-        } catch (InterruptedException e) {
+        } catch (InterruptedException ignored) {
         }
         synchronized (trs) {
             trs.notifyAll();
@@ -72,7 +72,7 @@ public class Tree extends Thread {
         MyIterator it = w.node_edge.iterator();
         while (it.hasNext()) {
             Edge edge = (Edge) it.next();
-            if (edge.left_node.b_marked == false || edge.right_node.b_marked == false) {
+            if (!edge.left_node.b_marked || !edge.right_node.b_marked) {
                 q.add(edge);
                 n[n_i] = edge;
                 n_i++;
@@ -101,7 +101,7 @@ public class Tree extends Thread {
             else
                 n = e.left_node;
 
-            if (e.in_q == true && n.b_marked == true) {
+            if (e.in_q && n.b_marked) {
                 q.delete(e);
                 m[m_i] = e;
                 m_i++;
@@ -243,14 +243,14 @@ public class Tree extends Thread {
             output_ktree();
             //if N(G,B)=0 then output spannender Baum B
         } else {
-            while (Con_check.check(graph) < 0 && tag == false) {
+            while (Con_check.check(graph) < 0 && !tag) {
                 e = q.last;
                 //e := letztes Element von Q
 
                 q.delete(e);
                 //Q := Q - e
 
-                if (e.left_node.b_marked == false)
+                if (!e.left_node.b_marked)
                     w = e.left_node;
                 else
                     w = e.right_node;

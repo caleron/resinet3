@@ -16,8 +16,7 @@ public class ProbPanel extends Panel {
 
     @Override
     public Dimension getPreferredSize() {
-        Dimension dm = new Dimension(600, ((renet4.drawnEdges.size() + renet4.drawnNodes.size()) / 2 + 1) * 30);
-        return dm;
+        return new Dimension(600, ((renet4.drawnEdges.size() + renet4.drawnNodes.size()) / 2 + 1) * 30);
     }
 
 }

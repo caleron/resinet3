@@ -11,9 +11,9 @@ import java.awt.*;
 /**
  * Created by Patrick on 27.10.2015.
  */
-public class GraphPanel extends Panel {
+class GraphPanel extends Panel {
     private Renet4 renet4;
-    Graph graph;
+    private Graph graph;
 
     public GraphPanel(Renet4 renet4, Graph graph) {
         this.renet4 = renet4;
@@ -61,7 +61,6 @@ public class GraphPanel extends Panel {
     }
 
     public Dimension getPreferredSize() {
-        Dimension dimension = new Dimension(Math.round(renet4.graph_width) + 25, Math.round(renet4.graph_height) + 25);
-        return dimension;
+        return new Dimension(Math.round(renet4.graph_width) + 25, Math.round(renet4.graph_height) + 25);
     }
 }
