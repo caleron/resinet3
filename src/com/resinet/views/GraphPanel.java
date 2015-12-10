@@ -12,11 +12,11 @@ import java.awt.*;
  * Created by Patrick on 27.10.2015.
  */
 class GraphPanel extends Panel {
-    private Renet4 renet4;
+    private Resinet3 resinet3;
     private Graph graph;
 
-    public GraphPanel(Renet4 renet4, Graph graph) {
-        this.renet4 = renet4;
+    public GraphPanel(Resinet3 resinet3, Graph graph) {
+        this.resinet3 = resinet3;
         this.graph = graph;
     }
 
@@ -61,6 +61,6 @@ class GraphPanel extends Panel {
     }
 
     public Dimension getPreferredSize() {
-        return new Dimension(Math.round(renet4.graph_width) + 25, Math.round(renet4.graph_height) + 25);
+        return new Dimension(Math.round(resinet3.graph_width) + 25, Math.round(resinet3.graph_height) + 25);
     }
 }

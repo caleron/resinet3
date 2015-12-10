@@ -1,6 +1,6 @@
 package com.resinet.views;
 
-import com.resinet.Renet4;
+import com.resinet.Resinet3;
 
 import java.awt.*;
 
@@ -8,15 +8,15 @@ import java.awt.*;
  * Created by Patrick on 27.10.2015.
  */
 public class ProbPanel extends Panel {
-    private Renet4 renet4;
+    private Resinet3 resinet3;
 
-    public ProbPanel(Renet4 renet4) {
-        this.renet4 = renet4;
+    public ProbPanel(Resinet3 resinet3) {
+        this.resinet3 = resinet3;
     }
 
     @Override
     public Dimension getPreferredSize() {
-        return new Dimension(600, ((renet4.drawnEdges.size() + renet4.drawnNodes.size()) / 2 + 1) * 30);
+        return new Dimension(600, ((resinet3.drawnEdges.size() + resinet3.drawnNodes.size()) / 2 + 1) * 30);
     }
 
 }

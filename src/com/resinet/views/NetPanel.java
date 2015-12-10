@@ -8,10 +8,10 @@ import com.resinet.model.*;
 import com.resinet.util.MyIterator;
 
 public class NetPanel extends Panel {
-    private Renet4 renet4;
+    private Resinet3 resinet3;
 
-    public NetPanel(Renet4 renet4) {
-        this.renet4 = renet4;
+    public NetPanel(Resinet3 resinet3) {
+        this.resinet3 = resinet3;
     }
 
     @Override
@@ -27,7 +27,7 @@ public class NetPanel extends Panel {
 
         imgGraphics.fillRect(0, 0, 625, getHeight());
 
-        MyIterator iterator = renet4.drawnNodes.iterator();
+        MyIterator iterator = resinet3.drawnNodes.iterator();
         int count = 0;
         while (iterator.hasNext()) {
             imgGraphics.setColor(Color.black);
@@ -50,17 +50,17 @@ public class NetPanel extends Panel {
         }
 
         imgGraphics.setColor(Color.black);
-        iterator = renet4.drawnEdges.iterator();
+        iterator = resinet3.drawnEdges.iterator();
         while (iterator.hasNext()) {
             EdgeLine e = (EdgeLine) iterator.next();
             imgGraphics.drawLine(e.x1, e.y1, e.x2, e.y2);
-            String s = String.valueOf(renet4.drawnEdges.indexOf(e));
+            String s = String.valueOf(resinet3.drawnEdges.indexOf(e));
             imgGraphics.drawString(s, e.x0, e.y0);
         }
 
 
-        if (renet4.valid)
-            imgGraphics.drawLine(renet4.el.x1, renet4.el.y1, renet4.el.x2, renet4.el.y2);
+        if (resinet3.valid)
+            imgGraphics.drawLine(resinet3.el.x1, resinet3.el.y1, resinet3.el.x2, resinet3.el.y2);
 
         g.drawImage(img, 0, 0, this);
     }

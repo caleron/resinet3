@@ -1,6 +1,6 @@
 package com.resinet.util;/* com.resinet.util.Util.java */
 
-import com.resinet.Renet4;
+import com.resinet.Resinet3;
 import com.resinet.algorithms.Con_check;
 import com.resinet.model.Edge;
 import com.resinet.model.Graph;
@@ -543,7 +543,7 @@ public class Util {
             Edge e = (Edge) g.getEdgelist().get(0);
             if ((!e.left_node.c_node) || (!e.right_node.c_node))
                 return 0;
-            Renet4.factProb = Renet4.factProb + "r" + e.edge_no + ")";
+            Resinet3.factProb = Resinet3.factProb + "r" + e.edge_no + ")";
             return ((Edge) g.getEdgelist().get(0)).prob;
         }
 
@@ -612,7 +612,7 @@ public class Util {
             if (edgenr != (-2)) {
                 Edge e = g1.getEdge(edgenr);
                 p1 = e.prob;
-                Renet4.counterFact = Renet4.counterFact + 1;
+                Resinet3.counterFact = Resinet3.counterFact + 1;
 
                 if (c_node_cnt == 2 && e.left_node.c_node && e.right_node.c_node) {
                     c_node_reduce = true; //nur noch zwei Konnektionsknoten, deren verbindende Kante gewählt wurde.
@@ -640,8 +640,8 @@ public class Util {
             g2.level = level + 1;
             g2.kind_of_reduction = 1;
             g2.reduced_edge = edgenr;
-            Renet4.generated_Graphs.add(g2);
-            Renet4.factProb = Renet4.factProb + "r" + edgenr + "+(1-r" + edgenr + ")(";
+            Resinet3.generated_Graphs.add(g2);
+            Resinet3.factProb = Resinet3.factProb + "r" + edgenr + "+(1-r" + edgenr + ")(";
             prob = p1 + (1 - p2) * (getProbabilityFact(g2, level + 1));
 
         }
@@ -652,15 +652,15 @@ public class Util {
             g2.level = level + 1;
             g2.kind_of_reduction = 1;
             g2.reduced_edge = edgenr;
-            Renet4.generated_Graphs.add(g2);
+            Resinet3.generated_Graphs.add(g2);
             g.child_Graphs.add(g1);
             g1.level = level + 1;
             g1.kind_of_reduction = 0;
             g1.reduced_edge = edgenr;
-            Renet4.generated_Graphs.add(g1);
-            Renet4.factProb = Renet4.factProb + "r" + edgenr + "(";
+            Resinet3.generated_Graphs.add(g1);
+            Resinet3.factProb = Resinet3.factProb + "r" + edgenr + "(";
             prob = p1 * (getProbabilityFact(g1, level + 1));
-            Renet4.factProb = Renet4.factProb + "+(1-r" + edgenr + ")(";
+            Resinet3.factProb = Resinet3.factProb + "+(1-r" + edgenr + ")(";
             prob = prob + (1 - p2) * (getProbabilityFact(g2, level + 1));
         }
 
@@ -671,12 +671,12 @@ public class Util {
             while (itprob.hasNext()) {
                 cnt = 1;
                 Edge e = (Edge) itprob.next();
-                Renet4.factProb = Renet4.factProb + "r" + e.edge_no;
+                Resinet3.factProb = Resinet3.factProb + "r" + e.edge_no;
                 prob = prob * e.prob;
             }
             prob = prob * cnt;
         }
-        Renet4.factProb = Renet4.factProb + ")";
+        Resinet3.factProb = Resinet3.factProb + ")";
         return prob;
     }
 

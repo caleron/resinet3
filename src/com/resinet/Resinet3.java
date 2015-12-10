@@ -1,4 +1,4 @@
-package com.resinet;/* Renet4.java */
+package com.resinet;/* Resinet3.java */
 
 import com.resinet.algorithms.Con_check;
 import com.resinet.algorithms.Zerleg;
@@ -21,7 +21,7 @@ import javax.swing.*;
 import javax.swing.filechooser.FileNameExtensionFilter;
 
 
-public class Renet4 extends JFrame
+public class Resinet3 extends JFrame
         implements ActionListener {
     private NetPanel netPanel;
     private ProbPanel probPanel;
@@ -64,19 +64,19 @@ public class Renet4 extends JFrame
     private Image logo;
     private Checkbox reliabilityCompareCheckBox;
 
-    private static Renet4 mainFrame;
+    private static Resinet3 mainFrame;
 
     //Fuers Logo
     public void paint(Graphics g) {
         g.drawImage(logo, 270, 30, this);
     }
 
-    private Renet4() {
+    private Resinet3() {
         init();
     }
 
     public static void main(String[] args) {
-        mainFrame = new Renet4();
+        mainFrame = new Resinet3();
         mainFrame.pack();
         mainFrame.setSize(700, 825);
         mainFrame.setVisible(true);
