@@ -229,7 +229,6 @@ class Tree extends Thread {
         int n_i = 0;
         int m_i = 0;
         int q1_i = 0;
-        boolean tag = false;
 
         if (q.count == 0) {
             Edge eg = b.last_br;
@@ -243,7 +242,7 @@ class Tree extends Thread {
             output_ktree();
             //if N(G,B)=0 then output spannender Baum B
         } else {
-            while (Con_check.check(graph) < 0 && !tag) {
+            while (Con_check.check(graph) < 0) {
                 e = q.last;
                 //e := letztes Element von Q
 

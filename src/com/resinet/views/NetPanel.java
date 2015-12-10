@@ -70,4 +70,9 @@ public class NetPanel extends Panel {
         paint(g);
     }
     //ueberschreiben der Methode update, um den Bildschirm nicht zu loeschen
+
+    @Override
+    public Dimension getPreferredSize() {
+        return new Dimension(625, 315);
+    }
 }

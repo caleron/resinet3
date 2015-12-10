@@ -26,7 +26,7 @@ public class Resinet3 extends JFrame
     private NetPanel netPanel;
     private ProbPanel probPanel;
     private TextArea text;
-    private TextField pf, endProbabilityTextField, textfieldStepsize;
+    private TextField endProbabilityTextField, textfieldStepsize;
     private Button drawBtn, resetGraphBtn, differentReliabilitiesOkBtn, sameReliabilityOkBtn, resetProbabilitiesBtn,
             probabilitiesOkBtn, calcReliabilityBtn, resilienceBtn, inputNetBtn, exportNetBtn;
     private boolean sameReliability;
@@ -43,16 +43,10 @@ public class Resinet3 extends JFrame
     private float[] edgeProbabilities;
     private float[] nodeProbabilities;
     private float prob;
-    private float probfact;
     private String resultText;
     private TextArea result;
 
-    public static String factProb;
-    public static int counterFact;
-
-    private Graph graphfact;
     private Graph graph;
-    public static MyList generated_Graphs;
     public float graph_width;
     public float graph_height;
 
@@ -620,49 +614,28 @@ public class Resinet3 extends JFrame
     }
 
     /**
-     * Weist alle Wahrscheinlichkeiten aus den Eingabefeldern den Elementen im Graphen neu zu
-     */
-    private void reassignProbabilities() {
-        reassignProbabilites(false);
-    }
-
-    /**
      * Weist alle Wahrscheinlichkeiten aus den Eingabefeldern den Elementen im Graphen neu zu Berücksichtigt auf Wunsch
      * nur den "normalen" Graphen
-     *
-     * @param onlyNormalGraph bei true wird der Faktorisierungsgraph ignoriert
      */
-    private void reassignProbabilites(boolean onlyNormalGraph) {
+    private void reassignProbabilities() {
         /*
         Diese Listen sind Klone der Kantenlisten des Graphen, aber halten anscheinend die selben Referenzen auf Kanten
         wie die Kantenliste des Graphen, also eine flache Kopie.
         Wozu das ganze? Keine Ahnung.
         */
         MyList edgeList = graph.getEdgelist();
-        MyList factEdgeList = graphfact.getEdgelist();
         //Kantenwahrscheinlichkeiten
         for (int i = 0; i < edgeProbabilities.length; i++) {
             Edge e = (Edge) edgeList.get(i);
             e.prob = edgeProbabilities[i];
-
-            if (!onlyNormalGraph) {
-                Edge e2 = (Edge) factEdgeList.get(i);
-                e2.prob = edgeProbabilities[i];
-            }
         }
 
         MyList nodeList = graph.getNodelist();
-        MyList factNodeList = graphfact.getNodelist();
 
         //Knotenwahrscheinlichkeiten
         for (int i = 0; i < nodeProbabilities.length; i++) {
             Node e = (Node) nodeList.get(i);
             e.prob = nodeProbabilities[i];
-
-            if (!onlyNormalGraph) {
-                Node e2 = (Node) factNodeList.get(i);
-                e2.prob = nodeProbabilities[i];
-            }
         }
     }
 
@@ -803,22 +776,6 @@ public class Resinet3 extends JFrame
 
 		/*Erzeuge Graphen.*/
         graph = makeGraph();
-
-		/*Clone Graphen für Faktorisierung.*/
-        try {
-            graphfact = (Graph) Util.serialClone(graph); //clone Graphen
-        } catch (IOException | ClassNotFoundException e1) {
-            System.err.println(e1.toString());
-        }
-
-		/*Passe Positionierung des Graphen an.*/
-        MyList node_pos = graphfact.getNodelist();
-        np = node_pos.iterator();
-        while (np.hasNext()) {
-            Node n = (Node) np.next();
-            n.xposition = n.xposition - smallest_x_pos;
-            n.yposition = n.yposition - smallest_y_pos;
-        }
 
         netPanel.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
         differentReliabilitiesOkBtn.setEnabled(false);
@@ -1209,23 +1166,11 @@ public class Resinet3 extends JFrame
         //com.resinet.model.Graph ist zusammenhängend
         graphConnected = (Con_check.check(graph) == -1);
 
-        // Wahrscheinlichkeiten neu zuordnen. 
-        /*edgeList = (MyList)graph.getEdgelist().clone();
-        br_fact = (MyList)graphfact.getEdgelist().clone();
-		for(int k=0; k<edgeProbabilities.length;k++)
-		{
-		    Edge e = (Edge)edgeList.get(k);
-		    e.prob = edgeProbabilities[k];
-		    Edge e2 = (Edge)br_fact.get(k);
-		    e2.prob = edgeProbabilities[k];
-		}*/
-
         if (graphConnected) {
             heidtmanns_reliability();
             resultText = "The reliability of the network is: " + prob;
         } else {
-            fact_reliability();
-            resultText = "The reliability of the network is: " + probfact;
+            JOptionPane.showMessageDialog(mainFrame, "Your Graph is not connected!", "Error", JOptionPane.ERROR_MESSAGE);
         }
         result.setText(resultText);
     }
@@ -1234,24 +1179,8 @@ public class Resinet3 extends JFrame
      * Zuverlaessigkeitsberechnung mit 3 Algorithmen (ReNeT)
      */
     private void calculate_reliability_3_Algorithms() {
-        counterFact = 0;
-        graphfact.level = 0;
-        generated_Graphs = new MyList();
-        generated_Graphs.add(graphfact);
-        factProb = "(";
-        graphfact.child_Graphs = new MyList();
-
-        probfact = Util.getProbabilityFact(graphfact, 0);
-
-        Util.drawTreeofGraphs(graphfact);
-
-        System.out.println("Die  Zuverlaessigkeit des Netzes ist: " + probfact);
-
         resultText = "Please use the scrollbar to scroll through the results. \n \n";
 
-        resultText = resultText + "The reliability of the network is calculated using the method of factorisation (no reduction):\nNumber of factorisations: " + counterFact + "\nP=" + factProb + "\nThe reliability of the network is:\n" + probfact;
-
-        resultText = resultText + "\n\n-------------------------\n\n";
         calcReliabilityBtn.setEnabled(true);
         resilienceBtn.setEnabled(true);
 
@@ -1262,7 +1191,7 @@ public class Resinet3 extends JFrame
         } catch (InterruptedException ignored) {
         }
 
-        reassignProbabilites(true);
+        reassignProbabilities();
 
         //die IW jeder Kante zuweisen
         Util.getProbability(graph);
@@ -1388,7 +1317,7 @@ public class Resinet3 extends JFrame
 
         //Die Zerlegung verbraucht die meiste Zeit, beim Testnetz etwa 300ms, während der Rest nur max 1 ms braucht
         System.out.println("Laufzeit Heidtmann bis Zerlegung: " + ((new Date()).getTime() - start));
-        reassignProbabilites(true);
+        reassignProbabilities();
 
         //die IW jeder Kante zuweisen
         Util.getProbability(graph);
@@ -1403,7 +1332,6 @@ public class Resinet3 extends JFrame
 
         } else {
             prob = 0;
-            int count = 0;
             MyIterator it = zer.hz.iterator();
             while (it.hasNext()) {
                 System.out.println("Neuer Pfad");
@@ -1413,18 +1341,14 @@ public class Resinet3 extends JFrame
                 //hs enthält hier anscheinend einen Pfad im Graphen zwischen den K-Knoten
                 //TODO genauer untersuchen
                 p = getPathProbability(hs);
-                //p = getPathProbability(hs, false);
 
                 for (int i = 1; i < al.size(); i++) {
                     MySet hs1 = (MySet) al.get(i);
                     if (hs1.isEmpty())
                         continue;
                     p = p * (1 - getPathProbability(hs1));
-                    //p = p * (1 - getPathProbability(hs1, true));
-
 
                 }
-                count++;
                 System.out.println("Wahrscheinlichkeit: " + Float.toString(p));
                 prob = prob + p;
 
@@ -1454,35 +1378,6 @@ public class Resinet3 extends JFrame
         return prob;
     }
 
-
-////////////////// Zuverlaessigkeitsberechnung nur mit Faktorisierung //////////////////  
-
-    private float fact_reliability() {
-        long start = new Date().getTime();
-
-        if (calculationSeriesMode == 0 && !onlyReliabilityFast) {
-            resultText = "Step " + counter + " of " + combinations;
-            result.setText(resultText);
-        }
-
-        counterFact = 0;
-        graphfact.level = 0;
-        generated_Graphs = new MyList();
-        generated_Graphs.add(graphfact);
-        factProb = "(";
-        graphfact.child_Graphs = new MyList();
-
-        probfact = Util.getProbabilityFact(graphfact, 0);
-
-        Util.drawTreeofGraphs(graphfact);
-        calcReliabilityBtn.setEnabled(true);
-        resilienceBtn.setEnabled(true);
-
-        long runningTime = new Date().getTime() - start;
-        System.out.println("Laufzeit Fact: " + runningTime);
-        System.out.println("Prob. Fact: " + probfact);
-        return probfact;
-    }
 
 ///////////////////////////// Binomialkoeffizient ////////////////////////////////// 
 
@@ -1550,24 +1445,17 @@ public class Resinet3 extends JFrame
         }
 
         //Prüfen ob das Netz zusammenhängt
-        int resilienceMode;
-        if (Con_check.check(graph) == -1) {
-            //com.resinet.model.Graph ist zusammenhängend
-            resilienceMode = 2;
-        } else {
-            resilienceMode = 1;
+        if (Con_check.check(graph) != -1) {
+            JOptionPane.showMessageDialog(mainFrame, "Your Graph is not connected", "Error", JOptionPane.ERROR_MESSAGE);
+            return;
         }
 
         Graph graphSave = null;
-        Graph graphSave2 = null;
 
         try {
             graphSave = (Graph) Util.serialClone(graph); //clone Graphen
-            graphSave2 = (Graph) Util.serialClone(graphfact); //clone Graphen
-        } catch (java.io.IOException e1) {
+        } catch (IOException | ClassNotFoundException e1) {
             System.err.println(e1.toString());
-        } catch (java.lang.ClassNotFoundException e2) {
-            System.err.println(e2.toString());
         }
 
         // Berechne Anzahl der Kombinationen
@@ -1617,22 +1505,14 @@ public class Resinet3 extends JFrame
             // Erhöhe pro Kombination den Zähler um 1.
             counter++;
 
-            if (resilienceMode == 2) {
-                graph = makeGraph();
-            } else {
-                graphfact = makeGraph();
-            }
+            graph = makeGraph();
 
 
             // Wahrscheinlichkeiten neu zuordnen.
             reassignProbabilities();
 
             // Berechne die Zuverlässigkeit für die aktuelle Kombination und addiere sie zur bisherigen Summe. 
-            if (resilienceMode == 2) {
-                result_resilience = result_resilience + heidtmanns_reliability();
-            } else {
-                result_resilience = result_resilience + fact_reliability();
-            }
+            result_resilience = result_resilience + heidtmanns_reliability();
 
         }
 
@@ -1654,11 +1534,8 @@ public class Resinet3 extends JFrame
         try {
 
             graph = (Graph) Util.serialClone(graphSave); //clone Graphen
-            graphfact = (Graph) Util.serialClone(graphSave2); //clone Graphen
-        } catch (java.io.IOException e1) {
+        } catch (IOException | ClassNotFoundException e1) {
             System.err.println(e1.toString());
-        } catch (java.lang.ClassNotFoundException e2) {
-            System.err.println(e2.toString());
         }
 
         long runningTime = new Date().getTime() - start;
@@ -1706,12 +1583,13 @@ public class Resinet3 extends JFrame
 
         //Ab hier zeilenweises Einlesen der ausgewählten Datei
         String actRow;
-        LineNumberReader lineReader = null;
+        LineNumberReader lineReader;
 
         try {
             lineReader = new LineNumberReader(new FileReader(netFile));
         } catch (FileNotFoundException e) {
             e.printStackTrace();
+            return;
         }
 
         try {
@@ -1844,7 +1722,7 @@ public class Resinet3 extends JFrame
         }
 
         //Ab hier in die Datei schreiben
-        Writer writer = null;
+        Writer writer;
 
         try {
             writer = new FileWriter(path);
@@ -1954,17 +1832,20 @@ public class Resinet3 extends JFrame
 
     //Für die Serienberechnung in Schritten
     private void calculationSeries() {
-        //Sicherungskopien
+        //Prüfen ob das Netz zusammenhängt
+
+        if (Con_check.check(graph) != -1) {
+            JOptionPane.showMessageDialog(mainFrame, "Your Graph is not connected!", "Error", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+
+        //Sicherungskopie
         Graph graphSave = null;
-        Graph graphSave2 = null;
 
         try {
             graphSave = (Graph) Util.serialClone(graph); //clone Graphen
-            graphSave2 = (Graph) Util.serialClone(graphfact); //clone Graphen
-        } catch (java.io.IOException e1) {
+        } catch (IOException | ClassNotFoundException e1) {
             System.err.println(e1.toString());
-        } catch (java.lang.ClassNotFoundException e2) {
-            System.err.println(e2.toString());
         }
 
         float[] probsSave = edgeProbabilities.clone();
@@ -1989,7 +1870,7 @@ public class Resinet3 extends JFrame
         }
 
         //Ab hier in die Datei schreiben
-        Writer writer = null;
+        Writer writer;
 
         try {
             writer = new FileWriter(filepath);
@@ -2001,11 +1882,6 @@ public class Resinet3 extends JFrame
             }
 
             writer.append(System.getProperty("line.separator"));
-
-            //Prüfen ob das Netz zusammenhängt
-            boolean graphConnected;
-            //com.resinet.model.Graph ist zusammenhängend
-            graphConnected = Con_check.check(graph) == -1;
 
             //Ab hier Berechnungsserie
             int counter = 1;
@@ -2022,19 +1898,15 @@ public class Resinet3 extends JFrame
                     edgeProbabilities[j] = i.floatValue();
                 }
 
-                if (calculationSeriesMode == 1) //Resilienz
-                {
+                if (calculationSeriesMode == 1) {
+                    //Resilienz
                     calculate_resilience();
-                } else //Reliability
-                {
+                } else {
+                    //Reliability
                     // Wahrscheinlichkeiten neu zuordnen. (wird in calculate_resilience() auch gemacht)
                     reassignProbabilities();
 
-                    if (graphConnected) {
-                        heidtmanns_reliability();
-                    } else {
-                        fact_reliability();
-                    }
+                    heidtmanns_reliability();
                 }
 
                 writer.append(System.getProperty("line.separator"));
@@ -2052,12 +1924,7 @@ public class Resinet3 extends JFrame
                 if (calculationSeriesMode == 1) {
                     writer.write(reliabilityString + result_resilience);
                 } else {
-                    if (graphConnected) {
-                        writer.write(reliabilityString + prob);
-                    } else {
-                        writer.write(reliabilityString + probfact);
-                    }
-
+                    writer.write(reliabilityString + prob);
                 }
 
             }
@@ -2070,16 +1937,12 @@ public class Resinet3 extends JFrame
             return;
         }
 
-
         //Setze den intern gespeicherten Graphen auf Anfangszustand zurück
         try {
 
             graph = (Graph) Util.serialClone(graphSave); //clone Graphen
-            graphfact = (Graph) Util.serialClone(graphSave2); //clone Graphen
-        } catch (java.io.IOException e1) {
+        } catch (IOException | ClassNotFoundException e1) {
             System.err.println(e1.toString());
-        } catch (java.lang.ClassNotFoundException e2) {
-            System.err.println(e2.toString());
         }
 
         edgeProbabilities = probsSave.clone();
