@@ -698,7 +698,6 @@ public class Renet4 extends JFrame
                 calcReliabilityBtn.setEnabled(true);
             resilienceBtn.setEnabled(true);
 
-            //TODO knotenwahrscheinlichkeiten zuweisen
         /*Wahrscheinlichkeiten neu zuordnen.*/
             reassignProbabilities();
 
@@ -1762,9 +1761,12 @@ public class Renet4 extends JFrame
         Util.getProbability(graph);
         if (graph.edgeList.size() == 1) {
             Edge e = (Edge) graph.getEdgelist().get(0);
-            if ((e.left_node.c_node == true) && (e.right_node.c_node == true))
-                prob = ((Edge) graph.edgeList.get(0)).prob;
-            else prob = 0;
+            if ((e.left_node.c_node == true) && (e.right_node.c_node == true)) {
+                prob = e.prob;
+                prob *= e.left_node.prob;
+                prob *= e.right_node.prob;
+            } else
+                prob = 0;
             resultText = "The reduced network contains only one edge.\nThe reliability of the network is:\nP=" + prob;
             if (lang == 'D')
                 resultText = "Das reduzierte Netz enthaelt nur eine Kante. Die Zuverlaessigkeit des Netzes ist:\nP=" + prob;
@@ -1894,9 +1896,11 @@ public class Renet4 extends JFrame
         Util.getProbability(graph);
         if (graph.edgeList.size() == 1) {
             Edge e = (Edge) graph.getEdgelist().get(0);
-            if ((e.left_node.c_node == true) && (e.right_node.c_node == true))
-                prob = ((Edge) graph.edgeList.get(0)).prob;
-            else prob = 0;
+            if ((e.left_node.c_node == true) && (e.right_node.c_node == true)) {
+                prob = e.prob;
+                prob *= e.left_node.prob;
+                prob *= e.right_node.prob;
+            } else prob = 0;
             resultText = "The reduced network contains only one edge.\nThe reliability of the network is:\nP=" + prob;
             if (lang == 'D')
                 resultText = "Das reduzierte Netz enthaelt nur eine Kante. Die Zuverlaessigkeit des Netzes ist:\nP=" + prob;
