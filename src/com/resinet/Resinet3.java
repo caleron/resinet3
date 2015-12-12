@@ -14,6 +14,7 @@ import java.awt.event.*;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.lang.*;
+import java.math.MathContext;
 import java.util.*;
 import java.io.*;
 
@@ -26,7 +27,7 @@ public class Resinet3 extends JFrame
     private NetPanel netPanel;
     private ProbPanel probPanel;
     private TextArea text;
-    private TextField endProbabilityTextField, textfieldStepsize;
+    private TextField edgeEndProbabilityBox, edgeProbabilityStepSizeBox, nodeEndProbabilityBox, nodeProbabilityStepSizeBox;
     private Button drawBtn, resetGraphBtn, differentReliabilitiesOkBtn, sameReliabilityOkBtn, resetProbabilitiesBtn,
             probabilitiesOkBtn, calcReliabilityBtn, resilienceBtn, inputNetBtn, exportNetBtn;
     private boolean sameReliability;
@@ -82,9 +83,13 @@ public class Resinet3 extends JFrame
         drawnNodes = new MyList();
         drawnEdges = new MyList();
 
-        startValue = BigDecimal.ZERO;
-        endValue = BigDecimal.ZERO;
-        stepSize = BigDecimal.ZERO;
+        edgeStartValue = BigDecimal.ZERO;
+        edgeEndValue = BigDecimal.ZERO;
+        edgeStepSize = BigDecimal.ZERO;
+        nodeStartValue = BigDecimal.ZERO;
+        nodeEndValue = BigDecimal.ZERO;
+        nodeStepSize = BigDecimal.ZERO;
+
         calculationSeriesMode = 0;
         onlyReliabilityFast = false;
 
@@ -408,9 +413,12 @@ public class Resinet3 extends JFrame
         }
 
         if (button == resetGraphBtn) {
-            startValue = BigDecimal.ZERO;
-            endValue = BigDecimal.ZERO;
-            stepSize = BigDecimal.ZERO;
+            edgeStartValue = BigDecimal.ZERO;
+            edgeEndValue = BigDecimal.ZERO;
+            edgeStepSize = BigDecimal.ZERO;
+            nodeStartValue = BigDecimal.ZERO;
+            nodeEndValue = BigDecimal.ZERO;
+            nodeStepSize = BigDecimal.ZERO;
 
             netPanel.setCursor(new Cursor(Cursor.CROSSHAIR_CURSOR));
             differentReliabilitiesOkBtn.setEnabled(true);
@@ -459,7 +467,8 @@ public class Resinet3 extends JFrame
             }
 
             if (sameReliability) {
-                String sEnd = endProbabilityTextField.getText();
+                //TODO was sinnvolles hieraus machen
+                String sEnd = edgeEndProbabilityBox.getText();
                 if (sEnd.length() != 0) {
                     for (int i = 0; i < edgeCount; i++) {
                         if (textIsNotProbability(sEnd))
@@ -522,21 +531,35 @@ public class Resinet3 extends JFrame
 
 
             //End value und step size zuordnen
-            //TODO dies kann eigentlich in den Block mit sameReliability
-            if (edgeProbabilityTextFields[0].getText().length() != 0) {
-                startValue = new BigDecimal(edgeProbabilityTextFields[0].getText());
-                System.out.println("StartValue: " + startValue);
-            }
-
             if (sameReliability) {
-                if (endProbabilityTextField.getText().length() != 0) {
-                    endValue = new BigDecimal(endProbabilityTextField.getText());
-                    System.out.println("EndValue: " + endValue);
+                if (edgeProbabilityTextFields[0].getText().length() != 0) {
+                    edgeStartValue = new BigDecimal(edgeProbabilityTextFields[0].getText());
+                    System.out.println("StartValue Edges: " + edgeStartValue);
                 }
 
-                if (textfieldStepsize.getText().length() != 0) {
-                    stepSize = new BigDecimal(textfieldStepsize.getText());
-                    System.out.println("StepSize: " + stepSize);
+                if (edgeEndProbabilityBox.getText().length() != 0) {
+                    edgeEndValue = new BigDecimal(edgeEndProbabilityBox.getText());
+                    System.out.println("EndValue Edges: " + edgeEndValue);
+                }
+
+                if (edgeProbabilityStepSizeBox.getText().length() != 0) {
+                    edgeStepSize = new BigDecimal(edgeProbabilityStepSizeBox.getText());
+                    System.out.println("StepSize Edges: " + edgeStepSize);
+                }
+
+                if (nodeProbabilityTextFields[0].getText().length() != 0) {
+                    nodeStartValue = new BigDecimal(nodeProbabilityTextFields[0].getText());
+                    System.out.println("StartValue Nodes: " + nodeStartValue);
+                }
+
+                if (nodeEndProbabilityBox.getText().length() != 0) {
+                    nodeEndValue = new BigDecimal(nodeEndProbabilityBox.getText());
+                    System.out.println("EndValue Nodes: " + nodeEndValue);
+                }
+
+                if (nodeProbabilityStepSizeBox.getText().length() != 0) {
+                    nodeStepSize = new BigDecimal(nodeProbabilityStepSizeBox.getText());
+                    System.out.println("StepSize Nodes: " + nodeStepSize);
                 }
             }
 
@@ -545,9 +568,12 @@ public class Resinet3 extends JFrame
 
 
         if (button == resetProbabilitiesBtn) {
-            startValue = BigDecimal.ZERO;
-            endValue = BigDecimal.ZERO;
-            stepSize = BigDecimal.ZERO;
+            edgeStartValue = BigDecimal.ZERO;
+            edgeEndValue = BigDecimal.ZERO;
+            edgeStepSize = BigDecimal.ZERO;
+            nodeStartValue = BigDecimal.ZERO;
+            nodeEndValue = BigDecimal.ZERO;
+            nodeStepSize = BigDecimal.ZERO;
 
             probabilitiesOkBtn.setEnabled(true);
             differentReliabilitiesOkBtn.setEnabled(true);
@@ -565,11 +591,18 @@ public class Resinet3 extends JFrame
                 nodeProbabilityTextField.setEditable(true);
             }
 
-            if (endProbabilityTextField != null) {
-                endProbabilityTextField.setText(null);
+            if (edgeEndProbabilityBox != null) {
+                edgeEndProbabilityBox.setText(null);
             }
-            if (textfieldStepsize != null) {
-                textfieldStepsize.setText(null);
+            if (edgeProbabilityStepSizeBox != null) {
+                edgeProbabilityStepSizeBox.setText(null);
+            }
+
+            if (nodeEndProbabilityBox != null) {
+                nodeEndProbabilityBox.setText(null);
+            }
+            if (nodeProbabilityStepSizeBox != null) {
+                nodeProbabilityStepSizeBox.setText(null);
             }
 
             sameReliabilityOkBtn.setEnabled(true);
@@ -577,7 +610,9 @@ public class Resinet3 extends JFrame
         }
 
         if (button == resilienceBtn) {
-            if (!endValue.equals(BigDecimal.ZERO) && !stepSize.equals(BigDecimal.ZERO) && sameReliability) {
+            if (!edgeEndValue.equals(BigDecimal.ZERO) && !edgeStepSize.equals(BigDecimal.ZERO) &&
+                    !nodeEndValue.equals(BigDecimal.ZERO) && !nodeStepSize.equals(BigDecimal.ZERO) && sameReliability) {
+
                 calculationSeriesMode = 1;
                 calculationSeries();
             } else {
@@ -595,7 +630,8 @@ public class Resinet3 extends JFrame
             //heidtmanns_reliability();
             //fact_reliability();
 
-            if (!endValue.equals(BigDecimal.ZERO) && !stepSize.equals(BigDecimal.ZERO) && sameReliability) {
+            if (!edgeEndValue.equals(BigDecimal.ZERO) && !edgeStepSize.equals(BigDecimal.ZERO) &&
+                    !nodeEndValue.equals(BigDecimal.ZERO) && !nodeStepSize.equals(BigDecimal.ZERO) && sameReliability) {
                 calculationSeriesMode = 2;
                 calculationSeries();
             } else {
@@ -798,8 +834,8 @@ public class Resinet3 extends JFrame
             probScrollPane.setScrollPosition(0, 0);
             probPanel.setSize(600, 179);
             probPanel.removeAll();
-            //probPanel.setLayout(new GridLayout(1, 1));
-            probPanel.setLayout(new GridLayout(6, 2));
+
+            probPanel.setLayout(new GridLayout(7, 2));
 
             edgeProbabilityTextFields = new TextField[edgeCount];
             nodeProbabilityTextFields = new TextField[nodeCount];
@@ -829,28 +865,40 @@ public class Resinet3 extends JFrame
             nodeProbPanel.add(nodeProbtextField);
             probPanel.add(nodeProbPanel);
 
-            String str1 = "Optional for calculation series: ";
-            Label l1 = new Label(str1, Label.RIGHT);
-            Panel p1 = new Panel();
-            p1.add(l1);
-            probPanel.add(p1);
+            Label stepValuesHeader = new Label("Optional for calculation series: ", Label.RIGHT);
+            Panel stepValuesPanel = new Panel();
+            stepValuesPanel.add(stepValuesHeader);
+            probPanel.add(stepValuesPanel);
 
-            String str2 = "End value: ";
-            Label l2 = new Label(str2, Label.RIGHT);
-            endProbabilityTextField = new TextField(20);
-            endProbabilityTextField.setBackground(Color.white);
+            Label edgeProbEndValueLbl = new Label("Edge End value: ", Label.RIGHT);
+            edgeEndProbabilityBox = new TextField(20);
+            edgeEndProbabilityBox.setBackground(Color.white);
             Panel p2 = new Panel();
-            p2.add(l2);
-            p2.add(endProbabilityTextField);
+            p2.add(edgeProbEndValueLbl);
+            p2.add(edgeEndProbabilityBox);
 
-            String str3 = "Step size (e.g. 0.01): ";
-            Label l3 = new Label(str3, Label.RIGHT);
-            textfieldStepsize = new TextField(20);
-            textfieldStepsize.setBackground(Color.white);
+            Label edgeStepSizeLbl = new Label("Step size (e.g. 0.01): ", Label.RIGHT);
+            edgeProbabilityStepSizeBox = new TextField(20);
+            edgeProbabilityStepSizeBox.setBackground(Color.white);
 
-            p2.add(l3);
-            p2.add(textfieldStepsize);
+            p2.add(edgeStepSizeLbl);
+            p2.add(edgeProbabilityStepSizeBox);
+
+            Label nodeEndValueLbl = new Label("Node End value: ", Label.RIGHT);
+            nodeEndProbabilityBox = new TextField(20);
+            nodeEndProbabilityBox.setBackground(Color.white);
+            Panel nodePanel = new Panel();
+            nodePanel.add(nodeEndValueLbl);
+            nodePanel.add(nodeEndProbabilityBox);
+
+            Label nodeStepSizeLbl = new Label("Step size (e.g. 0.01): ", Label.RIGHT);
+            nodeProbabilityStepSizeBox = new TextField(20);
+            nodeProbabilityStepSizeBox.setBackground(Color.white);
+            nodePanel.add(nodeStepSizeLbl);
+            nodePanel.add(nodeProbabilityStepSizeBox);
+
             probPanel.add(p2);
+            probPanel.add(nodePanel);
         } else {
 
             probPanel.setSize(probPanel.getPreferredSize());
@@ -1820,9 +1868,8 @@ public class Resinet3 extends JFrame
     }
 
 
-    private BigDecimal startValue;
-    private BigDecimal endValue;
-    private BigDecimal stepSize;
+    private BigDecimal edgeStartValue, edgeEndValue, edgeStepSize;
+    private BigDecimal nodeStartValue, nodeEndValue, nodeStepSize;
     private int calculationSeriesMode = 0; //1 = resilience, 2 = reliability;
     private boolean onlyReliabilityFast;
 
@@ -1872,55 +1919,74 @@ public class Resinet3 extends JFrame
             writer = new FileWriter(filepath);
 
             if (calculationSeriesMode == 1) {
-                writer.write("Reliability of every edge                 Resilience of the network");
+                writer.write("Reliability of every edge                 Reliability of every node                 Resilience of the network");
             } else {
-                writer.write("Reliability of every edge                 Reliability of the network");
+                writer.write("Reliability of every edge                 Reliability of every node                 Reliability of the network");
             }
 
             writer.append(System.getProperty("line.separator"));
 
             //Ab hier Berechnungsserie
             int counter = 1;
-            for (BigDecimal i = startValue; i.compareTo(endValue) <= 0; i = i.add(stepSize))
-            //for(float i = startValue; i<=endValue; i=i+stepSize)
-            {
-                resultText = "Calculation Series: Step " + counter + " of " + ((endValue.subtract(startValue)).divide(stepSize)).add(BigDecimal.ONE);
-                result.setText(resultText);
-                counter++;
+            String stepCount = ((edgeEndValue.subtract(edgeStartValue)).divide(edgeStepSize)).add(BigDecimal.ONE)
+                    .multiply(((nodeEndValue.subtract(nodeStartValue)).divide(nodeStepSize)).add(BigDecimal.ONE)).toPlainString();
 
-                //i ist reliability
-                //Neue/aktuelle Wahrscheinlichkeiten zuweisen
-                for (int j = 0; j < edgeProbabilities.length; j++) {
-                    edgeProbabilities[j] = i.floatValue();
-                }
+            for (BigDecimal currentEdgeProb = edgeStartValue; currentEdgeProb.compareTo(edgeEndValue) <= 0;
+                 currentEdgeProb = currentEdgeProb.add(edgeStepSize)) {
 
-                if (calculationSeriesMode == 1) {
-                    //Resilienz
-                    calculate_resilience();
-                } else {
-                    //Reliability
-                    // Wahrscheinlichkeiten neu zuordnen. (wird in calculate_resilience() auch gemacht)
-                    reassignProbabilities();
+                for (BigDecimal currentNodeProb = nodeStartValue; currentNodeProb.compareTo(nodeEndValue) <= 0;
+                     currentNodeProb = currentNodeProb.add(nodeStepSize)) {
 
-                    heidtmanns_reliability();
-                }
+                    resultText = "Calculation Series: Step " + counter + " of " + stepCount;
+                    result.setText(resultText);
+                    counter++;
 
-                writer.append(System.getProperty("line.separator"));
+                    //currentEdgeProb ist reliability
+                    //Neue/aktuelle Wahrscheinlichkeiten zuweisen
+                    for (int j = 0; j < edgeProbabilities.length; j++) {
+                        edgeProbabilities[j] = currentEdgeProb.floatValue();
+                    }
+                    for (int j = 0; j < nodeProbabilities.length; j++) {
+                        nodeProbabilities[j] = currentNodeProb.floatValue();
+                    }
 
-                String reliabilityString = i.toString();
+                    if (calculationSeriesMode == 1) {
+                        //Resilienz
+                        calculate_resilience();
+                    } else {
+                        //Reliability
+                        // Wahrscheinlichkeiten neu zuordnen. (wird in calculate_resilience() auch gemacht)
+                        reassignProbabilities();
 
-                while (reliabilityString.length() < stepSize.toString().length()) {
-                    reliabilityString = reliabilityString + "0";
-                }
+                        heidtmanns_reliability();
+                    }
 
-                while (reliabilityString.length() < 42) {
-                    reliabilityString = reliabilityString + " ";
-                }
+                    writer.append(System.getProperty("line.separator"));
 
-                if (calculationSeriesMode == 1) {
-                    writer.write(reliabilityString + result_resilience);
-                } else {
-                    writer.write(reliabilityString + prob);
+                    String reliabilityString = currentEdgeProb.toString();
+
+                    while (reliabilityString.length() < edgeStepSize.toString().length()) {
+                        reliabilityString = reliabilityString + "0";
+                    }
+
+                    while (reliabilityString.length() < 42) {
+                        reliabilityString = reliabilityString + " ";
+                    }
+
+                    reliabilityString += currentNodeProb.toString();
+                    while (reliabilityString.length() < 42 + nodeStepSize.toString().length()) {
+                        reliabilityString = reliabilityString + "0";
+                    }
+
+                    while (reliabilityString.length() < 84) {
+                        reliabilityString = reliabilityString + " ";
+                    }
+
+                    if (calculationSeriesMode == 1) {
+                        writer.write(reliabilityString + result_resilience);
+                    } else {
+                        writer.write(reliabilityString + prob);
+                    }
                 }
 
             }
