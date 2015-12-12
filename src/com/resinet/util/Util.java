@@ -1,7 +1,5 @@
 package com.resinet.util;/* com.resinet.util.Util.java */
 
-import com.resinet.Resinet3;
-import com.resinet.algorithms.Con_check;
 import com.resinet.model.Edge;
 import com.resinet.model.Graph;
 import com.resinet.model.Node;
@@ -27,7 +25,13 @@ public class Util {
         return ret;
     }
 
-
+    /**
+     * Serien- Polygon- Ketten- Reduktion
+     * Diese Funktion reduziert den Graphen und weist den neuen Kanten die Ursprungskanten zu (parent_edges)
+     * getEdgeProbability weist dann den neuen Kanten Wahrscheinlichkeiten zu
+     * @param g der Graph
+     * @param factorisation kp
+     */
     public static void skpReduce(Graph g, boolean factorisation) {
 
         MyList nd = g.nodeList;

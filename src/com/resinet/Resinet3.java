@@ -279,7 +279,7 @@ public class Resinet3 extends JFrame
         reliabilityButtons.setLayout(new FlowLayout(FlowLayout.CENTER));
         reliabilityButtons.add(calcReliabilityBtn);
 
-        reliabilityCompareCheckBox = new Checkbox("Compare 3 algorithms");
+        reliabilityCompareCheckBox = new Checkbox("Compare 2 algorithms");
         reliabilityButtons.add(reliabilityCompareCheckBox);
         reliabilityPanel.add(reliabilityButtons);
 
@@ -602,7 +602,7 @@ public class Resinet3 extends JFrame
                 calculationSeriesMode = 0;
                 //Wenn die Checkbox angeklickt wurde, sollen die 3 Alg. verglichen werden. Sonst nicht.
                 if (reliabilityCompareCheckBox.getState()) {
-                    calculate_reliability_3_Algorithms();
+                    calculate_reliability_2_Algorithms();
                 } else {
                     onlyReliabilityFast = true;
                     calculate_reliability_faster();
@@ -1178,7 +1178,7 @@ public class Resinet3 extends JFrame
     /**
      * Zuverlaessigkeitsberechnung mit 3 Algorithmen (ReNeT)
      */
-    private void calculate_reliability_3_Algorithms() {
+    private void calculate_reliability_2_Algorithms() {
         resultText = "Please use the scrollbar to scroll through the results. \n \n";
 
         calcReliabilityBtn.setEnabled(true);
@@ -1193,8 +1193,6 @@ public class Resinet3 extends JFrame
 
         reassignProbabilities();
 
-        //die IW jeder Kante zuweisen
-        Util.getProbability(graph);
         if (graph.edgeList.size() == 1) {
             Edge e = (Edge) graph.getEdgelist().get(0);
             if ((e.left_node.c_node) && (e.right_node.c_node)) {
@@ -1319,8 +1317,6 @@ public class Resinet3 extends JFrame
         System.out.println("Laufzeit Heidtmann bis Zerlegung: " + ((new Date()).getTime() - start));
         reassignProbabilities();
 
-        //die IW jeder Kante zuweisen
-        Util.getProbability(graph);
         if (graph.edgeList.size() == 1) {
             Edge e = (Edge) graph.getEdgelist().get(0);
             if ((e.left_node.c_node) && (e.right_node.c_node)) {
