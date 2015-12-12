@@ -13,9 +13,8 @@ public class Zerleg extends Thread {
 
     public MySet az;
     /**
-     * Enthält alle Zerlegungen nach Heidtmann.
-     * Ein Element ist eine Liste aus Pfaden, wobei der erste Pfad der hin-Pfad ist und die weiteren
-     * Pfade die Ergebnisse aus dem Disjunktmachen mit den bisherigen Pfaden sind
+     * Enthält alle Zerlegungen nach Heidtmann. Ein Element ist eine Liste aus Pfaden, wobei der erste Pfad der hin-Pfad
+     * ist und die weiteren Pfade die Ergebnisse aus dem Disjunktmachen mit den bisherigen Pfaden sind
      */
     public MySet hz;
 
@@ -71,7 +70,9 @@ public class Zerleg extends Thread {
                 if (i == trs.size() - 1 && !ktrees.dead) {
                     synchronized (trs) {
                         try {
-                            trs.wait();
+                            if (!ktrees.dead) {
+                                trs.wait();
+                            }
                         } catch (InterruptedException e) {
                             System.out.println(e.toString());
                         }
@@ -152,7 +153,9 @@ public class Zerleg extends Thread {
                 if (i == trs.size() && !ktrees.dead) {
                     synchronized (trs) {
                         try {
-                            trs.wait();
+                            if (!ktrees.dead) {
+                                trs.wait();
+                            }
                         } catch (InterruptedException e) {
                             e.printStackTrace();
                         }

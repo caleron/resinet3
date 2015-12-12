@@ -53,10 +53,10 @@ class Tree extends Thread {
     public void run() {
         tree();
         dead = true;
-        try {
+        /*try {
             sleep(300);
         } catch (InterruptedException ignored) {
-        }
+        }*/
         synchronized (trs) {
             trs.notifyAll();
         }
