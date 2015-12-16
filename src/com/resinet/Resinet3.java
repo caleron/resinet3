@@ -619,8 +619,8 @@ public class Resinet3 extends JFrame
                 calculationSeriesMode = 0;
                 calculate_resilience();
 
-                resultText = "The network has " + total_nodes + " Nodes, containing " + c_nodes + " c-Nodes.\n" + "There are " + combinations + " combinations.\n" + "The resilience of the network is: " + result_resilience;
-                //resultText = "Das Netz hat " + total_nodes + " Knoten, davon " + c_nodes + " K-Knoten.\n" + "Es gibt also " + combinations + " Kombinationen.\n" + "Die Resilienz des Netzes ist: " + result_resilience;		
+                resultText = "The network has " + total_nodes + " Nodes, containing " + c_nodes + " c-Nodes.\n" +
+                        "There are " + combinations + " combinations.\n" + "The resilience of the network is: " + result_resilience;
                 result.setText(resultText);
             }
         }
@@ -657,7 +657,6 @@ public class Resinet3 extends JFrame
         /*
         Diese Listen sind Klone der Kantenlisten des Graphen, aber halten anscheinend die selben Referenzen auf Kanten
         wie die Kantenliste des Graphen, also eine flache Kopie.
-        Wozu das ganze? Keine Ahnung.
         */
         MyList edgeList = graph.getEdgelist();
         //Kantenwahrscheinlichkeiten
@@ -781,7 +780,9 @@ public class Resinet3 extends JFrame
 
         if (count < 2) {
             //Der Code in diesem Block zeigt nur ein Hinweisfenster an und bricht die Funktion ab
-            String str = "Your Network does not contain at least 2 c-drawnNodes! You can draw a new c-node by pressing the right mouse button. If you want to transform an existing node into a c-node, please hold the Ctrl-Key on your keyboard while left-clicking on the node.";
+            String str = "Your Network does not contain at least 2 c-drawnNodes! \nYou can draw a new c-node by " +
+                    "pressing the right mouse button. \nIf you want to transform an existing node into a c-node, " +
+                    "\nplease hold the Ctrl-Key on your keyboard while left-clicking on the node.";
 
             JOptionPane.showMessageDialog(mainFrame, str, "Warning!", JOptionPane.ERROR_MESSAGE);
             return;
@@ -832,7 +833,7 @@ public class Resinet3 extends JFrame
 
         if (sameReliability) {
             probScrollPane.setScrollPosition(0, 0);
-            probPanel.setSize(600, 179);
+            probPanel.setSize(600, 190);
             probPanel.removeAll();
 
             probPanel.setLayout(new GridLayout(7, 2));
@@ -1102,7 +1103,11 @@ public class Resinet3 extends JFrame
                     }
 
                     if (x1 != x2 && y1 != y2 && min_x1x2 <= x3 && x3 <= max_x1x2 && min_y1y2 <= y3 && y3 <= max_y1y2) {
-                        dr = Math.sqrt(Math.pow(x3 - x1 - ((x3 - x1 + (-x3 * diff_y2y1 + y3 * diff_x2x1 + x1 * diff_y2y1 - y1 * diff_x2x1) / (diff_y2y1 + Math.pow(diff_x2x1, 2) / diff_y2y1)) / diff_x2x1) * diff_x2x1, 2) + Math.pow(y3 - y1 - ((x3 - x1 + (-x3 * diff_y2y1 + y3 * diff_x2x1 + x1 * diff_y2y1 - y1 * diff_x2x1) / (diff_y2y1 + Math.pow(diff_x2x1, 2) / diff_y2y1)) / diff_x2x1) * diff_y2y1, 2));
+                        dr = Math.sqrt(Math.pow(x3 - x1 - ((x3 - x1 + (-x3 * diff_y2y1 + y3 * diff_x2x1 + x1 *
+                                diff_y2y1 - y1 * diff_x2x1) / (diff_y2y1 + Math.pow(diff_x2x1, 2) / diff_y2y1)) / diff_x2x1)
+                                * diff_x2x1, 2) + Math.pow(y3 - y1 - ((x3 - x1 + (-x3 * diff_y2y1 + y3 * diff_x2x1 + x1
+                                * diff_y2y1 - y1 * diff_x2x1) / (diff_y2y1 + Math.pow(diff_x2x1, 2) / diff_y2y1)) / diff_x2x1)
+                                * diff_y2y1, 2));
                         if (dr <= r) {
                             showInputEdgeProbDialog(cntedge);
                             break;
@@ -1928,8 +1933,13 @@ public class Resinet3 extends JFrame
 
             //Ab hier Berechnungsserie
             int counter = 1;
-            String stepCount = ((edgeEndValue.subtract(edgeStartValue)).divide(edgeStepSize)).add(BigDecimal.ONE)
-                    .multiply(((nodeEndValue.subtract(nodeStartValue)).divide(nodeStepSize)).add(BigDecimal.ONE)).toPlainString();
+
+            BigInteger edgeStepCount = edgeEndValue.subtract(edgeStartValue).divide(edgeStepSize, BigDecimal.ROUND_FLOOR)
+                    .add(BigDecimal.ONE).toBigInteger();
+            BigInteger nodeStepCount = nodeEndValue.subtract(nodeStartValue).divide(nodeStepSize, BigDecimal.ROUND_FLOOR)
+                    .add(BigDecimal.ONE).toBigInteger();
+
+            String stepCount = edgeStepCount.multiply(nodeStepCount).toString();
 
             for (BigDecimal currentEdgeProb = edgeStartValue; currentEdgeProb.compareTo(edgeEndValue) <= 0;
                  currentEdgeProb = currentEdgeProb.add(edgeStepSize)) {

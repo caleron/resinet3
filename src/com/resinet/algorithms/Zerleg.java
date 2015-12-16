@@ -70,6 +70,7 @@ public class Zerleg extends Thread {
                 if (i == trs.size() - 1 && !ktrees.dead) {
                     synchronized (trs) {
                         try {
+                            //Durch diese Abfrage treten auch ohne Wartezeit keine Deadlocks mehr auf
                             if (!ktrees.dead) {
                                 trs.wait();
                             }
@@ -153,6 +154,7 @@ public class Zerleg extends Thread {
                 if (i == trs.size() && !ktrees.dead) {
                     synchronized (trs) {
                         try {
+                            //Durch diese Abfrage treten auch ohne Wartezeit keine Deadlocks mehr auf
                             if (!ktrees.dead) {
                                 trs.wait();
                             }

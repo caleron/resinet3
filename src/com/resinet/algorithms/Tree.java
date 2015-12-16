@@ -53,6 +53,8 @@ class Tree extends Thread {
     public void run() {
         tree();
         dead = true;
+        //Threadwartezeit entfernt, da durch einen Kontroll-check in dem synchronized-Block der Zerlegungsthreads
+        //Deadlocks nicht mehr auftreten
         /*try {
             sleep(300);
         } catch (InterruptedException ignored) {
@@ -156,15 +158,18 @@ class Tree extends Thread {
             e = e.right;
         }
 
-
+        //An dieser Stelle wurde der Algorithmus erweitert.
+        //Diese Liste enthält alle bisher hinzugefügten Knoten
         ArrayList<Node> consideredNodes = new ArrayList<>();
 
-
+        //Eine flache Kopie des Baumes, durch die hindurchiteriert werden kann, da ktree um die Knoten erweitert wird.
         MySet treeCopy = (MySet) ktree.clone();
 
         MyIterator it = treeCopy.iterator();
         String output = "Pfad";
         while (it.hasNext()) {
+            //Prüft bei jeder Kante des Pfades für den linken und den rechten Knoten jeweils, ob er schon
+            //zur Menge ktree hinzugefügt wurde, und fügt den Knoten hinzu, falls er noch nicht in der Menge ist.
             Edge edge = (Edge) it.next();
             output += " e" + edge.edge_no;
             //TODO testen
