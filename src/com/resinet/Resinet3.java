@@ -11,12 +11,14 @@ import com.resinet.views.*;
 
 import java.awt.*;
 import java.awt.event.*;
+import java.lang.reflect.Array;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.lang.*;
 import java.math.MathContext;
 import java.util.*;
 import java.io.*;
+import java.util.List;
 
 import javax.swing.*;
 import javax.swing.filechooser.FileNameExtensionFilter;
@@ -450,10 +452,12 @@ public class Resinet3 extends JFrame
             int nodeCount = nodeProbabilityTextFields.length;
             edgeProbabilities = new float[edgeCount];
             nodeProbabilities = new float[nodeCount];
+            boolean seriesValuesMissing = false;
 
             MyList edgesWithMissingProbability = new MyList();
             MyList nodesWithMissingProbability = new MyList();
 
+            //Prüft alle Felder durch, ob da Wahrscheinlichkeiten drin stehen
             for (int i = 0; i < edgeCount; i++) {
                 String s = edgeProbabilityTextFields[i].getText();
                 if (textIsNotProbability(s))
@@ -467,18 +471,26 @@ public class Resinet3 extends JFrame
             }
 
             if (sameReliability) {
-                //TODO was sinnvolles hieraus machen
-                String sEnd = edgeEndProbabilityBox.getText();
-                if (sEnd.length() != 0) {
-                    for (int i = 0; i < edgeCount; i++) {
-                        if (textIsNotProbability(sEnd))
-                            edgesWithMissingProbability.add(String.valueOf(i));
+                //Felder für die Berechnungsserien prüfen
+                ArrayList<TextField> checkingList = new ArrayList<>();
+                checkingList.add(edgeEndProbabilityBox);
+                checkingList.add(nodeEndProbabilityBox);
+                checkingList.add(edgeProbabilityStepSizeBox);
+                checkingList.add(nodeProbabilityStepSizeBox);
+
+                for (TextField field : checkingList) {
+                    String value = field.getText();
+
+                    if (value.length() != 0 && textIsNotProbability(value)) {
+                        seriesValuesMissing = true;
+                        break;
                     }
                 }
             }
 
-            if (edgesWithMissingProbability.size() != 0 || nodesWithMissingProbability.size() != 0) {
+            if (edgesWithMissingProbability.size() != 0 || nodesWithMissingProbability.size() != 0 || seriesValuesMissing) {
                 //Dieser Block zeigt nur ein Hinweisfenster an, falls Wahrscheinlichkeiten fehlen
+                //Strings für fehlende Kanten und Knoten generieren
                 MyIterator it = edgesWithMissingProbability.iterator();
                 String missingProbabilityEdges = (String) it.next();
                 while (it.hasNext()) {
@@ -494,14 +506,24 @@ public class Resinet3 extends JFrame
                 }
 
                 String str = "The reliability of an edge is a probability, thus\nit must be a number in format x.xxxxxx " +
-                        "which is\nless than or equal to 1. Please check the in-\nput for edge\n" + missingProbabilityEdges +
-                        "\n and for node\n" + missingProbabilityNodes;
+                        "which is\nless than or equal to 1. \n";
+
+                //Passende Texte hinzufügen
+                if (edgesWithMissingProbability.size() != 0 || nodesWithMissingProbability.size() != 0) {
+                    str += "Please check the in-\nput for edge\n" + missingProbabilityEdges +
+                            "\n and for node\n" + missingProbabilityNodes + "\n";
+                }
+
+                if (seriesValuesMissing) {
+                    str += "Please check the input for the calculation series.";
+                }
 
                 //Toolkit.getDefaultToolkit().beep();
                 JOptionPane.showMessageDialog(mainFrame, str, "Warning!", JOptionPane.ERROR_MESSAGE);
 
                 return;
             }
+            //bis hierhin in diesem Block: testen, ob felder ausgefüllt wurden
 
             for (int i = 0; i < edgeCount; i++) {
                 edgeProbabilityTextFields[i].setEditable(false);
@@ -1229,7 +1251,7 @@ public class Resinet3 extends JFrame
     }
 
     /**
-     * Zuverlaessigkeitsberechnung mit 3 Algorithmen (ReNeT)
+     * Zuverlaessigkeitsberechnung mit 2 Algorithmen (ReNeT)
      */
     private void calculate_reliability_2_Algorithms() {
         resultText = "Please use the scrollbar to scroll through the results. \n \n";

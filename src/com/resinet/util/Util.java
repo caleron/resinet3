@@ -29,6 +29,7 @@ public class Util {
      * Serien- Polygon- Ketten- Reduktion
      * Diese Funktion reduziert den Graphen und weist den neuen Kanten die Ursprungskanten zu (parent_edges)
      * getEdgeProbability weist dann den neuen Kanten Wahrscheinlichkeiten zu
+     * Wird nicht verwendet und scheint auch nicht richtig zu funktionieren
      * @param g der Graph
      * @param factorisation kp
      */
