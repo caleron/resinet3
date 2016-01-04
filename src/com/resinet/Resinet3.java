@@ -77,6 +77,7 @@ public class Resinet3 extends JFrame
         mainFrame.pack();
         mainFrame.setSize(700, 825);
         mainFrame.setTitle("ResinetV");
+        mainFrame.setLocationRelativeTo(null);
         mainFrame.setVisible(true);
     }
 
@@ -101,12 +102,8 @@ public class Resinet3 extends JFrame
         GridBagLayout mainLayout = new GridBagLayout();
         setLayout(mainLayout);
 
-        logo = getToolkit().getImage(getClass().getResource("img/logo.jpg"));
+        logo = getToolkit().getImage(getClass().getResource("img/logo_neu.png"));
         prepareImage(logo, this);
-
-        Panel halt0 = new Panel();
-        GridBagConstraints halt0Gbc = makegbc(0, 0, 1, 1, "west");
-        add(halt0, halt0Gbc);
 
         initNetPanel();
 
@@ -232,10 +229,11 @@ public class Resinet3 extends JFrame
         add(probScrollPane, spGbc);
 
         Panel probabilitiesBtnPanel = new Panel();
-        GridBagConstraints panel5Gbc = makegbc(0, 13, 1, 1, "west");
+        GridBagConstraints probPanelGbc = makegbc(0, 13, 1, 1, "west");
         probabilitiesBtnPanel.setLayout(new FlowLayout(FlowLayout.LEFT));
-        panel5Gbc.fill = GridBagConstraints.HORIZONTAL;
-        add(probabilitiesBtnPanel, panel5Gbc);
+        probPanelGbc.fill = GridBagConstraints.HORIZONTAL;
+        add(probabilitiesBtnPanel, probPanelGbc);
+
         resetProbabilitiesBtn = new Button("Reset");
         resetProbabilitiesBtn.setEnabled(false);
         resetProbabilitiesBtn.addActionListener(this);
