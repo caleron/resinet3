@@ -76,6 +76,7 @@ public class Resinet3 extends JFrame
         mainFrame = new Resinet3();
         mainFrame.pack();
         mainFrame.setSize(700, 825);
+        mainFrame.setTitle("ResinetV");
         mainFrame.setVisible(true);
     }
 
