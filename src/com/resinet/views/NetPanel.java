@@ -7,8 +7,15 @@ import com.resinet.*;
 import com.resinet.model.*;
 import com.resinet.util.MyIterator;
 
-public class NetPanel extends Panel {
+import javax.swing.*;
+
+public class NetPanel extends JPanel {
     private Resinet3 resinet3;
+
+    //die Kante, die gezeichnet wird, während man die Maus gedrückt hält (beim Kanten erstellen)
+    public EdgeLine el;
+    public boolean valid = false;
+
 
     public NetPanel(Resinet3 resinet3) {
         this.resinet3 = resinet3;
@@ -18,14 +25,14 @@ public class NetPanel extends Panel {
     public void paint(Graphics g) {
         //g.drawRect(0, 0, 600, 200);
         //System.out.println(netPanel.getHeight());
-        BufferedImage img = new BufferedImage(625, getHeight(), BufferedImage.TYPE_INT_RGB);
+        BufferedImage img = new BufferedImage(getWidth(), getHeight(), BufferedImage.TYPE_INT_RGB);
         Graphics2D imgGraphics = img.createGraphics();
 
         imgGraphics.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 
         imgGraphics.setColor(Color.WHITE);
 
-        imgGraphics.fillRect(0, 0, 625, getHeight());
+        imgGraphics.fillRect(0, 0, getWidth(), getHeight());
 
         MyIterator iterator = resinet3.drawnNodes.iterator();
         int count = 0;
@@ -59,8 +66,8 @@ public class NetPanel extends Panel {
         }
 
 
-        if (resinet3.valid)
-            imgGraphics.drawLine(resinet3.el.x1, resinet3.el.y1, resinet3.el.x2, resinet3.el.y2);
+        if (valid)
+            imgGraphics.drawLine(el.x1, el.y1, el.x2, el.y2);
 
         g.drawImage(img, 0, 0, this);
     }
@@ -71,8 +78,7 @@ public class NetPanel extends Panel {
     }
     //ueberschreiben der Methode update, um den Bildschirm nicht zu loeschen
 
-    @Override
-    public Dimension getPreferredSize() {
-        return new Dimension(625, 315);
+    public interface GraphChangedListener {
+        void graphChanged();
     }
 }

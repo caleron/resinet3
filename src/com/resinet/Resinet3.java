@@ -11,43 +11,39 @@ import com.resinet.views.*;
 
 import java.awt.*;
 import java.awt.event.*;
-import java.lang.reflect.Array;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.lang.*;
-import java.math.MathContext;
 import java.util.*;
 import java.io.*;
-import java.util.List;
 
 import javax.swing.*;
 import javax.swing.filechooser.FileNameExtensionFilter;
 
 
 public class Resinet3 extends JFrame
-        implements ActionListener {
+        implements ActionListener, NetPanel.GraphChangedListener {
     private NetPanel netPanel;
-    private ProbPanel probPanel;
-    private TextArea text;
-    private TextField edgeEndProbabilityBox, edgeProbabilityStepSizeBox, nodeEndProbabilityBox, nodeProbabilityStepSizeBox;
-    private Button drawBtn, resetGraphBtn, differentReliabilitiesOkBtn, sameReliabilityOkBtn, resetProbabilitiesBtn,
+    private ProbPanel probabilityFieldsPanel;
+    private JTextArea graphPanelTextArea;
+    private JTextField edgeEndProbabilityBox, edgeProbabilityStepSizeBox, nodeEndProbabilityBox, nodeProbabilityStepSizeBox;
+    private JButton drawBtn, resetGraphBtn, differentReliabilitiesOkBtn, sameReliabilityOkBtn, resetProbabilitiesBtn,
             probabilitiesOkBtn, calcReliabilityBtn, resilienceBtn, inputNetBtn, exportNetBtn;
-    private boolean sameReliability;
+    private boolean sameReliabilityMode = false;
 
     public MyList drawnNodes;
     public MyList drawnEdges;
-    public EdgeLine el;
-    public boolean valid = false;
+
     private boolean probability_mode = false;
     private MyMouseListener drawMouseListener;
     private MyMouseMotionListener drawMouseMoveListener;
-    private TextField[] edgeProbabilityTextFields;
-    private TextField[] nodeProbabilityTextFields;
+    private JTextField[] edgeProbabilityTextFields;
+    private JTextField[] nodeProbabilityTextFields;
     private float[] edgeProbabilities;
     private float[] nodeProbabilities;
     private float prob;
     private String resultText;
-    private TextArea result;
+    private JTextArea resultTextArea;
 
     private Graph graph;
     public float graph_width;
@@ -55,38 +51,46 @@ public class Resinet3 extends JFrame
 
     private Zerleg zer;
 
-    private Color backgroundColor = new Color(85, 143, 180);
+    //private Color backgroundColor = new Color(85, 143, 180);
 
-    private ScrollPane probScrollPane;
-    private Image logo;
-    private Checkbox reliabilityCompareCheckBox;
+    private JScrollPane probabilityFieldsScrollPane;
+    private JCheckBox reliabilityCompareCheckBox;
 
     private static Resinet3 mainFrame;
-
-    //Fuers Logo
-    public void paint(Graphics g) {
-        g.drawImage(logo, 270, 30, this);
-    }
 
     private Resinet3() {
         init();
     }
 
     public static void main(String[] args) {
-        mainFrame = new Resinet3();
-        mainFrame.pack();
-        mainFrame.setSize(700, 825);
-        mainFrame.setTitle("ResinetV");
-        mainFrame.setLocationRelativeTo(null);
-        mainFrame.setVisible(true);
+        SwingUtilities.invokeLater(() -> {
+            mainFrame = new Resinet3();
+            mainFrame.pack();
+            mainFrame.setSize(700, 825);
+            mainFrame.setMinimumSize(new Dimension(600, 700));
+            mainFrame.setTitle("ResinetV");
+            mainFrame.setLocationRelativeTo(null);
+            mainFrame.setVisible(true);
+        });
     }
 
+    /**
+     * Leitet alle Initialisierungen ein
+     */
     private void init() {
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+
+        //Windows Look-and-Feel setzen
+        try {
+            UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
 
         drawnNodes = new MyList();
         drawnEdges = new MyList();
 
+        //Initialwerte setzen
         edgeStartValue = BigDecimal.ZERO;
         edgeEndValue = BigDecimal.ZERO;
         edgeStepSize = BigDecimal.ZERO;
@@ -97,165 +101,79 @@ public class Resinet3 extends JFrame
         calculationSeriesMode = 0;
         onlyReliabilityFast = false;
 
-        //color = color.brighter();
-        setBackground(backgroundColor);
         GridBagLayout mainLayout = new GridBagLayout();
         setLayout(mainLayout);
 
-        logo = getToolkit().getImage(getClass().getResource("img/logo_neu.png"));
-        prepareImage(logo, this);
+        initLogo();
 
-        initNetPanel();
+        initGraphPanel();
 
-        initHeaderPanel();
-
-        initReliabilityPanelHeader();
         initProbabilitiesPanel();
 
-        initReliabilityPanel();
-        initResiliencePanel();
+        initCalculatePanel();
 
         initOutputTextPanel();
     }
 
-    private void initOutputTextPanel() {
-        Panel outputTextPanel = new Panel();
-        //GridBagConstraints panel7Gbc = makegbc(0, 16, 1, 4, "west" );
-        GridBagConstraints panel7Gbc = makegbc(0, 17, 1, 4, "west");
-        add(outputTextPanel, panel7Gbc);
-
-        result = new TextArea(" ", 3, 85, TextArea.SCROLLBARS_VERTICAL_ONLY);
-        result.setEditable(false);
-        outputTextPanel.add(result);
-        outputTextPanel.setBackground(backgroundColor);
+    /**
+     * Zeigt das Logo an
+     */
+    private void initLogo() {
+        Image logo = getToolkit().getImage(getClass().getResource("img/logo_neu.png"));
+        prepareImage(logo, this);
+        JLabel logoLabel = new JLabel(new ImageIcon(logo));
+        GridBagConstraints gbc = makegbc(0, 0, 1, 1, 0, 0);
+        add(logoLabel, gbc);
     }
 
-    private void initReliabilityPanelHeader() {
-        //Panel unter dem Netzwerkgraphen
-        Panel reliabilityPanelHeader = new Panel();
-        reliabilityPanelHeader.setLayout(new GridLayout(1, 1));
-        GridBagConstraints panel3Gbc = makegbc(0, 7, 1, 1, "west");
-        panel3Gbc.fill = GridBagConstraints.HORIZONTAL;
-        add(reliabilityPanelHeader, panel3Gbc);
-        reliabilityPanelHeader.setBackground(backgroundColor);
-        Label label2 = new Label("   Now you can input the reliability of every edge:", Label.LEFT);
-        reliabilityPanelHeader.add(label2);
-    }
+    /**
+     * Baut das Oberste Panel mit Graph auf
+     */
+    private void initGraphPanel() {
+        JPanel graphPanel = new JPanel();
+        graphPanel.setBorder(BorderFactory.createTitledBorder("Please input your network model:"));
+        GridBagConstraints gbc = makegbc(0, 1, 1, 6, 1, 0.4);
+        add(graphPanel, gbc);
 
-    private void initResiliencePanel() {
-        Panel resiliencePanel = new Panel();
-        GridBagConstraints resiliencePanelGbc = makegbc(0, 16, 1, 1, "west");
+        GridBagLayout graphPanelLayout = new GridBagLayout();
+        graphPanel.setLayout(graphPanelLayout);
 
-        resilienceBtn = new Button("Calculate the resilience of the network");
-        resilienceBtn.setEnabled(false);
-        resilienceBtn.addActionListener(this);
-
-        resiliencePanel.add(resilienceBtn);
-        resiliencePanel.setBackground(backgroundColor);
-        add(resiliencePanel, resiliencePanelGbc);
-    }
-
-    private void initHeaderPanel() {
-        Panel headerPanel = new Panel();
-        headerPanel.setBackground(backgroundColor);
-        GridBagConstraints panel1Gbc = makegbc(0, 5, 1, 1, "west");
-        add(headerPanel, panel1Gbc);
-
-        GridBagLayout headerPanelLayout = new GridBagLayout();
-        headerPanel.setLayout(headerPanelLayout);
-
-        Label headerLabel = new Label("Please input your network model:");
-        GridBagConstraints label1Gbc = makegbc(0, 0, 4, 1, "west");
-        headerPanel.add(headerLabel, label1Gbc);
-
-        drawBtn = new Button("Draw");
+        drawBtn = new JButton("Draw Network");
         drawBtn.addActionListener(this);
-        GridBagConstraints drawBGbc = makegbc(0, 1, 1, 1, "west");
-        headerPanel.add(drawBtn, drawBGbc);
+        gbc = makegbc(0, 0, 1, 1, 1, 0, GridBagConstraints.HORIZONTAL);
+        graphPanel.add(drawBtn, gbc);
 
-        differentReliabilitiesOkBtn = new Button("Ok (components with different reliabilities)");
-        differentReliabilitiesOkBtn.setEnabled(false);
-        differentReliabilitiesOkBtn.addActionListener(this);
-        GridBagConstraints ok1BGbc = makegbc(1, 1, 1, 1, "west");
-        headerPanel.add(differentReliabilitiesOkBtn, ok1BGbc);
-
-        sameReliabilityOkBtn = new Button("Ok (components with same reliability)");
-        sameReliabilityOkBtn.setEnabled(false);
-        sameReliabilityOkBtn.addActionListener(this);
-        GridBagConstraints sameReliabilityBGbc = makegbc(2, 1, 1, 1, "west");
-        headerPanel.add(sameReliabilityOkBtn, sameReliabilityBGbc);
-        sameReliability = false;
-
-        resetGraphBtn = new Button("Reset");
+        resetGraphBtn = new JButton("Reset Network");
         resetGraphBtn.setEnabled(false);
         resetGraphBtn.addActionListener(this);
-        GridBagConstraints reset1BGbc = makegbc(3, 1, 1, 1, "west");
-        headerPanel.add(resetGraphBtn, reset1BGbc);
+        gbc = makegbc(1, 0, 1, 1, 1, 0, GridBagConstraints.HORIZONTAL);
+        graphPanel.add(resetGraphBtn, gbc);
 
         //Button Input Network
-        inputNetBtn = new Button("Load");
+        inputNetBtn = new JButton("Load Network");
         inputNetBtn.setEnabled(true);
         inputNetBtn.addActionListener(this);
-        GridBagConstraints inputNetGbc = makegbc(4, 1, 1, 1, "west");
-        headerPanel.add(inputNetBtn, inputNetGbc);
+        gbc = makegbc(2, 0, 1, 1, 1, 0, GridBagConstraints.HORIZONTAL);
+        graphPanel.add(inputNetBtn, gbc);
 
         //Button Output Network
-        exportNetBtn = new Button("Save");
+        exportNetBtn = new JButton("Save Network");
         exportNetBtn.setEnabled(true);
         exportNetBtn.addActionListener(this);
-        GridBagConstraints exportNetGbc = makegbc(5, 1, 1, 1, "west");
-        headerPanel.add(exportNetBtn, exportNetGbc);
-    }
-
-    private void initProbabilitiesPanel() {
-
-        //Option 1: JScrollPane, funktioniert nicht
-/*	JScrollPane probScrollPane = new JScrollPane( JScrollPane.VERTICAL_SCROLLBAR_ALWAYS,
-            JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS );
-	probScrollPane.setPreferredSize(new java.awt.Dimension(600, 200));
-	probPanel = new ProbPanel();
-	probScrollPane.setViewportView( probPanel );
-	GridBagConstraints spGbc = makegbc(0, 9, 1, 4, "west" );*/
+        gbc = makegbc(3, 0, 1, 1, 1, 0, GridBagConstraints.HORIZONTAL);
+        graphPanel.add(exportNetBtn, gbc);
 
 
-        //Option 2: ScrollPane
-        probScrollPane = new ScrollPane(ScrollPane.SCROLLBARS_AS_NEEDED);
-        probPanel = new ProbPanel(this);
-        //probScrollPane.setSize(625, 200);
-        probScrollPane.setSize(625, 140);
-        //probPanel.setSize(600, 400);
-        probScrollPane.add(probPanel);
-        GridBagConstraints spGbc = makegbc(0, 9, 1, 4, "west");
-        add(probScrollPane, spGbc);
-
-        Panel probabilitiesBtnPanel = new Panel();
-        GridBagConstraints probPanelGbc = makegbc(0, 13, 1, 1, "west");
-        probabilitiesBtnPanel.setLayout(new FlowLayout(FlowLayout.LEFT));
-        probPanelGbc.fill = GridBagConstraints.HORIZONTAL;
-        add(probabilitiesBtnPanel, probPanelGbc);
-
-        resetProbabilitiesBtn = new Button("Reset");
-        resetProbabilitiesBtn.setEnabled(false);
-        resetProbabilitiesBtn.addActionListener(this);
-        probabilitiesOkBtn = new Button("Ok");
-        probabilitiesOkBtn.setEnabled(false);
-        probabilitiesOkBtn.addActionListener(this);
-        probabilitiesBtnPanel.add(resetProbabilitiesBtn);
-        probabilitiesBtnPanel.add(probabilitiesOkBtn);
-
-        probabilitiesBtnPanel.setBackground(backgroundColor);
-    }
-
-    private void initNetPanel() {
         netPanel = new NetPanel(this);
         drawMouseListener = new MyMouseListener();
         drawMouseMoveListener = new MyMouseMotionListener();
         netPanel.setBackground(Color.white);
         netPanel.setSize(625, 315);
 
-        netPanel.setVisible(true);
-        GridBagConstraints panel2Gbc = makegbc(0, 6, 1, 1, "west");
-        add(netPanel, panel2Gbc);
+        netPanel.setVisible(false);
+        gbc = makegbc(0, 1, 4, 5, 1, 1);
+
+        graphPanel.add(netPanel, gbc);
         String notetext = "On this panel you can draw your network model after a click on the \"Draw\" button.\n" +
                 "Press the left button to draw a node and the right button to draw a connection-node. " +
                 "Delete a node by holding the <shift>-key an pressing the left button.\nTo draw an edge press the " +
@@ -265,77 +183,189 @@ public class Resinet3 extends JFrame
                 "(ResiNeT or Pajek) by clicking the \"Load\" button. To turn an existing node into a connection-node " +
                 "hold the Ctrl-Key while left-clicking on the node.";
 
-        text = new TextArea(notetext, 19, 85, TextArea.SCROLLBARS_NONE);
-        text.setBackground(Color.white);
-        text.setEditable(false);
-        netPanel.add(text);
+        graphPanelTextArea = new JTextArea(notetext, 10, 50);
+        graphPanelTextArea.setFont(new Font("Calibri", Font.PLAIN, 12));
+        graphPanelTextArea.setBackground(Color.white);
+        graphPanelTextArea.setLineWrap(true);
+        graphPanelTextArea.setWrapStyleWord(true);
+        graphPanelTextArea.setEditable(false);
+        JScrollPane scrollPane = new JScrollPane(graphPanelTextArea);
+        //scrollPane.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED);
+        graphPanel.add(scrollPane, gbc);
+
+
+        //TODO entfernen und dafür Radioboxen verwenden
+        differentReliabilitiesOkBtn = new JButton("Ok (components with different reliabilities)");
+        differentReliabilitiesOkBtn.setEnabled(false);
+        differentReliabilitiesOkBtn.addActionListener(this);
+        //gbc = makegbc(1, 2, 1, 1, 0, 0, GridBagConstraints.HORIZONTAL);
+        //graphPanel.add(differentReliabilitiesOkBtn, gbc);
+
+        sameReliabilityOkBtn = new JButton("Ok (components with same reliability)");
+        sameReliabilityOkBtn.setEnabled(false);
+        sameReliabilityOkBtn.addActionListener(this);
+        //gbc = makegbc(2, 2, 1, 1, 0, 0, GridBagConstraints.HORIZONTAL);
+        //graphPanel.add(sameReliabilityOkBtn, gbc);
     }
 
-    private void initReliabilityPanel() {
-        Panel reliabilityPanel = new Panel();
-        GridBagConstraints panel6Gbc = makegbc(0, 15, 1, 1, "west");
-        reliabilityPanel.setLayout(new GridBagLayout());
-        add(reliabilityPanel, panel6Gbc);
 
-        calcReliabilityBtn = new Button("Calculate the reliability of the network");
+    /**
+     * Baut das Panel zur Eingabe von Wahrscheinlichkeiten und Parametern auf
+     */
+    private void initProbabilitiesPanel() {
+
+        //Panel unter dem Netzwerkgraphen
+        JPanel probabilityGroupPanel = new JPanel();
+        probabilityGroupPanel.setBorder(BorderFactory.createTitledBorder("Now you can input the reliability of every edge:"));
+        probabilityGroupPanel.setLayout(new GridBagLayout());
+
+        GridBagConstraints gbc = makegbc(0, 7, 1, 8, 1, 0.4);
+        add(probabilityGroupPanel, gbc);
+
+        //Radiobuttons zum auswählen des Modus
+        ButtonGroup buttonGroup = new ButtonGroup();
+        JRadioButton singleReliabilityRadioBtn = new JRadioButton("components have different reliabilities");
+        buttonGroup.add(singleReliabilityRadioBtn);
+        gbc = makegbc(0, 0, 2, 1, 1, 0, GridBagConstraints.BOTH, 5);
+        probabilityGroupPanel.add(singleReliabilityRadioBtn, gbc);
+
+        JRadioButton sameReliabilityRadioBtn = new JRadioButton("components have same reliabilities", true);
+        buttonGroup.add(sameReliabilityRadioBtn);
+        gbc = makegbc(0, 1, 2, 1, 1, 0, GridBagConstraints.BOTH, 5);
+        probabilityGroupPanel.add(sameReliabilityRadioBtn, gbc);
+
+        //Panel mit Wahrscheinlichkeitstextfeldern
+        probabilityFieldsPanel = new ProbPanel(this);
+        probabilityFieldsScrollPane = new JScrollPane(probabilityFieldsPanel);
+        gbc = makegbc(0, 2, 2, 1, 1, 1);
+        probabilityGroupPanel.add(probabilityFieldsScrollPane, gbc);
+
+        //Reset-Button für alle Wahrscheinlichkeitstextfelder
+        resetProbabilitiesBtn = new JButton("Reset");
+        resetProbabilitiesBtn.setEnabled(false);
+        resetProbabilitiesBtn.addActionListener(this);
+        gbc = makegbc(0, 3, 1, 1, 1, 0);
+        probabilityGroupPanel.add(resetProbabilitiesBtn, gbc);
+
+        probabilitiesOkBtn = new JButton("Ok");
+        probabilitiesOkBtn.setEnabled(false);
+        probabilitiesOkBtn.addActionListener(this);
+        gbc = makegbc(1, 3, 1, 1, 1, 0);
+        probabilityGroupPanel.add(probabilitiesOkBtn, gbc);
+    }
+
+    /**
+     * Baut das Panel mit den Berechnungsoptionen auf
+     */
+    private void initCalculatePanel() {
+        JPanel calculatePanel = new JPanel();
+        calculatePanel.setBorder(BorderFactory.createTitledBorder("Start calculation"));
+        calculatePanel.setLayout(new GridBagLayout());
+        GridBagConstraints gbc = makegbc(0, 16, 1, 1, 1, 0);
+        add(calculatePanel, gbc);
+
+        resilienceBtn = new JButton("Calculate the resilience of the network");
+        resilienceBtn.setEnabled(false);
+        resilienceBtn.addActionListener(this);
+        gbc = makegbc(0, 0, 1, 1, 0, 0);
+        calculatePanel.add(resilienceBtn, gbc);
+
+        calcReliabilityBtn = new JButton("Calculate the reliability of the network");
         calcReliabilityBtn.setEnabled(false);
         calcReliabilityBtn.addActionListener(this);
+        gbc = makegbc(0, 1, 1, 1, 0, 0);
+        calculatePanel.add(calcReliabilityBtn, gbc);
 
-        Panel reliabilityButtons = new Panel();
-        reliabilityButtons.setLayout(new FlowLayout(FlowLayout.CENTER));
-        reliabilityButtons.add(calcReliabilityBtn);
-
-        reliabilityCompareCheckBox = new Checkbox("Compare 2 algorithms");
-        reliabilityButtons.add(reliabilityCompareCheckBox);
-        reliabilityPanel.add(reliabilityButtons);
-
-        reliabilityPanel.setBackground(backgroundColor);
+        reliabilityCompareCheckBox = new JCheckBox("Compare 2 algorithms");
+        gbc = makegbc(1, 1, 1, 1, 1, 0);
+        calculatePanel.add(reliabilityCompareCheckBox, gbc);
     }
 
-    private GridBagConstraints makegbc(int x, int y, int width, int height, String anchor) {
+    /**
+     * Baut das Textausgabepanel auf
+     */
+    private void initOutputTextPanel() {
+        JPanel outputTextPanel = new JPanel();
+        outputTextPanel.setBorder(BorderFactory.createTitledBorder("Output"));
+        outputTextPanel.setLayout(new BorderLayout());
+
+        GridBagConstraints gbc = makegbc(0, 17, 1, 4, 1, 0.2);
+        add(outputTextPanel, gbc);
+
+        resultTextArea = new JTextArea();
+        resultTextArea.setEditable(false);
+        JScrollPane sp = new JScrollPane(resultTextArea);
+
+        //Borderlayout mit CENTER nutzt den gesamten übrigen Platz
+        outputTextPanel.add(sp, BorderLayout.CENTER);
+    }
+
+    /**
+     * Erstellt ein GridBagConstraints-Objekt mit den angegebenen Parametern
+     *
+     * @param x       X-Position im Grid (gridx)
+     * @param y       Y-Position im Grid (gridy)
+     * @param width   beanspruchte Spaltenanzahl im Grid (gridwidth)
+     * @param height  beanspruchte Zeilenanzahl im Grid (gridheight)
+     * @param weightx Gewichtung auf X-Achse (für Verteilung des freien Platzes)
+     * @param weighty Gewichtung auf Y-Achse (für Verteilung des freien Platzes
+     * @return GridBagConstraints
+     */
+    private GridBagConstraints makegbc(int x, int y, int width, int height, double weightx, double weighty) {
+        return makegbc(x, y, width, height, weightx, weighty, GridBagConstraints.BOTH);
+    }
+
+    /**
+     * Erstellt ein GridBagConstraints-Objekt mit den angegebenen Parametern
+     *
+     * @param x       X-Position im Grid (gridx)
+     * @param y       Y-Position im Grid (gridy)
+     * @param width   beanspruchte Spaltenanzahl im Grid (gridwidth)
+     * @param height  beanspruchte Zeilenanzahl im Grid (gridheight)
+     * @param weightx Gewichtung auf X-Achse (für Verteilung des freien Platzes)
+     * @param weighty Gewichtung auf Y-Achse (für Verteilung des freien Platzes
+     * @param fill    GridBagConstraints-Konstante für Füllung des freien Raumes in der Zelle
+     * @return GridBagConstraints
+     */
+    private GridBagConstraints makegbc(int x, int y, int width, int height, double weightx, double weighty, int fill) {
+        return makegbc(x, y, width, height, weightx, weighty, fill, 1);
+    }
+
+    /**
+     * Erstellt ein GridBagConstraints-Objekt mit den angegebenen Parametern
+     *
+     * @param x         X-Position im Grid (gridx)
+     * @param y         Y-Position im Grid (gridy)
+     * @param width     beanspruchte Spaltenanzahl im Grid (gridwidth)
+     * @param height    beanspruchte Zeilenanzahl im Grid (gridheight)
+     * @param weightx   Gewichtung auf X-Achse (für Verteilung des freien Platzes)
+     * @param weighty   Gewichtung auf Y-Achse (für Verteilung des freien Platzes
+     * @param fill      GridBagConstraints-Konstante für Füllung des freien Raumes in der Zelle
+     * @param leftInset Abstand links
+     * @return GridBagConstraints
+     */
+    private GridBagConstraints makegbc(int x, int y, int width, int height, double weightx, double weighty, int fill, int leftInset) {
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.gridx = x;
         gbc.gridy = y;
         gbc.gridwidth = width;
         gbc.gridheight = height;
-        switch (anchor) {
-            case "center":
-                gbc.anchor = GridBagConstraints.CENTER;
-                break;
-            case "north":
-                gbc.anchor = GridBagConstraints.NORTH;
-                break;
-            case "northeast":
-                gbc.anchor = GridBagConstraints.NORTHEAST;
-                break;
-            case "east":
-                gbc.anchor = GridBagConstraints.EAST;
-                break;
-            case "southeast":
-                gbc.anchor = GridBagConstraints.SOUTHEAST;
-                break;
-            case "south":
-                gbc.anchor = GridBagConstraints.SOUTH;
-                break;
-            case "southwest":
-                gbc.anchor = GridBagConstraints.SOUTHWEST;
-                break;
-            case "west":
-                gbc.anchor = GridBagConstraints.WEST;
-                break;
-            case "northwest":
-                gbc.anchor = GridBagConstraints.NORTHWEST;
-                break;
-        }
 
-        gbc.insets = new Insets(1, 1, 1, 1);
+        gbc.weightx = weightx;
+        gbc.weighty = weighty;
+        gbc.fill = fill;
+        gbc.insets = new Insets(1, leftInset, 1, 1);
         return gbc;
     }
 
+
     public void actionPerformed(ActionEvent evt) {
-        Button button = (Button) evt.getSource();
+        JButton button = (JButton) evt.getSource();
 
         if (button == drawBtn) {
+            graphPanelTextArea.setVisible(false);
+            netPanel.setVisible(true);
+
             netPanel.setCursor(new Cursor(Cursor.CROSSHAIR_CURSOR));
             netPanel.addMouseListener(drawMouseListener);
             netPanel.addMouseMotionListener(drawMouseMoveListener);
@@ -344,12 +374,12 @@ public class Resinet3 extends JFrame
             drawBtn.setEnabled(false);
             resetGraphBtn.setEnabled(true);
             if (netPanel.getComponentCount() != 0)
-                netPanel.remove(text);
+                netPanel.remove(graphPanelTextArea);
         }
 
         if (button == sameReliabilityOkBtn) {
-            probPanel.removeAll();
-            sameReliability = true;
+            probabilityFieldsPanel.removeAll();
+            sameReliabilityMode = true;
             resetGraphBtn.setEnabled(true);
             sameReliabilityOkBtn.setEnabled(true);
             checkGraphAndBuildProbPanel();
@@ -370,20 +400,20 @@ public class Resinet3 extends JFrame
             drawnEdges.clear();
             graph = null;
             zer = null;
-            valid = false;
+            netPanel.valid = false;
             probability_mode = false;
-            probPanel.removeAll();
-            probPanel.repaint();
+            probabilityFieldsPanel.removeAll();
+            probabilityFieldsPanel.repaint();
             drawBtn.setEnabled(false);
             probabilitiesOkBtn.setEnabled(false);
             calcReliabilityBtn.setEnabled(false);
             resilienceBtn.setEnabled(false);
-            //result.setText(" ");
+            //resultTextArea.setText(" ");
             //reduceText = "";
-            sameReliability = false;
+            sameReliabilityMode = false;
             sameReliabilityOkBtn.setEnabled(true);
 
-            //probPanel.removeAll();
+            //probabilityFieldsPanel.removeAll();
             //resetGraphBtn.setEnabled(true);
 
             inputNet();
@@ -392,7 +422,7 @@ public class Resinet3 extends JFrame
             //sameReliabilityOkBtn.setEnabled(true);
             //calcReliabilityBtn.setEnabled(false);
             //resilienceBtn.setEnabled(false);
-            netPanel.remove(text);
+            netPanel.remove(graphPanelTextArea);
             netPanel.repaint();
 
         }
@@ -402,8 +432,8 @@ public class Resinet3 extends JFrame
         }
 
         if (button == differentReliabilitiesOkBtn) {
-            probPanel.removeAll();
-            sameReliability = false;
+            probabilityFieldsPanel.removeAll();
+            sameReliabilityMode = false;
             resetGraphBtn.setEnabled(true);
             sameReliabilityOkBtn.setEnabled(true);
             checkGraphAndBuildProbPanel();
@@ -432,17 +462,17 @@ public class Resinet3 extends JFrame
             drawnEdges.clear();
             graph = null;
             zer = null;
-            valid = false;
+            netPanel.valid = false;
             probability_mode = false;
             netPanel.repaint();
-            probPanel.removeAll();
-            probPanel.repaint();
+            probabilityFieldsPanel.removeAll();
+            probabilityFieldsPanel.repaint();
             drawBtn.setEnabled(false);
             probabilitiesOkBtn.setEnabled(false);
             calcReliabilityBtn.setEnabled(false);
             resilienceBtn.setEnabled(false);
-            result.setText(" ");
-            sameReliability = false;
+            resultTextArea.setText(" ");
+            sameReliabilityMode = false;
             sameReliabilityOkBtn.setEnabled(true);
         }
 
@@ -469,15 +499,15 @@ public class Resinet3 extends JFrame
                     nodesWithMissingProbability.add(String.valueOf(i));
             }
 
-            if (sameReliability) {
+            if (sameReliabilityMode) {
                 //Felder für die Berechnungsserien prüfen
-                ArrayList<TextField> checkingList = new ArrayList<>();
+                ArrayList<JTextField> checkingList = new ArrayList<>();
                 checkingList.add(edgeEndProbabilityBox);
                 checkingList.add(nodeEndProbabilityBox);
                 checkingList.add(edgeProbabilityStepSizeBox);
                 checkingList.add(nodeProbabilityStepSizeBox);
 
-                for (TextField field : checkingList) {
+                for (JTextField field : checkingList) {
                     String value = field.getText();
 
                     if (value.length() != 0 && textIsNotProbability(value)) {
@@ -552,7 +582,7 @@ public class Resinet3 extends JFrame
 
 
             //End value und step size zuordnen
-            if (sameReliability) {
+            if (sameReliabilityMode) {
                 if (edgeProbabilityTextFields[0].getText().length() != 0) {
                     edgeStartValue = new BigDecimal(edgeProbabilityTextFields[0].getText());
                     System.out.println("StartValue Edges: " + edgeStartValue);
@@ -602,12 +632,12 @@ public class Resinet3 extends JFrame
             calcReliabilityBtn.setEnabled(false);
             resilienceBtn.setEnabled(false);
             edgeProbabilities = null;
-            for (TextField edgeProbabilityTextField : edgeProbabilityTextFields) {
+            for (JTextField edgeProbabilityTextField : edgeProbabilityTextFields) {
                 edgeProbabilityTextField.setText(null);
                 edgeProbabilityTextField.setEditable(true);
             }
 
-            for (TextField nodeProbabilityTextField : nodeProbabilityTextFields) {
+            for (JTextField nodeProbabilityTextField : nodeProbabilityTextFields) {
                 nodeProbabilityTextField.setText(null);
                 nodeProbabilityTextField.setEditable(true);
             }
@@ -632,7 +662,7 @@ public class Resinet3 extends JFrame
 
         if (button == resilienceBtn) {
             if (!edgeEndValue.equals(BigDecimal.ZERO) && !edgeStepSize.equals(BigDecimal.ZERO) &&
-                    !nodeEndValue.equals(BigDecimal.ZERO) && !nodeStepSize.equals(BigDecimal.ZERO) && sameReliability) {
+                    !nodeEndValue.equals(BigDecimal.ZERO) && !nodeStepSize.equals(BigDecimal.ZERO) && sameReliabilityMode) {
 
                 calculationSeriesMode = 1;
                 calculationSeries();
@@ -642,7 +672,7 @@ public class Resinet3 extends JFrame
 
                 resultText = "The network has " + total_nodes + " Nodes, containing " + c_nodes + " c-Nodes.\n" +
                         "There are " + combinations + " combinations.\n" + "The resilience of the network is: " + result_resilience;
-                result.setText(resultText);
+                resultTextArea.setText(resultText);
             }
         }
 
@@ -652,13 +682,13 @@ public class Resinet3 extends JFrame
             //fact_reliability();
 
             if (!edgeEndValue.equals(BigDecimal.ZERO) && !edgeStepSize.equals(BigDecimal.ZERO) &&
-                    !nodeEndValue.equals(BigDecimal.ZERO) && !nodeStepSize.equals(BigDecimal.ZERO) && sameReliability) {
+                    !nodeEndValue.equals(BigDecimal.ZERO) && !nodeStepSize.equals(BigDecimal.ZERO) && sameReliabilityMode) {
                 calculationSeriesMode = 2;
                 calculationSeries();
             } else {
                 calculationSeriesMode = 0;
                 //Wenn die Checkbox angeklickt wurde, sollen die 3 Alg. verglichen werden. Sonst nicht.
-                if (reliabilityCompareCheckBox.getState()) {
+                if (reliabilityCompareCheckBox.isSelected()) {
                     calculate_reliability_2_Algorithms();
                 } else {
                     onlyReliabilityFast = true;
@@ -842,30 +872,30 @@ public class Resinet3 extends JFrame
 
         int edgeCount = drawnEdges.size();
         int nodeCount = drawnNodes.size();
-        //probPanel.setSize(probPanel.getPreferredSize());
-        //System.out.println(probPanel.getSize());
+        //probabilityFieldsPanel.setSize(probabilityFieldsPanel.getPreferredSize());
+        //System.out.println(probabilityFieldsPanel.getSize());
         /*Da drawnEdges.size() sich geaendert hat, muss hier die
-          Size von probPanel nochmal festgelegt werden, oder man fuegt erst hier
-		  probPanel zur ScrollPane probScrollPane:
-		  probPanel = new ProbPanel();
-		  probScrollPane.add(probPanel);
-		  Dann hat probPanel die richtige Groesse.
+          Size von probabilityFieldsPanel nochmal festgelegt werden, oder man fuegt erst hier
+		  probabilityFieldsPanel zur ScrollPane probabilityFieldsScrollPane:
+		  probabilityFieldsPanel = new ProbPanel();
+		  probabilityFieldsScrollPane.add(probabilityFieldsPanel);
+		  Dann hat probabilityFieldsPanel die richtige Groesse.
 		*/
 
-        if (sameReliability) {
-            probScrollPane.setScrollPosition(0, 0);
-            probPanel.setSize(600, 190);
-            probPanel.removeAll();
+        if (sameReliabilityMode) {
+            probabilityFieldsScrollPane.getVerticalScrollBar().setValue(0);
+            probabilityFieldsPanel.setSize(600, 190);
+            probabilityFieldsPanel.removeAll();
 
-            probPanel.setLayout(new GridLayout(7, 2));
+            probabilityFieldsPanel.setLayout(new GridLayout(7, 2));
 
-            edgeProbabilityTextFields = new TextField[edgeCount];
-            nodeProbabilityTextFields = new TextField[nodeCount];
+            edgeProbabilityTextFields = new JTextField[edgeCount];
+            nodeProbabilityTextFields = new JTextField[nodeCount];
             String str = "Reliability of every edge: ";
 
             //Kantenwahrscheinlichkeiten
             Label edgeProbLabel = new Label(str, Label.RIGHT);
-            TextField edgeProbtextField = new TextField(20);
+            JTextField edgeProbtextField = new JTextField(20);
             edgeProbtextField.setBackground(Color.white);
             for (int i = 0; i < drawnEdges.size(); i++) {
                 edgeProbabilityTextFields[i] = edgeProbtextField;
@@ -873,11 +903,11 @@ public class Resinet3 extends JFrame
             Panel edgeProbPanel = new Panel();
             edgeProbPanel.add(edgeProbLabel);
             edgeProbPanel.add(edgeProbtextField);
-            probPanel.add(edgeProbPanel);
+            probabilityFieldsPanel.add(edgeProbPanel);
 
             //Kantenwahrscheinlichkeiten
             Label nodeProbLabel = new Label("Reliability of every node:", Label.RIGHT);
-            TextField nodeProbtextField = new TextField(20);
+            JTextField nodeProbtextField = new JTextField(20);
             nodeProbtextField.setBackground(Color.white);
             for (int i = 0; i < drawnNodes.size(); i++) {
                 nodeProbabilityTextFields[i] = nodeProbtextField;
@@ -885,51 +915,51 @@ public class Resinet3 extends JFrame
             Panel nodeProbPanel = new Panel();
             nodeProbPanel.add(nodeProbLabel);
             nodeProbPanel.add(nodeProbtextField);
-            probPanel.add(nodeProbPanel);
+            probabilityFieldsPanel.add(nodeProbPanel);
 
             Label stepValuesHeader = new Label("Optional for calculation series: ", Label.RIGHT);
             Panel stepValuesPanel = new Panel();
             stepValuesPanel.add(stepValuesHeader);
-            probPanel.add(stepValuesPanel);
+            probabilityFieldsPanel.add(stepValuesPanel);
 
-            Label edgeProbEndValueLbl = new Label("Edge End value: ", Label.RIGHT);
-            edgeEndProbabilityBox = new TextField(20);
+            JLabel edgeProbEndValueLbl = new JLabel("Edge End value: ", Label.RIGHT);
+            edgeEndProbabilityBox = new JTextField(20);
             edgeEndProbabilityBox.setBackground(Color.white);
             Panel p2 = new Panel();
             p2.add(edgeProbEndValueLbl);
             p2.add(edgeEndProbabilityBox);
 
-            Label edgeStepSizeLbl = new Label("Step size (e.g. 0.01): ", Label.RIGHT);
-            edgeProbabilityStepSizeBox = new TextField(20);
+            JLabel edgeStepSizeLbl = new JLabel("Step size (e.g. 0.01): ", Label.RIGHT);
+            edgeProbabilityStepSizeBox = new JTextField(20);
             edgeProbabilityStepSizeBox.setBackground(Color.white);
 
             p2.add(edgeStepSizeLbl);
             p2.add(edgeProbabilityStepSizeBox);
 
-            Label nodeEndValueLbl = new Label("Node End value: ", Label.RIGHT);
-            nodeEndProbabilityBox = new TextField(20);
+            JLabel nodeEndValueLbl = new JLabel("Node End value: ", Label.RIGHT);
+            nodeEndProbabilityBox = new JTextField(20);
             nodeEndProbabilityBox.setBackground(Color.white);
             Panel nodePanel = new Panel();
             nodePanel.add(nodeEndValueLbl);
             nodePanel.add(nodeEndProbabilityBox);
 
-            Label nodeStepSizeLbl = new Label("Step size (e.g. 0.01): ", Label.RIGHT);
-            nodeProbabilityStepSizeBox = new TextField(20);
+            JLabel nodeStepSizeLbl = new JLabel("Step size (e.g. 0.01): ", Label.RIGHT);
+            nodeProbabilityStepSizeBox = new JTextField(20);
             nodeProbabilityStepSizeBox.setBackground(Color.white);
             nodePanel.add(nodeStepSizeLbl);
             nodePanel.add(nodeProbabilityStepSizeBox);
 
-            probPanel.add(p2);
-            probPanel.add(nodePanel);
+            probabilityFieldsPanel.add(p2);
+            probabilityFieldsPanel.add(nodePanel);
         } else {
 
-            probPanel.setSize(probPanel.getPreferredSize());
-            probPanel.removeAll();
-            //probPanel.setLayout(new GridLayout((edgeCount + nodeCount) / 2 + 1, 2));
-            probPanel.setLayout(new GridLayout(0, 2));
+            probabilityFieldsPanel.setSize(probabilityFieldsPanel.getPreferredSize());
+            probabilityFieldsPanel.removeAll();
+            //probabilityFieldsPanel.setLayout(new GridLayout((edgeCount + nodeCount) / 2 + 1, 2));
+            probabilityFieldsPanel.setLayout(new GridLayout(0, 2));
 
-            edgeProbabilityTextFields = new TextField[edgeCount];
-            nodeProbabilityTextFields = new TextField[nodeCount];
+            edgeProbabilityTextFields = new JTextField[edgeCount];
+            nodeProbabilityTextFields = new JTextField[nodeCount];
 
             for (int i = 0; i < drawnEdges.size(); i++) {
                 addFieldToProbPanel(i, false);
@@ -939,9 +969,9 @@ public class Resinet3 extends JFrame
                 addFieldToProbPanel(i, true);
             }
 
-            probScrollPane.validate();
+            probabilityFieldsScrollPane.validate();
         }
-        probPanel.validate();
+        probabilityFieldsPanel.validate();
 
 
         probabilitiesOkBtn.setEnabled(true);
@@ -963,8 +993,8 @@ public class Resinet3 extends JFrame
         else
             text = type + number;
 
-        Label label = new Label(text, Label.RIGHT);
-        TextField textField = new TextField(20);
+        JLabel label = new JLabel(text, SwingConstants.RIGHT);
+        JTextField textField = new JTextField(20);
         textField.setBackground(Color.white);
 
         if (isNodeProb) {
@@ -975,7 +1005,7 @@ public class Resinet3 extends JFrame
         Panel panel = new Panel();
         panel.add(label);
         panel.add(textField);
-        probPanel.add(panel);
+        probabilityFieldsPanel.add(panel);
     }
 
     /**
@@ -1017,6 +1047,11 @@ public class Resinet3 extends JFrame
             cnt++;
         }
         return new Graph(nodeList, edgeList);
+    }
+
+    @Override
+    public void graphChanged() {
+
     }
 
     private class MyMouseListener extends MouseAdapter {
@@ -1151,7 +1186,7 @@ public class Resinet3 extends JFrame
         public void mousePressed(MouseEvent evt) {
             if (evt.isShiftDown() || probability_mode)
                 return;
-            valid = false;
+            netPanel.valid = false;
             int x = evt.getX();
             int y = evt.getY();
             int cnt;
@@ -1166,11 +1201,11 @@ public class Resinet3 extends JFrame
                 int dy = y - py;
                 if ((dx * dx + dy * dy) <= 100) {
                     cnt = drawnNodes.indexOf(np);
-                    el = new EdgeLine();
-                    el.x1 = px;
-                    el.y1 = py;
-                    el.node1 = cnt;
-                    valid = true;
+                    netPanel.el = new EdgeLine();
+                    netPanel.el.x1 = px;
+                    netPanel.el.y1 = py;
+                    netPanel.el.node1 = cnt;
+                    netPanel.valid = true;
                     break;
                 }
                 //punkt (x,y) ist in dem Kreis(px, py)
@@ -1178,10 +1213,10 @@ public class Resinet3 extends JFrame
         }
 
         public void mouseReleased(MouseEvent evt) {
-            if (!valid || evt.isShiftDown() || probability_mode)
+            if (!netPanel.valid || evt.isShiftDown() || probability_mode)
                 return;
 
-            valid = false;
+            netPanel.valid = false;
             int x = evt.getX();
             int y = evt.getY();
             int cnt;
@@ -1194,18 +1229,18 @@ public class Resinet3 extends JFrame
                 py = py + 10;
                 int dx = x - px;
                 int dy = y - py;
-                if ((dx * dx + dy * dy) <= 100 && el.node1 != drawnNodes.indexOf(np)) {
+                if ((dx * dx + dy * dy) <= 100 && netPanel.el.node1 != drawnNodes.indexOf(np)) {
                     cnt = drawnNodes.indexOf(np);
-                    el.x2 = px;
-                    el.y2 = py;
-                    el.node2 = cnt;
-                    drawnEdges.add(el);
-                    valid = true;
+                    netPanel.el.x2 = px;
+                    netPanel.el.y2 = py;
+                    netPanel.el.node2 = cnt;
+                    drawnEdges.add(netPanel.el);
+                    netPanel.valid = true;
 
-                    int lx = el.x2 - el.x1;
-                    int ly = el.y2 - el.y1;
-                    el.x0 = el.x2 - lx / 2;
-                    el.y0 = el.y2 - ly / 2;
+                    int lx = netPanel.el.x2 - netPanel.el.x1;
+                    int ly = netPanel.el.y2 - netPanel.el.y1;
+                    netPanel.el.x0 = netPanel.el.x2 - lx / 2;
+                    netPanel.el.y0 = netPanel.el.y2 - ly / 2;
 
                     break;
                 }
@@ -1217,11 +1252,11 @@ public class Resinet3 extends JFrame
 
     private class MyMouseMotionListener extends MouseMotionAdapter {
         public void mouseDragged(MouseEvent evt) {
-            if (valid && !probability_mode) {
+            if (netPanel.valid && !probability_mode) {
                 int x = evt.getX();
                 int y = evt.getY();
-                el.x2 = x;
-                el.y2 = y;
+                netPanel.el.x2 = x;
+                netPanel.el.y2 = y;
                 netPanel.repaint();
             }
         }
@@ -1233,7 +1268,7 @@ public class Resinet3 extends JFrame
      */
     private void calculate_reliability_faster() {
         resultText = "Calculating...";
-        result.setText(resultText);
+        resultTextArea.setText(resultText);
 
         //Prüfen ob das Netz zusammenhängt
         boolean graphConnected;
@@ -1246,7 +1281,7 @@ public class Resinet3 extends JFrame
         } else {
             JOptionPane.showMessageDialog(mainFrame, "Your Graph is not connected!", "Error", JOptionPane.ERROR_MESSAGE);
         }
-        result.setText(resultText);
+        resultTextArea.setText(resultText);
     }
 
     /**
@@ -1363,7 +1398,7 @@ public class Resinet3 extends JFrame
             resultText = resultText + str1 + s + "\n" + str2 + prob;
 
         }
-        result.setText(resultText);
+        resultTextArea.setText(resultText);
         //calcReliabilityBtn.setEnabled(false);
     }
 
@@ -1376,7 +1411,7 @@ public class Resinet3 extends JFrame
 
         if (calculationSeriesMode == 0 && !onlyReliabilityFast) {
             resultText = "Step " + counter + " of " + combinations;
-            result.setText(resultText);
+            resultTextArea.setText(resultText);
         }
 
 
@@ -1409,7 +1444,6 @@ public class Resinet3 extends JFrame
                 MySet hs = (MySet) al.get(0);
                 float p;
                 //hs enthält hier anscheinend einen Pfad im Graphen zwischen den K-Knoten
-                //TODO genauer untersuchen
                 p = getPathProbability(hs);
 
                 for (int i = 1; i < al.size(); i++) {
@@ -1440,7 +1474,7 @@ public class Resinet3 extends JFrame
             calcReliabilityBtn.setEnabled(true);
             resilienceBtn.setEnabled(true);
 
-            //result.setText(resultText);
+            //resultTextArea.setText(resultText);
         }
         long runningTime = new Date().getTime() - start;
         System.out.println("Laufzeit Heidtmann: " + runningTime);
@@ -1494,7 +1528,7 @@ public class Resinet3 extends JFrame
         long start = new Date().getTime();
 
         resultText = "Calculating...";
-        result.setText(resultText);
+        resultTextArea.setText(resultText);
 
         //Anzahl der Knoten     		
         total_nodes = drawnNodes.size();
@@ -1969,7 +2003,7 @@ public class Resinet3 extends JFrame
                      currentNodeProb = currentNodeProb.add(nodeStepSize)) {
 
                     resultText = "Calculation Series: Step " + counter + " of " + stepCount;
-                    result.setText(resultText);
+                    resultTextArea.setText(resultText);
                     counter++;
 
                     //currentEdgeProb ist reliability
@@ -2047,7 +2081,7 @@ public class Resinet3 extends JFrame
         reassignProbabilities();
 
         resultText = "Calculation series finished. Please check your output file for the results.";
-        result.setText(resultText);
+        resultTextArea.setText(resultText);
 
     }
 
