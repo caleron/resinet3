@@ -3,10 +3,7 @@ package com.resinet;/* Resinet3.java */
 import com.resinet.algorithms.Con_check;
 import com.resinet.algorithms.Zerleg;
 import com.resinet.model.*;
-import com.resinet.util.MyIterator;
-import com.resinet.util.MyList;
-import com.resinet.util.MySet;
-import com.resinet.util.Util;
+import com.resinet.util.*;
 import com.resinet.views.*;
 
 import java.awt.*;
@@ -29,15 +26,10 @@ public class Resinet3 extends JFrame
     private JTextField edgeEndProbabilityBox, edgeProbabilityStepSizeBox, nodeEndProbabilityBox, nodeProbabilityStepSizeBox;
     private JButton drawBtn, resetGraphBtn, differentReliabilitiesOkBtn, sameReliabilityOkBtn, resetProbabilitiesBtn,
             probabilitiesOkBtn, calcReliabilityBtn, resilienceBtn, inputNetBtn, exportNetBtn;
+    private JRadioButton singleReliabilityRadioBtn, sameReliabilityRadioBtn;
     private boolean sameReliabilityMode = false;
 
-    public MyList drawnNodes;
-    public MyList drawnEdges;
-
-    private boolean probability_mode = false;
-    private MyMouseListener drawMouseListener;
-    private MyMouseMotionListener drawMouseMoveListener;
-    private JTextField[] edgeProbabilityTextFields;
+    public JTextField[] edgeProbabilityTextFields;
     private JTextField[] nodeProbabilityTextFields;
     private float[] edgeProbabilities;
     private float[] nodeProbabilities;
@@ -57,6 +49,14 @@ public class Resinet3 extends JFrame
     private JCheckBox reliabilityCompareCheckBox;
 
     private static Resinet3 mainFrame;
+
+    private GUI_STATES guiState;
+
+    public enum GUI_STATES {
+        SHOW_GRAPH_INFO,
+        ENTER_GRAPH,
+        CALCULATION_RUNNING
+    }
 
     private Resinet3() {
         init();
@@ -87,9 +87,6 @@ public class Resinet3 extends JFrame
             e.printStackTrace();
         }
 
-        drawnNodes = new MyList();
-        drawnEdges = new MyList();
-
         //Initialwerte setzen
         edgeStartValue = BigDecimal.ZERO;
         edgeEndValue = BigDecimal.ZERO;
@@ -113,6 +110,8 @@ public class Resinet3 extends JFrame
         initCalculatePanel();
 
         initOutputTextPanel();
+
+        setGUIState(GUI_STATES.SHOW_GRAPH_INFO);
     }
 
     /**
@@ -144,33 +143,27 @@ public class Resinet3 extends JFrame
         graphPanel.add(drawBtn, gbc);
 
         resetGraphBtn = new JButton("Reset Network");
-        resetGraphBtn.setEnabled(false);
         resetGraphBtn.addActionListener(this);
         gbc = makegbc(1, 0, 1, 1, 1, 0, GridBagConstraints.HORIZONTAL);
         graphPanel.add(resetGraphBtn, gbc);
 
         //Button Input Network
         inputNetBtn = new JButton("Load Network");
-        inputNetBtn.setEnabled(true);
         inputNetBtn.addActionListener(this);
         gbc = makegbc(2, 0, 1, 1, 1, 0, GridBagConstraints.HORIZONTAL);
         graphPanel.add(inputNetBtn, gbc);
 
         //Button Output Network
         exportNetBtn = new JButton("Save Network");
-        exportNetBtn.setEnabled(true);
         exportNetBtn.addActionListener(this);
         gbc = makegbc(3, 0, 1, 1, 1, 0, GridBagConstraints.HORIZONTAL);
         graphPanel.add(exportNetBtn, gbc);
 
 
         netPanel = new NetPanel(this);
-        drawMouseListener = new MyMouseListener();
-        drawMouseMoveListener = new MyMouseMotionListener();
         netPanel.setBackground(Color.white);
         netPanel.setSize(625, 315);
 
-        netPanel.setVisible(false);
         gbc = makegbc(0, 1, 4, 5, 1, 1);
 
         graphPanel.add(netPanel, gbc);
@@ -224,12 +217,12 @@ public class Resinet3 extends JFrame
 
         //Radiobuttons zum auswählen des Modus
         ButtonGroup buttonGroup = new ButtonGroup();
-        JRadioButton singleReliabilityRadioBtn = new JRadioButton("components have different reliabilities");
+        singleReliabilityRadioBtn = new JRadioButton("components have different reliabilities");
         buttonGroup.add(singleReliabilityRadioBtn);
         gbc = makegbc(0, 0, 2, 1, 1, 0, GridBagConstraints.BOTH, 5);
         probabilityGroupPanel.add(singleReliabilityRadioBtn, gbc);
 
-        JRadioButton sameReliabilityRadioBtn = new JRadioButton("components have same reliabilities", true);
+        sameReliabilityRadioBtn = new JRadioButton("components have same reliabilities", true);
         buttonGroup.add(sameReliabilityRadioBtn);
         gbc = makegbc(0, 1, 2, 1, 1, 0, GridBagConstraints.BOTH, 5);
         probabilityGroupPanel.add(sameReliabilityRadioBtn, gbc);
@@ -242,13 +235,11 @@ public class Resinet3 extends JFrame
 
         //Reset-Button für alle Wahrscheinlichkeitstextfelder
         resetProbabilitiesBtn = new JButton("Reset");
-        resetProbabilitiesBtn.setEnabled(false);
         resetProbabilitiesBtn.addActionListener(this);
         gbc = makegbc(0, 3, 1, 1, 1, 0);
         probabilityGroupPanel.add(resetProbabilitiesBtn, gbc);
 
         probabilitiesOkBtn = new JButton("Ok");
-        probabilitiesOkBtn.setEnabled(false);
         probabilitiesOkBtn.addActionListener(this);
         gbc = makegbc(1, 3, 1, 1, 1, 0);
         probabilityGroupPanel.add(probabilitiesOkBtn, gbc);
@@ -265,13 +256,11 @@ public class Resinet3 extends JFrame
         add(calculatePanel, gbc);
 
         resilienceBtn = new JButton("Calculate the resilience of the network");
-        resilienceBtn.setEnabled(false);
         resilienceBtn.addActionListener(this);
         gbc = makegbc(0, 0, 1, 1, 0, 0);
         calculatePanel.add(resilienceBtn, gbc);
 
         calcReliabilityBtn = new JButton("Calculate the reliability of the network");
-        calcReliabilityBtn.setEnabled(false);
         calcReliabilityBtn.addActionListener(this);
         gbc = makegbc(0, 1, 1, 1, 0, 0);
         calculatePanel.add(calcReliabilityBtn, gbc);
@@ -358,23 +347,36 @@ public class Resinet3 extends JFrame
         return gbc;
     }
 
+    public void setGUIState(GUI_STATES state) {
+        if (state == guiState)
+            return;
+
+        guiState = state;
+
+        drawBtn.setEnabled(state == GUI_STATES.SHOW_GRAPH_INFO);
+        exportNetBtn.setEnabled(state == GUI_STATES.ENTER_GRAPH);
+        inputNetBtn.setEnabled(state == GUI_STATES.ENTER_GRAPH || state == GUI_STATES.SHOW_GRAPH_INFO);
+        resetGraphBtn.setEnabled(state == GUI_STATES.ENTER_GRAPH);
+        netPanel.setVisible(state != GUI_STATES.SHOW_GRAPH_INFO);
+        graphPanelTextArea.setVisible(state == GUI_STATES.SHOW_GRAPH_INFO);
+
+        singleReliabilityRadioBtn.setEnabled(state == GUI_STATES.ENTER_GRAPH);
+        sameReliabilityRadioBtn.setEnabled(state == GUI_STATES.ENTER_GRAPH);
+        probabilitiesOkBtn.setEnabled(state == GUI_STATES.ENTER_GRAPH);
+        resetProbabilitiesBtn.setEnabled(state == GUI_STATES.ENTER_GRAPH);
+
+        calcReliabilityBtn.setEnabled(state == GUI_STATES.ENTER_GRAPH);
+        resilienceBtn.setEnabled(state == GUI_STATES.ENTER_GRAPH);
+        reliabilityCompareCheckBox.setEnabled(state == GUI_STATES.ENTER_GRAPH);
+    }
+
 
     public void actionPerformed(ActionEvent evt) {
         JButton button = (JButton) evt.getSource();
 
         if (button == drawBtn) {
-            graphPanelTextArea.setVisible(false);
-            netPanel.setVisible(true);
-
+            setGUIState(GUI_STATES.ENTER_GRAPH);
             netPanel.setCursor(new Cursor(Cursor.CROSSHAIR_CURSOR));
-            netPanel.addMouseListener(drawMouseListener);
-            netPanel.addMouseMotionListener(drawMouseMoveListener);
-            differentReliabilitiesOkBtn.setEnabled(true);
-            sameReliabilityOkBtn.setEnabled(true);
-            drawBtn.setEnabled(false);
-            resetGraphBtn.setEnabled(true);
-            if (netPanel.getComponentCount() != 0)
-                netPanel.remove(graphPanelTextArea);
         }
 
         if (button == sameReliabilityOkBtn) {
@@ -392,16 +394,17 @@ public class Resinet3 extends JFrame
             netPanel.setCursor(new Cursor(Cursor.CROSSHAIR_CURSOR));
             differentReliabilitiesOkBtn.setEnabled(true);
             resetGraphBtn.setEnabled(true);
-            netPanel.removeMouseListener(drawMouseListener);
+            //TODO netPanel listener resetten
+            /*netPanel.removeMouseListener(drawMouseListener);
             netPanel.removeMouseMotionListener(drawMouseMoveListener);
             netPanel.addMouseListener(drawMouseListener);
-            netPanel.addMouseMotionListener(drawMouseMoveListener);
-            drawnNodes.clear();
-            drawnEdges.clear();
+            netPanel.addMouseMotionListener(drawMouseMoveListener);*/
+            netPanel.drawnNodes.clear();
+            netPanel.drawnEdges.clear();
             graph = null;
             zer = null;
             netPanel.valid = false;
-            probability_mode = false;
+            netPanel.probability_mode = false;
             probabilityFieldsPanel.removeAll();
             probabilityFieldsPanel.repaint();
             drawBtn.setEnabled(false);
@@ -416,7 +419,7 @@ public class Resinet3 extends JFrame
             //probabilityFieldsPanel.removeAll();
             //resetGraphBtn.setEnabled(true);
 
-            inputNet();
+            GraphSaving.inputNet(netPanel);
 
             //differentReliabilitiesOkBtn.setEnabled(true);
             //sameReliabilityOkBtn.setEnabled(true);
@@ -428,7 +431,7 @@ public class Resinet3 extends JFrame
         }
 
         if (button == exportNetBtn) {
-            exportNet();
+            GraphSaving.exportNet(netPanel);
         }
 
         if (button == differentReliabilitiesOkBtn) {
@@ -454,16 +457,13 @@ public class Resinet3 extends JFrame
             netPanel.setCursor(new Cursor(Cursor.CROSSHAIR_CURSOR));
             differentReliabilitiesOkBtn.setEnabled(true);
             resetGraphBtn.setEnabled(true);
-            netPanel.removeMouseListener(drawMouseListener);
-            netPanel.removeMouseMotionListener(drawMouseMoveListener);
-            netPanel.addMouseListener(drawMouseListener);
-            netPanel.addMouseMotionListener(drawMouseMoveListener);
-            drawnNodes.clear();
-            drawnEdges.clear();
+            //TODO evtl netpanel listener resetten
+            netPanel.drawnNodes.clear();
+            netPanel.drawnEdges.clear();
             graph = null;
             zer = null;
             netPanel.valid = false;
-            probability_mode = false;
+            netPanel.probability_mode = false;
             netPanel.repaint();
             probabilityFieldsPanel.removeAll();
             probabilityFieldsPanel.repaint();
@@ -570,8 +570,6 @@ public class Resinet3 extends JFrame
 
             resetProbabilitiesBtn.setEnabled(true);
             probabilitiesOkBtn.setEnabled(false);
-            netPanel.removeMouseListener(drawMouseListener);
-            netPanel.removeMouseMotionListener(drawMouseMoveListener);
 
             if (graph != null)
                 calcReliabilityBtn.setEnabled(true);
@@ -810,7 +808,7 @@ public class Resinet3 extends JFrame
      * Prüft den Graphen und baut die Anzeige mit den Textfeldern für die Wahrscheinlichkeiten auf
      */
     private void checkGraphAndBuildProbPanel() {
-        if (drawnEdges.size() == 0) {
+        if (netPanel.drawnEdges.size() == 0) {
             //Dieser Block zeigt ein Hinweisfenster an, wenn keine Knoten vorhanden sind und bricht die Methode ab
             String str = "Your Network does not contain edges!";
 
@@ -822,7 +820,7 @@ public class Resinet3 extends JFrame
 
         //Anzahl Konnektionsknoten bestimmen
         int count = 0;
-        MyIterator np = drawnNodes.iterator();
+        MyIterator np = netPanel.drawnNodes.iterator();
         while (np.hasNext()) {
             NodePoint n = (NodePoint) np.next();
             if (n.k)
@@ -846,7 +844,7 @@ public class Resinet3 extends JFrame
         int highest_x_pos = 0;
         int smallest_y_pos = 2000;
         int highest_y_pos = 0;
-        np = drawnNodes.iterator();
+        np = netPanel.drawnNodes.iterator();
         while (np.hasNext()) {
             NodePoint n = (NodePoint) np.next();
             if (n.x < smallest_x_pos)
@@ -868,10 +866,10 @@ public class Resinet3 extends JFrame
         netPanel.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
         differentReliabilitiesOkBtn.setEnabled(false);
         resetGraphBtn.setEnabled(true);
-        probability_mode = true;
+        netPanel.probability_mode = true;
 
-        int edgeCount = drawnEdges.size();
-        int nodeCount = drawnNodes.size();
+        int edgeCount = netPanel.drawnEdges.size();
+        int nodeCount = netPanel.drawnNodes.size();
         //probabilityFieldsPanel.setSize(probabilityFieldsPanel.getPreferredSize());
         //System.out.println(probabilityFieldsPanel.getSize());
         /*Da drawnEdges.size() sich geaendert hat, muss hier die
@@ -897,7 +895,7 @@ public class Resinet3 extends JFrame
             Label edgeProbLabel = new Label(str, Label.RIGHT);
             JTextField edgeProbtextField = new JTextField(20);
             edgeProbtextField.setBackground(Color.white);
-            for (int i = 0; i < drawnEdges.size(); i++) {
+            for (int i = 0; i < netPanel.drawnEdges.size(); i++) {
                 edgeProbabilityTextFields[i] = edgeProbtextField;
             }
             Panel edgeProbPanel = new Panel();
@@ -909,7 +907,7 @@ public class Resinet3 extends JFrame
             Label nodeProbLabel = new Label("Reliability of every node:", Label.RIGHT);
             JTextField nodeProbtextField = new JTextField(20);
             nodeProbtextField.setBackground(Color.white);
-            for (int i = 0; i < drawnNodes.size(); i++) {
+            for (int i = 0; i < netPanel.drawnNodes.size(); i++) {
                 nodeProbabilityTextFields[i] = nodeProbtextField;
             }
             Panel nodeProbPanel = new Panel();
@@ -961,11 +959,11 @@ public class Resinet3 extends JFrame
             edgeProbabilityTextFields = new JTextField[edgeCount];
             nodeProbabilityTextFields = new JTextField[nodeCount];
 
-            for (int i = 0; i < drawnEdges.size(); i++) {
+            for (int i = 0; i < netPanel.drawnEdges.size(); i++) {
                 addFieldToProbPanel(i, false);
             }
 
-            for (int i = 0; i < drawnNodes.size(); i++) {
+            for (int i = 0; i < netPanel.drawnNodes.size(); i++) {
                 addFieldToProbPanel(i, true);
             }
 
@@ -1017,7 +1015,7 @@ public class Resinet3 extends JFrame
         MyList nodeList = new MyList();
         MyList edgeList = new MyList();
 
-        MyIterator it = drawnNodes.iterator();
+        MyIterator it = netPanel.drawnNodes.iterator();
         int cnt = 0;
         while (it.hasNext()) {
             NodePoint np = (NodePoint) it.next();
@@ -1030,7 +1028,7 @@ public class Resinet3 extends JFrame
             cnt++;
         }
         //fertig mit dem Eintragen von Knoten
-        it = drawnEdges.iterator();
+        it = netPanel.drawnEdges.iterator();
         cnt = 0;
         while (it.hasNext()) {
             EdgeLine e = (EdgeLine) it.next();
@@ -1052,214 +1050,6 @@ public class Resinet3 extends JFrame
     @Override
     public void graphChanged() {
 
-    }
-
-    private class MyMouseListener extends MouseAdapter {
-        public void mouseClicked(MouseEvent evt) {
-            if (!probability_mode) {
-                int x1 = evt.getX();
-                int y1 = evt.getY();
-                int cnt1;
-                MyIterator it = drawnNodes.iterator();
-                while (it.hasNext()) {
-                    NodePoint nps = (NodePoint) it.next();
-                    cnt1 = drawnNodes.indexOf(nps);
-                    int px = nps.x;
-                    int py = nps.y;
-                    px = px + 10;
-                    py = py + 10;
-                    int dx = x1 - px;
-                    int dy = y1 - py;
-                    if ((dx * dx + dy * dy) <= 100) {
-
-                        if (evt.isShiftDown()) //zum Löschen von Knoten
-                        {
-                            drawnNodes.remove(nps);
-                            for (int i = 0; i < drawnEdges.size(); i++) {
-                                EdgeLine edl = (EdgeLine) drawnEdges.get(i);
-
-                                if (edl.node1 == cnt1 || edl.node2 == cnt1) {
-                                    drawnEdges.remove(edl);
-                                    i = i - 1;
-                                } else {
-                                    if (edl.node1 > cnt1)
-                                        edl.node1 = edl.node1 - 1;
-                                    if (edl.node2 > cnt1)
-                                        edl.node2 = edl.node2 - 1;
-                                }
-                            }
-                        }
-
-                        //Vorhandene Knoten zu K-Knoten machen
-                        if (evt.isControlDown()) {
-                            nps.k = !nps.k;
-
-                            drawnNodes.set(cnt1, nps);
-                        }
-                        netPanel.repaint();
-                        return;
-                    }
-                    //punkt (x,y) ist in dem Kreis(px, py)
-                }
-                NodePoint np = new NodePoint();
-                if ((x1 % 20) < 10) //Am Raster ausrichten. Kreise haben Durchmesser von 20.
-                    np.x = x1 - (x1 % 20) - 10;
-                else
-                    np.x = x1 + 20 - (x1 % 20) - 10;
-                if ((y1 % 20) < 10)
-                    np.y = y1 - (y1 % 20) - 10;
-                else
-                    np.y = y1 + 20 - (y1 % 20) - 10;
-                if (evt.isMetaDown())
-                    np.k = true;
-                drawnNodes.add(np);
-                netPanel.repaint();
-            } else {
-                int r = 5;
-                double dr;
-                int cntedge = 0;
-                int x3 = evt.getX();
-                int y3 = evt.getY();
-                MyIterator it = drawnEdges.iterator();
-                while (it.hasNext()) {
-                    EdgeLine edg = (EdgeLine) it.next();
-                    int x1 = edg.x1;
-                    int y1 = edg.y1;
-                    int x2 = edg.x2;
-                    int y2 = edg.y2;
-                    int diff_x2x1 = x2 - x1;
-                    int diff_y2y1 = y2 - y1;
-                    int min_x1x2 = x1;
-                    int max_x1x2 = x2;
-                    int min_y1y2 = y1;
-                    int max_y1y2 = y2;
-                    if (x2 < min_x1x2) {
-                        min_x1x2 = x2;
-                        max_x1x2 = x1;
-                    }
-                    if (y2 < min_y1y2) {
-                        min_y1y2 = y2;
-                        max_y1y2 = y1;
-                    }
-
-                    if (x1 == x2 && min_y1y2 <= y3 && y3 <= max_y1y2) {
-                        dr = Math.abs(x3 - x1);
-                        if (dr <= r) {
-                            showInputEdgeProbDialog(cntedge);
-                            break;
-                        }
-                    }
-
-                    if (y1 == y2 && min_x1x2 <= x3 && x3 <= max_x1x2) {
-                        dr = Math.abs(y3 - y1);
-                        if (dr <= r) {
-                            showInputEdgeProbDialog(cntedge);
-                            break;
-                        }
-                    }
-
-                    if (x1 != x2 && y1 != y2 && min_x1x2 <= x3 && x3 <= max_x1x2 && min_y1y2 <= y3 && y3 <= max_y1y2) {
-                        dr = Math.sqrt(Math.pow(x3 - x1 - ((x3 - x1 + (-x3 * diff_y2y1 + y3 * diff_x2x1 + x1 *
-                                diff_y2y1 - y1 * diff_x2x1) / (diff_y2y1 + Math.pow(diff_x2x1, 2) / diff_y2y1)) / diff_x2x1)
-                                * diff_x2x1, 2) + Math.pow(y3 - y1 - ((x3 - x1 + (-x3 * diff_y2y1 + y3 * diff_x2x1 + x1
-                                * diff_y2y1 - y1 * diff_x2x1) / (diff_y2y1 + Math.pow(diff_x2x1, 2) / diff_y2y1)) / diff_x2x1)
-                                * diff_y2y1, 2));
-                        if (dr <= r) {
-                            showInputEdgeProbDialog(cntedge);
-                            break;
-                        }
-                    }
-                    cntedge++;
-                }
-                netPanel.repaint();
-            }
-        }
-
-        private void showInputEdgeProbDialog(int edgeNumber) {
-            String str = "Input reliability of Edge " + edgeNumber;
-            String res = JOptionPane.showInputDialog(mainFrame, str);
-            if (res != null && res.length() > 0) {
-                edgeProbabilityTextFields[edgeNumber].setText(res);
-            }
-        }
-
-        public void mousePressed(MouseEvent evt) {
-            if (evt.isShiftDown() || probability_mode)
-                return;
-            netPanel.valid = false;
-            int x = evt.getX();
-            int y = evt.getY();
-            int cnt;
-            MyIterator it = drawnNodes.iterator();
-            while (it.hasNext()) {
-                NodePoint np = (NodePoint) it.next();
-                int px = np.x;
-                int py = np.y;
-                px = px + 10;
-                py = py + 10;
-                int dx = x - px;
-                int dy = y - py;
-                if ((dx * dx + dy * dy) <= 100) {
-                    cnt = drawnNodes.indexOf(np);
-                    netPanel.el = new EdgeLine();
-                    netPanel.el.x1 = px;
-                    netPanel.el.y1 = py;
-                    netPanel.el.node1 = cnt;
-                    netPanel.valid = true;
-                    break;
-                }
-                //punkt (x,y) ist in dem Kreis(px, py)
-            }
-        }
-
-        public void mouseReleased(MouseEvent evt) {
-            if (!netPanel.valid || evt.isShiftDown() || probability_mode)
-                return;
-
-            netPanel.valid = false;
-            int x = evt.getX();
-            int y = evt.getY();
-            int cnt;
-            MyIterator it = drawnNodes.iterator();
-            while (it.hasNext()) {
-                NodePoint np = (NodePoint) it.next();
-                int px = np.x;
-                int py = np.y;
-                px = px + 10;
-                py = py + 10;
-                int dx = x - px;
-                int dy = y - py;
-                if ((dx * dx + dy * dy) <= 100 && netPanel.el.node1 != drawnNodes.indexOf(np)) {
-                    cnt = drawnNodes.indexOf(np);
-                    netPanel.el.x2 = px;
-                    netPanel.el.y2 = py;
-                    netPanel.el.node2 = cnt;
-                    drawnEdges.add(netPanel.el);
-                    netPanel.valid = true;
-
-                    int lx = netPanel.el.x2 - netPanel.el.x1;
-                    int ly = netPanel.el.y2 - netPanel.el.y1;
-                    netPanel.el.x0 = netPanel.el.x2 - lx / 2;
-                    netPanel.el.y0 = netPanel.el.y2 - ly / 2;
-
-                    break;
-                }
-                //punkt (x,y) ist in dem Kreis(px, py)
-            }
-            netPanel.repaint();
-        }
-    }
-
-    private class MyMouseMotionListener extends MouseMotionAdapter {
-        public void mouseDragged(MouseEvent evt) {
-            if (netPanel.valid && !probability_mode) {
-                int x = evt.getX();
-                int y = evt.getY();
-                netPanel.el.x2 = x;
-                netPanel.el.y2 = y;
-                netPanel.repaint();
-            }
-        }
     }
 
     /**
@@ -1531,7 +1321,7 @@ public class Resinet3 extends JFrame
         resultTextArea.setText(resultText);
 
         //Anzahl der Knoten     		
-        total_nodes = drawnNodes.size();
+        total_nodes = netPanel.drawnNodes.size();
 
         //Anzahl der K-Knoten
         c_nodes = 0;
@@ -1539,7 +1329,7 @@ public class Resinet3 extends JFrame
         // Sicherung der K-Knotenliste
         String cNodeList = "";
         for (int i = 0; i < total_nodes; i++) {
-            NodePoint nodeSave = (NodePoint) drawnNodes.get(i);
+            NodePoint nodeSave = (NodePoint) netPanel.drawnNodes.get(i);
             if (nodeSave.k) {
                 c_nodes++;
                 cNodeList = cNodeList + "1";
@@ -1594,14 +1384,14 @@ public class Resinet3 extends JFrame
             // Für jeden Knoten: Falls er in der aktuellen Kombination enthalten ist, setze ihn auf "K-Knoten".
             for (int i = 0; i < total_nodes; i++) {
                 // Entsprechenden Knoten holen
-                NodePoint node1 = (NodePoint) drawnNodes.get(i);
+                NodePoint node1 = (NodePoint) netPanel.drawnNodes.get(i);
                 //com.resinet.model.Node node1 = (com.resinet.model.Node)graph.nodeList.get(i);
 
                 // Dann auf true, falls K-Knoten
                 node1.k = d.contains(i);
 
                 // Schreibe jeden Knoten neu in die Knotenliste.
-                drawnNodes.set(i, node1);
+                netPanel.drawnNodes.set(i, node1);
                 //graph.nodeList.set(i, node1);
 
             }
@@ -1626,13 +1416,13 @@ public class Resinet3 extends JFrame
         //K-Knotenliste zurücksetzen
         for (int i = 0; i < total_nodes; i++) {
             // Entsprechenden Knoten holen
-            NodePoint nodeReset = (NodePoint) drawnNodes.get(i);
+            NodePoint nodeReset = (NodePoint) netPanel.drawnNodes.get(i);
 
             // Dann auf true, falls K-Knoten
             nodeReset.k = cNodeList.charAt(i) == '1';
 
             // Schreibe jeden Knoten neu in die Knotenliste.
-            drawnNodes.set(i, nodeReset);
+            netPanel.drawnNodes.set(i, nodeReset);
         }
 
         try {
@@ -1669,262 +1459,6 @@ public class Resinet3 extends JFrame
             combinationsSet.add(c + "");
         }
         return combinationsSet;
-    }
-
-    //Methode zum Einlesen von Netzen aus Textdateien im Pajek-Format
-    private void inputNet() {
-        //Dialog zum Datei auswählen
-        JFileChooser chooseFile = new JFileChooser();
-        chooseFile.setDialogTitle("Open File");
-        chooseFile.setFileFilter(new FileNameExtensionFilter("Pajek-Networks", "txt", "net"));
-        int state = chooseFile.showOpenDialog(null);
-        File netFile;
-        if (state == JFileChooser.APPROVE_OPTION) {
-            netFile = chooseFile.getSelectedFile();
-        } else {
-            return;
-        }
-
-        //Ab hier zeilenweises Einlesen der ausgewählten Datei
-        String actRow;
-        LineNumberReader lineReader;
-
-        try {
-            lineReader = new LineNumberReader(new FileReader(netFile));
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-            return;
-        }
-
-        try {
-            actRow = lineReader.readLine();
-            actRow = actRow.substring(10);
-            int nodesCount = Integer.parseInt(actRow);
-            int panelHeight = netPanel.getHeight() - 20;
-            int panelWidth = netPanel.getWidth() - 20;
-
-            //Erzeuge Knoten
-            for (int i = 0; i < nodesCount; i++) {
-                actRow = lineReader.readLine();
-                NodePoint node1 = new NodePoint();
-                node1.k = false;
-
-                //Hole x-Koordinate
-                int position = actRow.indexOf('.');
-
-                Double xCoordinate = Double.parseDouble(actRow.substring(position - 1, position + 5));
-                node1.x = (int) (xCoordinate * panelWidth);
-
-                //Hole y-Koordinate
-                Double yCoordinate = Double.parseDouble(actRow.substring(position + 10, position + 16));
-                node1.y = (int) (yCoordinate * panelHeight);
-
-                drawnNodes.add(node1);
-            }
-
-            //Zeile überspringen: *Arcs oder *Edges
-            lineReader.readLine();
-
-            //Lies Kanten aus
-            while (lineReader.ready()) {
-                actRow = lineReader.readLine();
-
-                //Achtung, Bei Leerzeile wird abgebrochen!
-                if (actRow == null | actRow.length() == 0) {
-                    System.out.println("Leerzeile in der Quelldatei. Lesevorgang abgebrochen.");
-                    return;
-                }
-
-                //Startknoten
-                String startnode = "";
-                int position = 0;
-
-                //Gehe in der Zeile nach rechts bis zur ersten Ziffer
-                while (actRow.charAt(position) == ' ') {
-                    position++;
-                }
-
-                //Hole Startknoten
-                while (actRow.charAt(position) != ' ') {
-                    startnode = startnode + actRow.charAt(position);
-                    position++;
-                }
-
-                //Endknoten
-                String endnode = "";
-
-                //Gehe in der Zeile nach rechts bis zur ersten Ziffer
-                while (actRow.charAt(position) == ' ') {
-                    position++;
-                }
-
-                //Hole Endknoten				      
-                while (actRow.charAt(position) != ' ') {
-                    endnode = endnode + actRow.charAt(position);
-                    position++;
-                }
-
-                //Füge aktuelle Kante inkl. Start- und Endknoten hinzu
-                EdgeLine edge1 = new EdgeLine();
-                edge1.node1 = Integer.parseInt(startnode) - 1;
-                edge1.node2 = Integer.parseInt(endnode) - 1;
-
-                NodePoint startNodePoint = (NodePoint) drawnNodes.get(edge1.node1);
-                edge1.x1 = startNodePoint.x + 10;
-                edge1.y1 = startNodePoint.y + 10;
-
-                NodePoint endNodePoint = (NodePoint) drawnNodes.get(edge1.node2);
-                edge1.x2 = endNodePoint.x + 10;
-                edge1.y2 = endNodePoint.y + 10;
-
-                int labelX = edge1.x2 - edge1.x1;
-                int labelY = edge1.y2 - edge1.y1;
-                edge1.x0 = edge1.x2 - labelX / 2;
-                edge1.y0 = edge1.y2 - labelY / 2;
-
-                drawnEdges.add(edge1);
-            }
-
-        } catch (Exception e) {
-            e.printStackTrace();
-            inputError();
-        }
-    }
-
-    private void inputError() {
-        //Error-Popup ausgeben
-        String str = "Your input was invalid! Please choose a valid file created by Pajek or ResiNeT.";
-
-        JOptionPane.showMessageDialog(mainFrame, str, "Warning!", JOptionPane.ERROR_MESSAGE);
-    }
-
-    private void exportNet() {
-        //Dialog zum Datei auswählen
-        JFileChooser chooseSaveFile = new JFileChooser();
-        chooseSaveFile.setDialogType(JFileChooser.SAVE_DIALOG);
-
-        FileNameExtensionFilter pajekFilter = new FileNameExtensionFilter("Pajek-Networks", "net");
-        chooseSaveFile.setFileFilter(pajekFilter);
-        chooseSaveFile.setDialogTitle("Save as...");
-        chooseSaveFile.setSelectedFile(new File("myNetwork.net"));
-
-        File saveNetFile;
-        String path;
-
-        int state = chooseSaveFile.showSaveDialog(null);
-        if (state == JFileChooser.APPROVE_OPTION) {
-            path = chooseSaveFile.getSelectedFile().toString();
-            saveNetFile = new File(path);
-
-            //Akzeptiert nur .net Dateien. Andernfalls Abbruch!
-            if (!pajekFilter.accept(saveNetFile)) {
-                exportError();
-                return;
-            }
-        } else {
-            return;
-        }
-
-        //Ab hier in die Datei schreiben
-        Writer writer;
-
-        try {
-            writer = new FileWriter(path);
-            writer.write("*Vertices " + drawnNodes.size());
-
-
-            int nodesDigitsCount = String.valueOf(drawnNodes.size()).length();
-
-            //Für jeden Knoten eine Zeile schreiben
-            for (int i = 1; i < drawnNodes.size() + 1; i++) {
-                writer.append(System.getProperty("line.separator"));
-
-                int digitsCurrentNode = String.valueOf(i).length();
-                int addSpaces = nodesDigitsCount - digitsCurrentNode;
-                int spacesLength = 0;
-
-                //Leerzeichen vorne auffüllen
-                for (int j = 0; j < addSpaces + 1; j++) {
-                    writer.write(" ");
-                    spacesLength++;
-                }
-
-                //Schreibe Knotennummer
-                String nodesNumber = Integer.toString(i) + " \"v" + Integer.toString(i) + "\"";
-                writer.write(nodesNumber);
-
-                //Nochmal so viele Leerzeichen auffüllen bis Position 46 erreicht ist
-                for (int k = 0; k < (46 - spacesLength - nodesNumber.length()); k++) {
-                    writer.write(" ");
-                }
-
-                NodePoint node = (NodePoint) drawnNodes.get(i - 1);
-                double xCoordinate = (double) node.x;
-                double yCoordinate = (double) node.y;
-
-                if (xCoordinate < 5) {
-                    xCoordinate = 5;
-                }
-                if (yCoordinate < 5) {
-                    yCoordinate = 5;
-                }
-
-                xCoordinate = xCoordinate / (double) (netPanel.getWidth());
-                yCoordinate = yCoordinate / (double) (netPanel.getHeight());
-
-                // Auf 4 Nachkommastellen runden
-                xCoordinate = Math.round(xCoordinate * 10000.0) / 10000.0;
-                yCoordinate = Math.round(yCoordinate * 10000.0) / 10000.0;
-
-                String xCoordinateString = Double.toString(xCoordinate);
-                String yCoordinateString = Double.toString(yCoordinate);
-
-                // Stellen auffüllen, z.b. 0.25 => 0.2500
-                while (xCoordinateString.length() < 6) {
-                    xCoordinateString = xCoordinateString + "0";
-                }
-
-                while (yCoordinateString.length() < 6) {
-                    yCoordinateString = yCoordinateString + "0";
-                }
-
-                //Schreibe Koordinaten in die Datei
-                writer.write(xCoordinateString + "    " + yCoordinateString + "    0.5000");
-            }
-
-            writer.append(System.getProperty("line.separator"));
-            writer.write("*Edges");
-
-            //Für jede Kante eine Zeile
-            for (int i = 0; i < drawnEdges.size(); i++) {
-                writer.append(System.getProperty("line.separator"));
-                EdgeLine edge = (EdgeLine) drawnEdges.get(i);
-                String node1 = Integer.toString(edge.node1 + 1);
-                String node2 = Integer.toString(edge.node2 + 1);
-
-                while (node1.length() < Integer.toString(drawnNodes.size()).length() + 1) {
-                    node1 = " " + node1;
-                }
-
-                while (node2.length() < Integer.toString(drawnNodes.size()).length() + 1) {
-                    node2 = " " + node2;
-                }
-                writer.write(node1 + " " + node2 + " 1");
-            }
-            writer.close();
-
-
-        } catch (IOException e) {
-            e.printStackTrace();
-            exportError();
-        }
-    }
-
-    private void exportError() {
-        //Error-Popup ausgeben
-        String str = "Your output was invalid! Please choose a valid filepath and use the file extension '.net'.";
-
-        JOptionPane.showMessageDialog(mainFrame, str, "Warning!", JOptionPane.ERROR_MESSAGE);
     }
 
 
