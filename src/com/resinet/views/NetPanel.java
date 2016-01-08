@@ -34,6 +34,7 @@ public class NetPanel extends JPanel {
 
         addMouseListener(new MyMouseListener());
         addMouseMotionListener(new MyMouseMotionListener());
+        setCursor(new Cursor(Cursor.CROSSHAIR_CURSOR));
     }
 
     @Override
@@ -87,12 +88,28 @@ public class NetPanel extends JPanel {
         g.drawImage(img, 0, 0, this);
     }
 
+    /**
+     * ueberschreiben der Methode update, um den Bildschirm nicht zu löschen
+     */
     @Override
     public void update(Graphics g) {
         paint(g);
     }
-    //ueberschreiben der Methode update, um den Bildschirm nicht zu loeschen
 
+    public void resetGraph() {
+
+        //TODO netPanel listener resetten
+        /*netPanel.removeMouseListener(drawMouseListener);
+        netPanel.removeMouseMotionListener(drawMouseMoveListener);
+        netPanel.addMouseListener(drawMouseListener);
+        netPanel.addMouseMotionListener(drawMouseMoveListener);*/
+        drawnNodes.clear();
+        drawnEdges.clear();
+        valid = false;
+        probability_mode = false;
+        repaint();
+    }
+    //TODO ermöglichen, dass man Knoten und Kanten anklicken kann und sich der Cursor beim Hover verändert
     private class MyMouseListener extends MouseAdapter {
         public void mouseClicked(MouseEvent evt) {
             if (!probability_mode) {
@@ -121,10 +138,12 @@ public class NetPanel extends JPanel {
                                     drawnEdges.remove(edl);
                                     i = i - 1;
                                 } else {
-                                    if (edl.node1 > cnt1)
+                                    if (edl.node1 > cnt1) {
                                         edl.node1 = edl.node1 - 1;
-                                    if (edl.node2 > cnt1)
+                                    }
+                                    if (edl.node2 > cnt1) {
                                         edl.node2 = edl.node2 - 1;
+                                    }
                                 }
                             }
                         }
@@ -136,6 +155,7 @@ public class NetPanel extends JPanel {
                             drawnNodes.set(cnt1, nps);
                         }
                         repaint();
+                        raiseGraphChangedEvent();
                         return;
                     }
                     //punkt (x,y) ist in dem Kreis(px, py)
@@ -152,6 +172,7 @@ public class NetPanel extends JPanel {
                 if (evt.isMetaDown())
                     np.k = true;
                 drawnNodes.add(np);
+                raiseGraphChangedEvent();
                 repaint();
             } else {
                 int r = 5;
@@ -218,7 +239,7 @@ public class NetPanel extends JPanel {
             String str = "Input reliability of Edge " + edgeNumber;
             String res = JOptionPane.showInputDialog(this, str);
             if (res != null && res.length() > 0) {
-                resinet3.edgeProbabilityTextFields[edgeNumber].setText(res);
+                resinet3.edgeProbabilityBoxes.get(edgeNumber).setText(res);
             }
         }
 
@@ -281,6 +302,7 @@ public class NetPanel extends JPanel {
                     el.x0 = el.x2 - lx / 2;
                     el.y0 = el.y2 - ly / 2;
 
+                    raiseGraphChangedEvent();
                     break;
                 }
                 //punkt (x,y) ist in dem Kreis(px, py)
@@ -301,6 +323,32 @@ public class NetPanel extends JPanel {
         }
     }
 
+
+    /*Ermittle kleinste und größte Positionswerte der Knoten.
+
+    int smallest_x_pos = 2000;
+    int highest_x_pos = 0;
+    int smallest_y_pos = 2000;
+    int highest_y_pos = 0;
+    np = netPanel.drawnNodes.iterator();
+    while (np.hasNext()) {
+        NodePoint n = (NodePoint) np.next();
+        if (n.x < smallest_x_pos)
+            smallest_x_pos = n.x;
+        if (n.x > highest_x_pos)
+            highest_x_pos = n.x;
+        if (n.y < smallest_y_pos)
+            smallest_y_pos = n.y;
+        if (n.y > highest_y_pos)
+            highest_y_pos = n.y;
+    }
+
+    graph_width = highest_x_pos - smallest_x_pos + 25;
+    graph_height = highest_y_pos - smallest_y_pos + 25;*/
+
+    private void raiseGraphChangedEvent() {
+        resinet3.graphChanged();
+    }
 
     public interface GraphChangedListener {
         void graphChanged();

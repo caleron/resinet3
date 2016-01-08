@@ -60,7 +60,7 @@ class GraphPanel extends Panel {
         }
     }
 
-    public Dimension getPreferredSize() {
+    /*public Dimension getPreferredSize() {
         return new Dimension(Math.round(resinet3.graph_width) + 25, Math.round(resinet3.graph_height) + 25);
-    }
+    }*/
 }

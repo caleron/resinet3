@@ -10,7 +10,7 @@ import java.awt.*;
 import java.io.*;
 
 public class GraphSaving {
-
+    //TODO dateiformat hinzufügen, wo auch k-knoten gespeichert werden
     //Methode zum Einlesen von Netzen aus Textdateien im Pajek-Format
     public static void inputNet(NetPanel netPanel) {
         //Dialog zum Datei auswählen
