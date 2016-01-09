@@ -529,8 +529,8 @@ public class Util {
         }
     }
 
-    private static float getEdgeProbability(Edge edge, Graph g) {
-        float prob = 1f;
+    private static double getEdgeProbability(Edge edge, Graph g) {
+        double prob = 1f;
 
         Edge edge1, edge2, edge3, edge4, edge5, edge6;
         edge1 = edge.parent_edges[0];
@@ -567,20 +567,20 @@ public class Util {
                 prob = edge1.prob * edge2.prob / (1 - (1 - edge1.prob) * (1 - edge2.prob));
                 if (g.reducetype.indexOf('K') < 0)
                     g.reducetype = g.reducetype + "K";
-                float u1 = 1 - edge1.prob;
-                float u2 = 1 - edge2.prob;
+                double u1 = 1 - edge1.prob;
+                double u2 = 1 - edge2.prob;
                 //u=1-r, defektwahrscheinlichkeit, s.a Seite 127, HD
                 g.kprob = g.kprob * (1 - u1 * u2);
             } else if (type.equals("R1") || type.equals("R2")) {
-                float p1 = edge1.prob;
-                float p2 = edge2.prob;
-                float p3 = edge3.prob;
-                float q1 = 1f - p1;
-                float q2 = 1f - p2;
-                float q3 = 1f - p3;
-                float f1 = p1 * p2 * p3 + q1 * p2 * p3 + p1 * q2 * p3 + p1 * p2 * q3;
-                float f2 = q1 * p2 * q3;
-                float f3 = p1 * q2 * q3;
+                double p1 = edge1.prob;
+                double p2 = edge2.prob;
+                double p3 = edge3.prob;
+                double q1 = 1f - p1;
+                double q2 = 1f - p2;
+                double q3 = 1f - p3;
+                double f1 = p1 * p2 * p3 + q1 * p2 * p3 + p1 * q2 * p3 + p1 * p2 * q3;
+                double f2 = q1 * p2 * q3;
+                double f3 = p1 * q2 * q3;
                 prob = f1 / (f2 + f1);
                 if (g.wedgeIndex.contains(edge)) {
                     g.wedge = g.wedge * ((f1 + f2) * (f1 + f3) / f1);
@@ -591,15 +591,15 @@ public class Util {
                         g.reducetype = g.reducetype + "2";
                 }
             } else if (type.equals("S1") || type.equals("S2")) {
-                float p1 = edge1.prob;
-                float p2 = edge2.prob;
-                float p3 = edge3.prob;
-                float q1 = 1f - p1;
-                float q2 = 1f - p2;
-                float q3 = 1f - p3;
-                float f1 = p1 * p2 * p3 + q1 * p2 * p3 + p1 * q2 * p3 + p1 * p2 * q3;
-                float f2 = q1 * p2 * q3;
-                float f3 = p1 * q2 * q3;
+                double p1 = edge1.prob;
+                double p2 = edge2.prob;
+                double p3 = edge3.prob;
+                double q1 = 1f - p1;
+                double q2 = 1f - p2;
+                double q3 = 1f - p3;
+                double f1 = p1 * p2 * p3 + q1 * p2 * p3 + p1 * q2 * p3 + p1 * p2 * q3;
+                double f2 = q1 * p2 * q3;
+                double f3 = p1 * q2 * q3;
                 prob = f1 / (f3 + f1);
                 Edge index = edge.r;
                 if (g.wedgeIndex.contains(index)) {
@@ -611,17 +611,17 @@ public class Util {
                         g.reducetype = g.reducetype + "2";
                 }
             } else if (type.equals("R3") || type.equals("S3")) {
-                float p1 = edge1.prob;
-                float p2 = edge2.prob;
-                float p3 = edge3.prob;
-                float p4 = edge4.prob;
-                float q1 = 1f - p1;
-                float q2 = 1f - p2;
-                float q3 = 1f - p3;
-                float q4 = 1f - p4;
-                float f1 = p1 * p2 * p3 * p4 + q1 * p2 * p3 * p4 + p1 * q2 * p3 * p4 + p1 * p2 * q3 * p4 + p1 * p2 * p3 * q4;
-                float f2 = p1 * q2 * q3 * p4 + q1 * p2 * p3 * q4 + q1 * p2 * q3 * p4;
-                float f3 = p1 * q2 * p3 * q4;
+                double p1 = edge1.prob;
+                double p2 = edge2.prob;
+                double p3 = edge3.prob;
+                double p4 = edge4.prob;
+                double q1 = 1f - p1;
+                double q2 = 1f - p2;
+                double q3 = 1f - p3;
+                double q4 = 1f - p4;
+                double f1 = p1 * p2 * p3 * p4 + q1 * p2 * p3 * p4 + p1 * q2 * p3 * p4 + p1 * p2 * q3 * p4 + p1 * p2 * p3 * q4;
+                double f2 = p1 * q2 * q3 * p4 + q1 * p2 * p3 * q4 + q1 * p2 * q3 * p4;
+                double f3 = p1 * q2 * p3 * q4;
                 Edge index = null;
                 if (type.equals("R3")) {
                     prob = f1 / (f2 + f1);
@@ -637,18 +637,18 @@ public class Util {
                         g.reducetype = g.reducetype + "3";
                 }
             } else if (type.equals("R4") || type.equals("S4") || type.equals("T4")) {
-                float p1 = edge1.prob;
-                float p2 = edge2.prob;
-                float p3 = edge3.prob;
-                float p4 = edge4.prob;
-                float q1 = 1f - p1;
-                float q2 = 1f - p2;
-                float q3 = 1f - p3;
-                float q4 = 1f - p4;
-                float f1 = p1 * p2 * p3 * p4 + q1 * p2 * p3 * p4 + p1 * q2 * p3 * p4 + p1 * p2 * q3 * p4 + p1 * p2 * p3 * q4;
-                float f2 = q1 * p2 * q3 * p4;
-                float f3 = p1 * q2 * q3 * p4 + q1 * p2 * p3 * q4;
-                float f4 = p1 * q2 * p3 * q4;
+                double p1 = edge1.prob;
+                double p2 = edge2.prob;
+                double p3 = edge3.prob;
+                double p4 = edge4.prob;
+                double q1 = 1f - p1;
+                double q2 = 1f - p2;
+                double q3 = 1f - p3;
+                double q4 = 1f - p4;
+                double f1 = p1 * p2 * p3 * p4 + q1 * p2 * p3 * p4 + p1 * q2 * p3 * p4 + p1 * p2 * q3 * p4 + p1 * p2 * p3 * q4;
+                double f2 = q1 * p2 * q3 * p4;
+                double f3 = p1 * q2 * q3 * p4 + q1 * p2 * p3 * q4;
+                double f4 = p1 * q2 * p3 * q4;
                 Edge index = null;
                 if (type.equals("R4")) {
                     prob = f1 / (f2 + f1);
@@ -667,18 +667,18 @@ public class Util {
                         g.reducetype = g.reducetype + "4";
                 }
             } else if (type.equals("R5") || type.equals("S5") || type.equals("T5")) {
-                float p1 = edge1.prob;
-                float p2 = edge2.prob;
-                float p3 = edge3.prob;
-                float p4 = edge4.prob;
-                float q1 = 1f - p1;
-                float q2 = 1f - p2;
-                float q3 = 1f - p3;
-                float q4 = 1f - p4;
-                float f1 = p1 * p2 * p3 * p4 + q1 * p2 * p3 * p4 + p1 * q2 * p3 * p4 + p1 * p2 * q3 * p4 + p1 * p2 * p3 * q4;
-                float f2 = q1 * p2 * q3 * q4;
-                float f3 = p1 * q2 * p3 * q4;
-                float f4 = p1 * p2 * q3 * q4;
+                double p1 = edge1.prob;
+                double p2 = edge2.prob;
+                double p3 = edge3.prob;
+                double p4 = edge4.prob;
+                double q1 = 1f - p1;
+                double q2 = 1f - p2;
+                double q3 = 1f - p3;
+                double q4 = 1f - p4;
+                double f1 = p1 * p2 * p3 * p4 + q1 * p2 * p3 * p4 + p1 * q2 * p3 * p4 + p1 * p2 * q3 * p4 + p1 * p2 * p3 * q4;
+                double f2 = q1 * p2 * q3 * q4;
+                double f3 = p1 * q2 * p3 * q4;
+                double f4 = p1 * p2 * q3 * q4;
                 Edge index = null;
                 if (type.equals("R5")) {
                     index = edge;
@@ -703,20 +703,20 @@ public class Util {
                         g.reducetype = g.reducetype + "5";
                 }
             } else if (type.equals("R6") || type.equals("S6") || type.equals("T6")) {
-                float p1 = edge1.prob;
-                float p2 = edge2.prob;
-                float p3 = edge3.prob;
-                float p4 = edge4.prob;
-                float p5 = edge5.prob;
-                float q1 = 1f - p1;
-                float q2 = 1f - p2;
-                float q3 = 1f - p3;
-                float q4 = 1f - p4;
-                float q5 = 1f - p5;
-                float f1 = p1 * p2 * p3 * p4 * p5 + q1 * p2 * p3 * p4 * p5 + p1 * q2 * p3 * p4 * p5 + p1 * p2 * q3 * p4 * p5 + p1 * p2 * p3 * q4 * p5 + p1 * p2 * p3 * p4 * q5;
-                float f2 = q1 * p2 * p3 * q4 * p5;
-                float f3 = p1 * q2 * p3 * (p4 * q5 + q4 * p5) + p2 * (q1 * p3 * p4 * q5 + p1 * q3 * q4 * p5);
-                float f4 = p1 * p2 * q3 * p4 * q5;
+                double p1 = edge1.prob;
+                double p2 = edge2.prob;
+                double p3 = edge3.prob;
+                double p4 = edge4.prob;
+                double p5 = edge5.prob;
+                double q1 = 1f - p1;
+                double q2 = 1f - p2;
+                double q3 = 1f - p3;
+                double q4 = 1f - p4;
+                double q5 = 1f - p5;
+                double f1 = p1 * p2 * p3 * p4 * p5 + q1 * p2 * p3 * p4 * p5 + p1 * q2 * p3 * p4 * p5 + p1 * p2 * q3 * p4 * p5 + p1 * p2 * p3 * q4 * p5 + p1 * p2 * p3 * p4 * q5;
+                double f2 = q1 * p2 * p3 * q4 * p5;
+                double f3 = p1 * q2 * p3 * (p4 * q5 + q4 * p5) + p2 * (q1 * p3 * p4 * q5 + p1 * q3 * q4 * p5);
+                double f4 = p1 * p2 * q3 * p4 * q5;
                 Edge index = null;
                 if (type.equals("R6")) {
                     prob = f1 / (f2 + f1);
@@ -735,23 +735,23 @@ public class Util {
                         g.reducetype = g.reducetype + "6";
                 }
             } else if (type.equals("R7") || type.equals("S7") || type.equals("T7")) {
-                float p1 = edge1.prob;
-                float p2 = edge2.prob;
-                float p3 = edge3.prob;
-                float p4 = edge4.prob;
-                float p5 = edge5.prob;
-                float p6 = edge6.prob;
-                float q1 = 1f - p1;
-                float q2 = 1f - p2;
-                float q3 = 1f - p3;
-                float q4 = 1f - p4;
-                float q5 = 1f - p5;
-                float q6 = 1f - p6;
-                float f1 = p1 * p2 * p3 * p4 * p5 * p6 * (1 + q1 / p1 + q2 / p2 + q3 / p3 + q4 / p4 + q5 / p5 + q6 / p6);
-                float f2 = q1 * p2 * p3 * q4 * p5 * p6;
-                float f3 = p1 * q2 * p3 * (q4 * p5 * p6 + p4 * q5 * p6 + p4 * p5 * q6) + p1 * p2 * q3 * p6 * (p4 * q5 + q4 * p5) +
-                        q1 * p2 * p3 * p4 * (q5 * p6 + p5 * q6);
-                float f4 = p1 * p2 * q3 * p4 * p5 * q6;
+                double p1 = edge1.prob;
+                double p2 = edge2.prob;
+                double p3 = edge3.prob;
+                double p4 = edge4.prob;
+                double p5 = edge5.prob;
+                double p6 = edge6.prob;
+                double q1 = 1f - p1;
+                double q2 = 1f - p2;
+                double q3 = 1f - p3;
+                double q4 = 1f - p4;
+                double q5 = 1f - p5;
+                double q6 = 1f - p6;
+                double f1 = p1 * p2 * p3 * p4 * p5 * p6 * (1 + q1 / p1 + q2 / p2 + q3 / p3 + q4 / p4 + q5 / p5 + q6 / p6);
+                double f2 = q1 * p2 * p3 * q4 * p5 * p6;
+                double f3 = p1 * q2 * p3 * (q4 * p5 * p6 + p4 * q5 * p6 + p4 * p5 * q6) + p1 * p2 * q3 * p6 * (p4 * q5 + q4 * p5) +
+                   q1 * p2 * p3 * p4 * (q5 * p6 + p5 * q6);
+                double f4 = p1 * p2 * q3 * p4 * p5 * q6;
                 Edge index = null;
                 if (type.equals("R7")) {
                     prob = f1 / (f2 + f1);

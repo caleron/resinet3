@@ -29,7 +29,7 @@ public class Edge implements Serializable {
     //Art der Reduktion, S, K, oder P
     public Edge r = null;
     //fuer Polygon-Ketten-Reduktion
-    public float prob;
+    public double prob;
     //Intaktwahrscheinlichkeit der Kante
 
     public Edge(int edge_no) {

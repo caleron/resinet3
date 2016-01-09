@@ -1,5 +1,6 @@
 package com.resinet.util;
 
+import com.resinet.Resinet3;
 import com.resinet.model.EdgeLine;
 import com.resinet.model.NodePoint;
 import com.resinet.views.NetPanel;
@@ -12,7 +13,7 @@ import java.io.*;
 public class GraphSaving {
     //TODO dateiformat hinzufügen, wo auch k-knoten gespeichert werden
     //Methode zum Einlesen von Netzen aus Textdateien im Pajek-Format
-    public static void inputNet(NetPanel netPanel) {
+    public static void inputNet(Resinet3 resinet3, NetPanel netPanel) {
         //Dialog zum Datei auswählen
         JFileChooser chooseFile = new JFileChooser();
         chooseFile.setDialogTitle("Open File");
@@ -24,6 +25,8 @@ public class GraphSaving {
         } else {
             return;
         }
+
+        resinet3.resetGraph();
 
         //Ab hier zeilenweises Einlesen der ausgewählten Datei
         String actRow;

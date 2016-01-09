@@ -35,9 +35,9 @@ public class Resinet3 extends JFrame
 
     public List<JTextField> edgeProbabilityBoxes = new ArrayList<>();
     private List<JTextField> nodeProbabilityBoxes = new ArrayList<>();
-    private float[] edgeProbabilities;
-    private float[] nodeProbabilities;
-    private float prob;
+    private double[] edgeProbabilities;
+    private double[] nodeProbabilities;
+    private double prob;
     private String resultText;
     private JTextArea resultTextArea;
 
@@ -185,7 +185,6 @@ public class Resinet3 extends JFrame
         graphPanelTextArea.setWrapStyleWord(true);
         graphPanelTextArea.setEditable(false);
         JScrollPane scrollPane = new JScrollPane(graphPanelTextArea);
-        //scrollPane.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED);
         graphPanel.add(scrollPane, gbc);
     }
 
@@ -229,6 +228,8 @@ public class Resinet3 extends JFrame
         //Panel mit Wahrscheinlichkeitstextfeldern
         //probabilityFieldsPanel = new JPanel();
         probabilityFieldsScrollPane = new JScrollPane();//probabilityFieldsPanel);
+        probabilityFieldsScrollPane.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
+        probabilityFieldsScrollPane.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED);
         gbc = makegbc(0, 2, 2, 1, 1, 1);
         probabilityGroupPanel.add(probabilityFieldsScrollPane, gbc);
 
@@ -256,62 +257,62 @@ public class Resinet3 extends JFrame
 
         //Kantenwahrscheinlichkeiten
         JLabel edgeProbLabel = new JLabel("Reliability of every edge: ", SwingConstants.RIGHT);
-        GridBagConstraints gbc = makegbc(0, 0, 2, 1, 1, 0, GridBagConstraints.VERTICAL, 1, GridBagConstraints.LINE_END);
+        GridBagConstraints gbc = makegbc(0, 0, 2, 1, 1, 0, GridBagConstraints.NONE, 1, GridBagConstraints.LINE_END);
         sameReliabilityPanel.add(edgeProbLabel, gbc);
 
         sameReliabilityEdgeProbBox = new JTextField(20);
         sameReliabilityEdgeProbBox.setBackground(Color.white);
-        gbc = makegbc(2, 0, 2, 1, 1, 0, GridBagConstraints.VERTICAL, 1, GridBagConstraints.LINE_START);
+        gbc = makegbc(2, 0, 2, 1, 1, 0, GridBagConstraints.NONE, 1, GridBagConstraints.LINE_START);
         sameReliabilityPanel.add(sameReliabilityEdgeProbBox, gbc);
 
         //Knotenwahrscheinlichkeiten
         JLabel nodeProbLabel = new JLabel("Reliability of every node:", SwingConstants.RIGHT);
-        gbc = makegbc(0, 1, 2, 1, 1, 0, GridBagConstraints.VERTICAL, 1, GridBagConstraints.LINE_END);
+        gbc = makegbc(0, 1, 2, 1, 1, 0, GridBagConstraints.NONE, 1, GridBagConstraints.LINE_END);
         sameReliabilityPanel.add(nodeProbLabel, gbc);
 
         sameReliabilityNodeProbBox = new JTextField(20);
         sameReliabilityNodeProbBox.setBackground(Color.white);
-        gbc = makegbc(2, 1, 2, 1, 1, 0, GridBagConstraints.VERTICAL, 1, GridBagConstraints.LINE_START);
+        gbc = makegbc(2, 1, 2, 1, 1, 0, GridBagConstraints.NONE, 1, GridBagConstraints.LINE_START);
         sameReliabilityPanel.add(sameReliabilityNodeProbBox, gbc);
 
         JLabel stepValuesHeader = new JLabel("Optional for calculation series: ", SwingConstants.RIGHT);
-        gbc = makegbc(0, 2, 4, 1, 1, 0, GridBagConstraints.VERTICAL);
+        gbc = makegbc(0, 2, 4, 1, 1, 0, GridBagConstraints.NONE);
         sameReliabilityPanel.add(stepValuesHeader, gbc);
 
         JLabel edgeProbEndValueLbl = new JLabel("Edge End value: ", SwingConstants.RIGHT);
-        gbc = makegbc(0, 3, 1, 1, 1, 0, GridBagConstraints.VERTICAL, 1, GridBagConstraints.LINE_END);
+        gbc = makegbc(0, 3, 1, 1, 1, 0, GridBagConstraints.NONE, 1, GridBagConstraints.LINE_END);
         sameReliabilityPanel.add(edgeProbEndValueLbl, gbc);
 
         edgeEndProbabilityBox = new JTextField(20);
         edgeEndProbabilityBox.setBackground(Color.white);
-        gbc = makegbc(1, 3, 1, 1, 1, 0, GridBagConstraints.VERTICAL, 1, GridBagConstraints.LINE_START);
+        gbc = makegbc(1, 3, 1, 1, 1, 0, GridBagConstraints.NONE, 1, GridBagConstraints.LINE_START);
         sameReliabilityPanel.add(edgeEndProbabilityBox, gbc);
 
         JLabel edgeStepSizeLbl = new JLabel("Step size (e.g. 0.01): ", SwingConstants.RIGHT);
-        gbc = makegbc(2, 3, 1, 1, 1, 0, GridBagConstraints.VERTICAL, 1, GridBagConstraints.LINE_END);
+        gbc = makegbc(2, 3, 1, 1, 1, 0, GridBagConstraints.NONE, 1, GridBagConstraints.LINE_END);
         sameReliabilityPanel.add(edgeStepSizeLbl, gbc);
 
         edgeProbabilityStepSizeBox = new JTextField(20);
         edgeProbabilityStepSizeBox.setBackground(Color.white);
-        gbc = makegbc(3, 3, 1, 1, 1, 0, GridBagConstraints.VERTICAL, 1, GridBagConstraints.LINE_START);
+        gbc = makegbc(3, 3, 1, 1, 1, 0, GridBagConstraints.NONE, 1, GridBagConstraints.LINE_START);
         sameReliabilityPanel.add(edgeProbabilityStepSizeBox, gbc);
 
         JLabel nodeEndValueLbl = new JLabel("Node End value: ", SwingConstants.RIGHT);
-        gbc = makegbc(0, 4, 1, 1, 1, 0, GridBagConstraints.VERTICAL, 1, GridBagConstraints.LINE_END);
+        gbc = makegbc(0, 4, 1, 1, 1, 0, GridBagConstraints.NONE, 1, GridBagConstraints.LINE_END);
         sameReliabilityPanel.add(nodeEndValueLbl, gbc);
 
         nodeEndProbabilityBox = new JTextField(20);
         nodeEndProbabilityBox.setBackground(Color.white);
-        gbc = makegbc(1, 4, 1, 1, 1, 0, GridBagConstraints.VERTICAL, 1, GridBagConstraints.LINE_START);
+        gbc = makegbc(1, 4, 1, 1, 1, 0, GridBagConstraints.NONE, 1, GridBagConstraints.LINE_START);
         sameReliabilityPanel.add(nodeEndProbabilityBox, gbc);
 
         JLabel nodeStepSizeLbl = new JLabel("Step size (e.g. 0.01): ", SwingConstants.RIGHT);
-        gbc = makegbc(2, 4, 1, 1, 1, 0, GridBagConstraints.VERTICAL, 1, GridBagConstraints.LINE_END);
+        gbc = makegbc(2, 4, 1, 1, 1, 0, GridBagConstraints.NONE, 1, GridBagConstraints.LINE_END);
         sameReliabilityPanel.add(nodeStepSizeLbl, gbc);
 
         nodeProbabilityStepSizeBox = new JTextField(20);
         nodeProbabilityStepSizeBox.setBackground(Color.white);
-        gbc = makegbc(3, 4, 1, 1, 1, 0, GridBagConstraints.VERTICAL, 1, GridBagConstraints.LINE_START);
+        gbc = makegbc(3, 4, 1, 1, 1, 0, GridBagConstraints.NONE, 1, GridBagConstraints.LINE_START);
         sameReliabilityPanel.add(nodeProbabilityStepSizeBox, gbc);
 
         //Einzelwahrscheinlichkeiten für die Komponenten
@@ -319,7 +320,7 @@ public class Resinet3 extends JFrame
         //singleReliabilityPanel.setPreferredSize(new Dimension(600, ((netPanel.drawnEdges.size() + netPanel.drawnNodes.size()) / 2 + 1) * 30));
         //singleReliabilityPanel.removeAll();
         singleReliabilityPanel.setLayout(new FlowLayout(FlowLayout.LEFT));
-
+        singleReliabilityPanel.setPreferredSize(probabilityFieldsScrollPane.getSize());
         //Mit Modus für gleiche Komponentenwahrscheinlichkeiten initialisieren
         setComponentReliabilityMode(true);
     }
@@ -473,6 +474,29 @@ public class Resinet3 extends JFrame
         calcReliabilityBtn.setEnabled(state == GUI_STATES.ENTER_GRAPH);
         resilienceBtn.setEnabled(state == GUI_STATES.ENTER_GRAPH);
         reliabilityCompareCheckBox.setEnabled(state == GUI_STATES.ENTER_GRAPH);
+
+        //Status für alle Wahrscheinlichkeitsfelder setzen
+        boolean probabilityBoxesEnabled = (state == GUI_STATES.ENTER_GRAPH);
+        if (singleReliabilityRadioBtn.isSelected()) {
+            setChildrenEnabled(singleReliabilityPanel, probabilityBoxesEnabled);
+        } else {
+            setChildrenEnabled(sameReliabilityPanel, probabilityBoxesEnabled);
+        }
+    }
+
+    /**
+     * Setzt den Enabled-Status für alle Subkomponenten
+     *
+     * @param el      Der Container
+     * @param enabled Enabled-Status der Subkomponenten
+     */
+    private void setChildrenEnabled(Container el, boolean enabled) {
+        for (Component component : el.getComponents()) {
+            component.setEnabled(enabled);
+            if (component instanceof Container) {
+                setChildrenEnabled((Container) component, enabled);
+            }
+        }
     }
 
     /**
@@ -485,6 +509,7 @@ public class Resinet3 extends JFrame
             probabilityFieldsScrollPane.getViewport().setView(sameReliabilityPanel);
         } else {
             probabilityFieldsScrollPane.getViewport().setView(singleReliabilityPanel);
+
             updateSingleReliabilityProbPanel();
         }
     }
@@ -504,17 +529,9 @@ public class Resinet3 extends JFrame
 
         if (button == inputNetBtn) {
             //Graph aus Datei laden
-            setGUIState(GUI_STATES.ENTER_GRAPH);
-
-            graph = null;
-            zer = null;
-            singleReliabilityPanel.removeAll();
-            singleReliabilityPanel.repaint();
-
-            netPanel.resetGraph();
-
-            GraphSaving.inputNet(netPanel);
+            GraphSaving.inputNet(mainFrame, netPanel);
             netPanel.repaint();
+            updateSingleReliabilityProbPanel();
         }
 
         if (button == exportNetBtn) {
@@ -523,154 +540,11 @@ public class Resinet3 extends JFrame
         }
 
         if (button == resetGraphBtn) {
-            //Graph zurücksetzen
-            setGUIState(GUI_STATES.ENTER_GRAPH);
-
-            netPanel.resetGraph();
-
-            graph = null;
-            zer = null;
-            singleReliabilityPanel.removeAll();
-            singleReliabilityPanel.repaint();
+            resetGraph();
         }
 
         if (button == probabilitiesOkBtn) {
-            int edgeCount = edgeProbabilityBoxes.size();
-            int nodeCount = nodeProbabilityBoxes.size();
-            edgeProbabilities = new float[edgeCount];
-            nodeProbabilities = new float[nodeCount];
-            boolean seriesValuesMissing = false;
-
-            MyList edgesWithMissingProbability = new MyList();
-            MyList nodesWithMissingProbability = new MyList();
-
-            //Prüft alle Felder durch, ob da Wahrscheinlichkeiten drin stehen
-            for (int i = 0; i < edgeCount; i++) {
-                String s = edgeProbabilityBoxes.get(i).getText();
-                if (textIsNotProbability(s))
-                    edgesWithMissingProbability.add(String.valueOf(i));
-            }
-
-            for (int i = 0; i < nodeCount; i++) {
-                String s = nodeProbabilityBoxes.get(i).getText();
-                if (textIsNotProbability(s))
-                    nodesWithMissingProbability.add(String.valueOf(i));
-            }
-
-            if (sameReliabilityRadioBtn.isSelected()) {
-                //Felder für die Berechnungsserien prüfen
-                ArrayList<JTextField> checkingList = new ArrayList<>();
-                checkingList.add(edgeEndProbabilityBox);
-                checkingList.add(nodeEndProbabilityBox);
-                checkingList.add(edgeProbabilityStepSizeBox);
-                checkingList.add(nodeProbabilityStepSizeBox);
-
-                for (JTextField field : checkingList) {
-                    String value = field.getText();
-
-                    if (value.length() != 0 && textIsNotProbability(value)) {
-                        seriesValuesMissing = true;
-                        break;
-                    }
-                }
-            }
-
-            if (edgesWithMissingProbability.size() != 0 || nodesWithMissingProbability.size() != 0 || seriesValuesMissing) {
-                //Dieser Block zeigt nur ein Hinweisfenster an, falls Wahrscheinlichkeiten fehlen
-                //Strings für fehlende Kanten und Knoten generieren
-                MyIterator it = edgesWithMissingProbability.iterator();
-                String missingProbabilityEdges = (String) it.next();
-                while (it.hasNext()) {
-                    String s2 = (String) it.next();
-                    missingProbabilityEdges = missingProbabilityEdges + ", " + s2;
-                }
-
-                it = nodesWithMissingProbability.iterator();
-                String missingProbabilityNodes = (String) it.next();
-                while (it.hasNext()) {
-                    String s2 = (String) it.next();
-                    missingProbabilityNodes = missingProbabilityNodes + ", " + s2;
-                }
-
-                String str = "The reliability of an edge is a probability, thus\nit must be a number in format x.xxxxxx " +
-                        "which is\nless than or equal to 1. \n";
-
-                //Passende Texte hinzufügen
-                if (edgesWithMissingProbability.size() != 0 || nodesWithMissingProbability.size() != 0) {
-                    str += "Please check the in-\nput for edge\n" + missingProbabilityEdges +
-                            "\n and for node\n" + missingProbabilityNodes + "\n";
-                }
-
-                if (seriesValuesMissing) {
-                    str += "Please check the input for the calculation series.";
-                }
-
-                //Toolkit.getDefaultToolkit().beep();
-                JOptionPane.showMessageDialog(mainFrame, str, "Warning!", JOptionPane.ERROR_MESSAGE);
-
-                return;
-            }
-            //bis hierhin in diesem Block: testen, ob felder ausgefüllt wurden
-
-            for (int i = 0; i < edgeCount; i++) {
-                edgeProbabilityBoxes.get(i).setEditable(false);
-                String s = edgeProbabilityBoxes.get(i).getText();
-                Float fo = Float.valueOf(s);
-                edgeProbabilities[i] = fo;
-            }
-
-            for (int i = 0; i < nodeCount; i++) {
-                nodeProbabilityBoxes.get(i).setEditable(false);
-                String s = nodeProbabilityBoxes.get(i).getText();
-                Float fo = Float.valueOf(s);
-                nodeProbabilities[i] = fo;
-            }
-
-            resetProbabilitiesBtn.setEnabled(true);
-            probabilitiesOkBtn.setEnabled(false);
-
-            if (graph != null)
-                calcReliabilityBtn.setEnabled(true);
-            resilienceBtn.setEnabled(true);
-
-        /*Wahrscheinlichkeiten neu zuordnen.*/
-            reassignProbabilities();
-
-
-            //End value und step size zuordnen
-            if (sameReliabilityRadioBtn.isSelected()) {
-                if (sameReliabilityEdgeProbBox.getText().length() != 0) {
-                    edgeStartValue = new BigDecimal(sameReliabilityEdgeProbBox.getText());
-                    System.out.println("StartValue Edges: " + edgeStartValue);
-                }
-
-                if (edgeEndProbabilityBox.getText().length() != 0) {
-                    edgeEndValue = new BigDecimal(edgeEndProbabilityBox.getText());
-                    System.out.println("EndValue Edges: " + edgeEndValue);
-                }
-
-                if (edgeProbabilityStepSizeBox.getText().length() != 0) {
-                    edgeStepSize = new BigDecimal(edgeProbabilityStepSizeBox.getText());
-                    System.out.println("StepSize Edges: " + edgeStepSize);
-                }
-
-                if (sameReliabilityNodeProbBox.getText().length() != 0) {
-                    nodeStartValue = new BigDecimal(sameReliabilityNodeProbBox.getText());
-                    System.out.println("StartValue Nodes: " + nodeStartValue);
-                }
-
-                if (nodeEndProbabilityBox.getText().length() != 0) {
-                    nodeEndValue = new BigDecimal(nodeEndProbabilityBox.getText());
-                    System.out.println("EndValue Nodes: " + nodeEndValue);
-                }
-
-                if (nodeProbabilityStepSizeBox.getText().length() != 0) {
-                    nodeStepSize = new BigDecimal(nodeProbabilityStepSizeBox.getText());
-                    System.out.println("StepSize Nodes: " + nodeStepSize);
-                }
-            }
-
-
+            readAndCheckProbabilities();
         }
 
 
@@ -741,6 +615,23 @@ public class Resinet3 extends JFrame
     }
 
     /**
+     * Setzt den Graph und alle damit verbundenen Variablen zurück und stellt die GUI um
+     */
+    public void resetGraph() {
+        setGUIState(GUI_STATES.ENTER_GRAPH);
+
+        netPanel.resetGraph();
+
+        graph = null;
+        zer = null;
+        singleReliabilityPanel.removeAll();
+        singleReliabilityPanel.repaint();
+
+        nodeProbabilityBoxes.clear();
+        edgeProbabilityBoxes.clear();
+    }
+
+    /**
      * Wird ausgelöst, wenn der Graph verändert wurde
      */
     @Override
@@ -755,32 +646,52 @@ public class Resinet3 extends JFrame
         if (sameReliabilityRadioBtn.isSelected())
             return;
 
-
         int edgeCount = netPanel.drawnEdges.size();
         int edgeBoxCount = edgeProbabilityBoxes.size();
         int nodeCount = netPanel.drawnNodes.size();
         int nodeBoxCount = nodeProbabilityBoxes.size();
 
+        //Fehlende Kantenwahrscheinlichkeitsfelder hinzufügen
         for (int i = edgeBoxCount; i < edgeCount; i++) {
             addFieldToProbPanel(i, false);
         }
-
+        //Fehlende Knotenwahrscheinlichkeitsfelder hinzufügen
         for (int i = nodeBoxCount; i < nodeCount; i++) {
             addFieldToProbPanel(i, true);
         }
 
+        //Überflüssige Kantenwahrscheinlichkeitsfelder entfernen
         for (int i = edgeBoxCount; i > edgeCount; i--) {
-            JTextField textField =  edgeProbabilityBoxes.get(edgeProbabilityBoxes.size() - 1);
+            JTextField textField = edgeProbabilityBoxes.get(edgeProbabilityBoxes.size() - 1);
             textField.getParent().getParent().remove(textField.getParent());
             edgeProbabilityBoxes.remove(textField);
         }
 
+        //Überflüssige Knotenwahrscheinlichkeitsfelder entfernen
         for (int i = nodeBoxCount; i > nodeCount; i--) {
-            JTextField textField =  nodeProbabilityBoxes.get(nodeProbabilityBoxes.size() - 1);
+            JTextField textField = nodeProbabilityBoxes.get(nodeProbabilityBoxes.size() - 1);
             textField.getParent().getParent().remove(textField.getParent());
             nodeProbabilityBoxes.remove(textField);
         }
-        probabilityFieldsScrollPane.validate();
+
+        //Layouten einleiten
+        singleReliabilityPanel.revalidate();
+
+        //invokeLater, damit das erst ausgeführt wird, nachdem das singleReliabilityPanel validiert wurde.
+        //Sonst haben die Panels mit den Eingabefeldern keine Koordinaten, mit denen gerechnet werden kann
+        if (singleReliabilityPanel.getComponentCount() > 4) {
+            SwingUtilities.invokeLater(() -> {
+                int maxY = 0;
+                for (Component comp : singleReliabilityPanel.getComponents()) {
+                    if (comp.getY() > maxY) {
+                        maxY = comp.getY();
+                    }
+                }
+                int height = maxY + 70;
+                singleReliabilityPanel.setPreferredSize(new Dimension((probabilityFieldsScrollPane.getWidth() - 10), height));
+                probabilityFieldsScrollPane.revalidate();
+            });
+        }
     }
 
 
@@ -807,11 +718,156 @@ public class Resinet3 extends JFrame
         } else {
             edgeProbabilityBoxes.add(textField);
         }
-        Panel panel = new Panel();
+        JPanel panel = new JPanel();
+        panel.setDoubleBuffered(true);
         panel.add(label);
         panel.add(textField);
         singleReliabilityPanel.add(panel);
     }
+
+    /**
+     * Prüft alle Wahrscheinlichkeitsfelder und speicher die Werte in die entsprechenden Variablen
+     */
+    private void readAndCheckProbabilities() {
+
+        int edgeCount = edgeProbabilityBoxes.size();
+        int nodeCount = nodeProbabilityBoxes.size();
+        edgeProbabilities = new double[edgeCount];
+        nodeProbabilities = new double[nodeCount];
+        boolean seriesValuesMissing = false;
+
+        MyList edgesWithMissingProbability = new MyList();
+        MyList nodesWithMissingProbability = new MyList();
+
+        //Prüft alle Felder durch, ob da Wahrscheinlichkeiten drin stehen
+        for (int i = 0; i < edgeCount; i++) {
+            String s = edgeProbabilityBoxes.get(i).getText();
+            if (textIsNotProbability(s))
+                edgesWithMissingProbability.add(String.valueOf(i));
+        }
+
+        for (int i = 0; i < nodeCount; i++) {
+            String s = nodeProbabilityBoxes.get(i).getText();
+            if (textIsNotProbability(s))
+                nodesWithMissingProbability.add(String.valueOf(i));
+        }
+
+        if (sameReliabilityRadioBtn.isSelected()) {
+            //Felder für die Berechnungsserien prüfen
+            ArrayList<JTextField> checkingList = new ArrayList<>();
+            checkingList.add(edgeEndProbabilityBox);
+            checkingList.add(nodeEndProbabilityBox);
+            checkingList.add(edgeProbabilityStepSizeBox);
+            checkingList.add(nodeProbabilityStepSizeBox);
+
+            for (JTextField field : checkingList) {
+                String value = field.getText();
+
+                if (value.length() != 0 && textIsNotProbability(value)) {
+                    seriesValuesMissing = true;
+                    break;
+                }
+            }
+        }
+
+        if (edgesWithMissingProbability.size() != 0 || nodesWithMissingProbability.size() != 0 || seriesValuesMissing) {
+            //Dieser Block zeigt nur ein Hinweisfenster an, falls Wahrscheinlichkeiten fehlen
+            //Strings für fehlende Kanten und Knoten generieren
+            MyIterator it = edgesWithMissingProbability.iterator();
+            String missingProbabilityEdges = (String) it.next();
+            while (it.hasNext()) {
+                String s2 = (String) it.next();
+                missingProbabilityEdges = missingProbabilityEdges + ", " + s2;
+            }
+
+            it = nodesWithMissingProbability.iterator();
+            String missingProbabilityNodes = (String) it.next();
+            while (it.hasNext()) {
+                String s2 = (String) it.next();
+                missingProbabilityNodes = missingProbabilityNodes + ", " + s2;
+            }
+
+            String str = "The reliability of an edge is a probability, thus\nit must be a number in format x.xxxxxx " +
+                    "which is\nless than or equal to 1. \n";
+
+            //Passende Texte hinzufügen
+            if (edgesWithMissingProbability.size() != 0 || nodesWithMissingProbability.size() != 0) {
+                str += "Please check the in-\nput for edge\n" + missingProbabilityEdges +
+                        "\n and for node\n" + missingProbabilityNodes + "\n";
+            }
+
+            if (seriesValuesMissing) {
+                str += "Please check the input for the calculation series.";
+            }
+
+            //Toolkit.getDefaultToolkit().beep();
+            JOptionPane.showMessageDialog(mainFrame, str, "Warning!", JOptionPane.ERROR_MESSAGE);
+
+            return;
+        }
+        //bis hierhin in diesem Block: testen, ob felder ausgefüllt wurden
+
+        for (int i = 0; i < edgeCount; i++) {
+            edgeProbabilityBoxes.get(i).setEditable(false);
+            String s = edgeProbabilityBoxes.get(i).getText();
+            Float fo = Float.valueOf(s);
+            edgeProbabilities[i] = fo;
+        }
+
+        for (int i = 0; i < nodeCount; i++) {
+            nodeProbabilityBoxes.get(i).setEditable(false);
+            String s = nodeProbabilityBoxes.get(i).getText();
+            Float fo = Float.valueOf(s);
+            nodeProbabilities[i] = fo;
+        }
+
+        resetProbabilitiesBtn.setEnabled(true);
+        probabilitiesOkBtn.setEnabled(false);
+
+        if (graph != null)
+            calcReliabilityBtn.setEnabled(true);
+        resilienceBtn.setEnabled(true);
+
+        /*Wahrscheinlichkeiten neu zuordnen.*/
+        reassignProbabilities();
+
+
+        //End value und step size zuordnen
+        if (sameReliabilityRadioBtn.isSelected()) {
+            if (sameReliabilityEdgeProbBox.getText().length() != 0) {
+                edgeStartValue = new BigDecimal(sameReliabilityEdgeProbBox.getText());
+                System.out.println("StartValue Edges: " + edgeStartValue);
+            }
+
+            if (edgeEndProbabilityBox.getText().length() != 0) {
+                edgeEndValue = new BigDecimal(edgeEndProbabilityBox.getText());
+                System.out.println("EndValue Edges: " + edgeEndValue);
+            }
+
+            if (edgeProbabilityStepSizeBox.getText().length() != 0) {
+                edgeStepSize = new BigDecimal(edgeProbabilityStepSizeBox.getText());
+                System.out.println("StepSize Edges: " + edgeStepSize);
+            }
+
+            if (sameReliabilityNodeProbBox.getText().length() != 0) {
+                nodeStartValue = new BigDecimal(sameReliabilityNodeProbBox.getText());
+                System.out.println("StartValue Nodes: " + nodeStartValue);
+            }
+
+            if (nodeEndProbabilityBox.getText().length() != 0) {
+                nodeEndValue = new BigDecimal(nodeEndProbabilityBox.getText());
+                System.out.println("EndValue Nodes: " + nodeEndValue);
+            }
+
+            if (nodeProbabilityStepSizeBox.getText().length() != 0) {
+                nodeStepSize = new BigDecimal(nodeProbabilityStepSizeBox.getText());
+                System.out.println("StepSize Nodes: " + nodeStepSize);
+            }
+        }
+
+
+    }
+
 
     private void checkGraph() {
 
@@ -869,8 +925,8 @@ public class Resinet3 extends JFrame
         }
     }
 
-    private float getPathProbability(MySet path) {
-        float p = 1;
+    private double getPathProbability(MySet path) {
+        double p = 1;
         String output = "Pfad";
 
         MyIterator it = path.iterator();
@@ -886,7 +942,7 @@ public class Resinet3 extends JFrame
                 output += " n" + n.node_no;
             }
         }
-        System.out.println(Float.toString(p) + " für " + output);
+        System.out.println(Double.toString(p) + " für " + output);
         return p;
     }
 
@@ -1052,7 +1108,7 @@ public class Resinet3 extends JFrame
             while (it.hasNext()) {
                 MyList al = (MyList) it.next();
                 MySet hs = (MySet) al.get(0);
-                float p;
+                double p;
                 p = getPathProbability(hs);
                 String s = getNo(hs);
                 for (int i = 1; i < al.size(); i++) {
@@ -1089,7 +1145,7 @@ public class Resinet3 extends JFrame
                 ResultA ra = (ResultA) it.next();
                 MySet si = ra.i;
                 MySet sd = ra.d;
-                float pi = 1;
+                double pi = 1;
                 MyIterator it1 = si.iterator();
                 while (it1.hasNext()) {
                     Object obj = it1.next();
@@ -1103,7 +1159,7 @@ public class Resinet3 extends JFrame
                         s = s + "r" + String.valueOf(n.node_no);
                     }
                 }
-                float pd = 1;
+                double pd = 1;
                 MyIterator it2 = sd.iterator();
                 while (it2.hasNext()) {
                     Object obj = it2.next();
@@ -1137,7 +1193,7 @@ public class Resinet3 extends JFrame
 
 //////////////////Zuverlaessigkeitsberechnung nur mit Heidtmann's Algorithm //////////////////  
 
-    private float heidtmanns_reliability() {
+    private double heidtmanns_reliability() {
         long start = new Date().getTime();
 
 
@@ -1174,7 +1230,7 @@ public class Resinet3 extends JFrame
                 System.out.println("Neuer Pfad");
                 MyList al = (MyList) it.next();
                 MySet hs = (MySet) al.get(0);
-                float p;
+                double p;
                 //hs enthält hier anscheinend einen Pfad im Graphen zwischen den K-Knoten
                 p = getPathProbability(hs);
 
@@ -1185,7 +1241,7 @@ public class Resinet3 extends JFrame
                     p = p * (1 - getPathProbability(hs1));
 
                 }
-                System.out.println("Wahrscheinlichkeit: " + Float.toString(p));
+                System.out.println("Wahrscheinlichkeit: " + Double.toString(p));
                 prob = prob + p;
 
             }
@@ -1252,7 +1308,7 @@ public class Resinet3 extends JFrame
     private int total_nodes;
     private int c_nodes;
     private BigInteger combinations;
-    private float result_resilience;
+    private double result_resilience;
     private int counter;
 
     // Hauptmethode, die den Algorithmus zur Berechnung der Resilienz beinhaltet.
@@ -1427,7 +1483,7 @@ public class Resinet3 extends JFrame
             System.err.println(e1.toString());
         }
 
-        float[] probsSave = edgeProbabilities.clone();
+        double[] probsSave = edgeProbabilities.clone();
 
         //Dialog zum Datei auswählen
         JFileChooser chooseSaveFile = new JFileChooser();

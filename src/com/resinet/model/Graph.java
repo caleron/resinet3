@@ -30,12 +30,12 @@ public class Graph implements Serializable {
     public MyList nodeList;
     public MyList edgeList;
 
-    public float kprob;
+    public double kprob;
     //fuer K-Reduktion (1-u1u2)(1-u3u4)...
     public String reducetype;
     //fuer Polygon-Ketten-Reduktion
     //wedge = (f1+f2)(f1+f3)/f1 oder wedge = (f1+f2)(f1+f3)(f1+f4)/f1^2
-    public float wedge = 1f;
+    public double wedge = 1.0;
     public MySet wedgeIndex = new MySet();
 
     public Object clone() throws CloneNotSupportedException {
