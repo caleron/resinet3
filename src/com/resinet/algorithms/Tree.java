@@ -23,6 +23,10 @@ class Tree extends Thread {
 
     public boolean dead = false;
 
+    /*
+    Während des Pfadefindens wird der Graph hierbei verändert, d.h. es werden Kanten entfernt und hinzugefügt
+     */
+
     public Tree(Graph graph) {
         //graph = (com.resinet.model.Graph)Sc.serialClone(graph);
         this.graph = graph;

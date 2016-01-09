@@ -1,7 +1,7 @@
 package com.resinet;/* Resinet3.java */
 
 import com.resinet.algorithms.Con_check;
-import com.resinet.algorithms.Zerleg;
+import com.resinet.algorithms.ProbabilityCalculator;
 import com.resinet.model.*;
 import com.resinet.util.*;
 import com.resinet.views.*;
@@ -9,46 +9,32 @@ import com.resinet.views.*;
 import java.awt.*;
 import java.awt.event.*;
 import java.math.BigDecimal;
-import java.math.BigInteger;
 import java.lang.*;
 import java.util.*;
-import java.io.*;
 import java.util.List;
 
 import javax.swing.*;
-import javax.swing.filechooser.FileNameExtensionFilter;
 
 
 public class Resinet3 extends JFrame
-        implements ActionListener, NetPanel.GraphChangedListener {
+        implements ActionListener, NetPanel.GraphChangedListener, ProbabilityCalculator.CalculationProgressListener {
     private NetPanel netPanel;
 
-    private JTextArea graphPanelTextArea;
+    private JTextArea graphPanelTextArea, resultTextArea;
     private JTextField edgeEndProbabilityBox, edgeProbabilityStepSizeBox, nodeEndProbabilityBox, nodeProbabilityStepSizeBox,
             sameReliabilityEdgeProbBox, sameReliabilityNodeProbBox;
     private JButton drawBtn, resetGraphBtn, resetProbabilitiesBtn,
             probabilitiesOkBtn, calcReliabilityBtn, resilienceBtn, inputNetBtn, exportNetBtn;
     private JRadioButton singleReliabilityRadioBtn, sameReliabilityRadioBtn;
 
+    private JScrollPane probabilityFieldsScrollPane;
+    private JCheckBox reliabilityCompareCheckBox;
 
     JPanel sameReliabilityPanel, singleReliabilityPanel;
 
     public List<JTextField> edgeProbabilityBoxes = new ArrayList<>();
     private List<JTextField> nodeProbabilityBoxes = new ArrayList<>();
-    private double[] edgeProbabilities;
-    private double[] nodeProbabilities;
-    private double prob;
-    private String resultText;
-    private JTextArea resultTextArea;
-
-    private Graph graph;
-
-    private Zerleg zer;
-
     //private Color backgroundColor = new Color(85, 143, 180);
-
-    private JScrollPane probabilityFieldsScrollPane;
-    private JCheckBox reliabilityCompareCheckBox;
 
     private static Resinet3 mainFrame;
 
@@ -58,6 +44,11 @@ public class Resinet3 extends JFrame
         SHOW_GRAPH_INFO,
         ENTER_GRAPH,
         CALCULATION_RUNNING
+    }
+
+    public enum CALCULATION_MODES {
+        RESILIENCE,
+        RELIABILITY,
     }
 
     private Resinet3() {
@@ -88,17 +79,6 @@ public class Resinet3 extends JFrame
         } catch (Exception e) {
             e.printStackTrace();
         }
-
-        //Initialwerte setzen
-        edgeStartValue = BigDecimal.ZERO;
-        edgeEndValue = BigDecimal.ZERO;
-        edgeStepSize = BigDecimal.ZERO;
-        nodeStartValue = BigDecimal.ZERO;
-        nodeEndValue = BigDecimal.ZERO;
-        nodeStepSize = BigDecimal.ZERO;
-
-        calculationSeriesMode = 0;
-        onlyReliabilityFast = false;
 
         GridBagLayout mainLayout = new GridBagLayout();
         setLayout(mainLayout);
@@ -515,6 +495,15 @@ public class Resinet3 extends JFrame
     }
 
     /**
+     * Setzt den Text in der Ergebnistextbox
+     *
+     * @param text Der Text
+     */
+    public void setResultText(String text) {
+        resultTextArea.setText(text);
+    }
+
+    /**
      * Wird beim Mausklick auf Buttons ausgelöst
      *
      * @param evt Das Click-Event
@@ -543,74 +532,19 @@ public class Resinet3 extends JFrame
             resetGraph();
         }
 
-        if (button == probabilitiesOkBtn) {
-            readAndCheckProbabilities();
-        }
-
-
         if (button == resetProbabilitiesBtn) {
             //Alle Wahrscheinlichkeitsfelder zurücksetzen
-            setGUIState(GUI_STATES.ENTER_GRAPH);
-
-            edgeProbabilities = null;
-
-            for (JTextField edgeProbabilityTextField : edgeProbabilityBoxes) {
-                edgeProbabilityTextField.setText(null);
-                edgeProbabilityTextField.setEditable(true);
-            }
-            //TODO statt editable disabled verwenden
-            for (JTextField nodeProbabilityTextField : nodeProbabilityBoxes) {
-                nodeProbabilityTextField.setText(null);
-                nodeProbabilityTextField.setEditable(true);
-            }
-
-            if (sameReliabilityRadioBtn.isSelected()) {
-                edgeEndProbabilityBox.setText(null);
-                edgeProbabilityStepSizeBox.setText(null);
-                nodeEndProbabilityBox.setText(null);
-                nodeProbabilityStepSizeBox.setText(null);
-            }
+            resetProbabilityFields();
         }
 
         if (button == resilienceBtn) {
             //Resilienzberechnung starten
-            if (!edgeEndValue.equals(BigDecimal.ZERO) && !edgeStepSize.equals(BigDecimal.ZERO) &&
-                    !nodeEndValue.equals(BigDecimal.ZERO) && !nodeStepSize.equals(BigDecimal.ZERO) && sameReliabilityRadioBtn.isSelected()) {
-
-                calculationSeriesMode = 1;
-                calculationSeries();
-            } else {
-                calculationSeriesMode = 0;
-                calculate_resilience();
-
-                resultText = "The network has " + total_nodes + " Nodes, containing " + c_nodes + " c-Nodes.\n" +
-                        "There are " + combinations + " combinations.\n" + "The resilience of the network is: " + result_resilience;
-                resultTextArea.setText(resultText);
-            }
+            startCalculation(CALCULATION_MODES.RESILIENCE);
         }
-
 
         if (button == calcReliabilityBtn) {
             //Zuverlässigkeitsberechnung starten
-            //heidtmanns_reliability();
-            //fact_reliability();
-
-            if (!edgeEndValue.equals(BigDecimal.ZERO) && !edgeStepSize.equals(BigDecimal.ZERO) &&
-                    !nodeEndValue.equals(BigDecimal.ZERO) && !nodeStepSize.equals(BigDecimal.ZERO) && sameReliabilityRadioBtn.isSelected()) {
-                calculationSeriesMode = 2;
-                calculationSeries();
-            } else {
-                calculationSeriesMode = 0;
-                //Wenn die Checkbox angeklickt wurde, sollen die 3 Alg. verglichen werden. Sonst nicht.
-                if (reliabilityCompareCheckBox.isSelected()) {
-                    calculate_reliability_2_Algorithms();
-                } else {
-                    onlyReliabilityFast = true;
-                    calculate_reliability_faster();
-                    onlyReliabilityFast = false;
-                }
-            }
-
+            startCalculation(CALCULATION_MODES.RELIABILITY);
         }
     }
 
@@ -622,13 +556,28 @@ public class Resinet3 extends JFrame
 
         netPanel.resetGraph();
 
-        graph = null;
-        zer = null;
         singleReliabilityPanel.removeAll();
         singleReliabilityPanel.repaint();
 
         nodeProbabilityBoxes.clear();
         edgeProbabilityBoxes.clear();
+    }
+
+    public void resetProbabilityFields() {
+        for (JTextField edgeProbabilityTextField : edgeProbabilityBoxes) {
+            edgeProbabilityTextField.setText(null);
+        }
+
+        for (JTextField nodeProbabilityTextField : nodeProbabilityBoxes) {
+            nodeProbabilityTextField.setText(null);
+        }
+
+        sameReliabilityEdgeProbBox.setText(null);
+        sameReliabilityNodeProbBox.setText(null);
+        edgeEndProbabilityBox.setText(null);
+        edgeProbabilityStepSizeBox.setText(null);
+        nodeEndProbabilityBox.setText(null);
+        nodeProbabilityStepSizeBox.setText(null);
     }
 
     /**
@@ -637,6 +586,16 @@ public class Resinet3 extends JFrame
     @Override
     public void graphChanged() {
         updateSingleReliabilityProbPanel();
+    }
+
+    /**
+     * Wird ausgelöst, wenn sich der Berechnungsstatus ändert
+     *
+     * @param status Der Berechnungsstatus
+     */
+    @Override
+    public void calculationProgressChanged(String status) {
+        setResultText(status);
     }
 
     /**
@@ -726,34 +685,22 @@ public class Resinet3 extends JFrame
     }
 
     /**
-     * Prüft alle Wahrscheinlichkeitsfelder und speicher die Werte in die entsprechenden Variablen
+     * Prüft alle Eingabefelder auf zulässige Werte
+     *
+     * @return True, wenn alle Felder Wahrscheinlichkeiten zwischen 0 und 1 enthalten
      */
-    private void readAndCheckProbabilities() {
-
+    private boolean probabilitiesValid() {
         int edgeCount = edgeProbabilityBoxes.size();
         int nodeCount = nodeProbabilityBoxes.size();
-        edgeProbabilities = new double[edgeCount];
-        nodeProbabilities = new double[nodeCount];
         boolean seriesValuesMissing = false;
+        boolean sameReliabilityValuesMissing = false;
 
         MyList edgesWithMissingProbability = new MyList();
         MyList nodesWithMissingProbability = new MyList();
 
-        //Prüft alle Felder durch, ob da Wahrscheinlichkeiten drin stehen
-        for (int i = 0; i < edgeCount; i++) {
-            String s = edgeProbabilityBoxes.get(i).getText();
-            if (textIsNotProbability(s))
-                edgesWithMissingProbability.add(String.valueOf(i));
-        }
-
-        for (int i = 0; i < nodeCount; i++) {
-            String s = nodeProbabilityBoxes.get(i).getText();
-            if (textIsNotProbability(s))
-                nodesWithMissingProbability.add(String.valueOf(i));
-        }
-
         if (sameReliabilityRadioBtn.isSelected()) {
             //Felder für die Berechnungsserien prüfen
+            boolean seriesFieldFilled = false;
             ArrayList<JTextField> checkingList = new ArrayList<>();
             checkingList.add(edgeEndProbabilityBox);
             checkingList.add(nodeEndProbabilityBox);
@@ -766,11 +713,38 @@ public class Resinet3 extends JFrame
                 if (value.length() != 0 && textIsNotProbability(value)) {
                     seriesValuesMissing = true;
                     break;
+                } else {
+                    seriesFieldFilled = true;
                 }
+            }
+            //Fehler nur anzeigen, falls mindestens ein und nicht alle Felder ausgefüllt sind
+            seriesValuesMissing = seriesFieldFilled && seriesValuesMissing;
+
+            //Felder für die Wahrscheinlichkeit für alle Kanten/Knoten prüfen
+            String edgeValue = sameReliabilityEdgeProbBox.getText(),
+                    nodeValue = sameReliabilityNodeProbBox.getText();
+            if (textIsNotProbability(edgeValue) || textIsNotProbability(nodeValue)) {
+                sameReliabilityValuesMissing = true;
+            }
+        } else {
+            //Einzelwahrscheinlichkeitsmodus
+            //Prüft alle Felder durch, ob da Wahrscheinlichkeiten drin stehen
+            for (int i = 0; i < edgeCount; i++) {
+                String s = edgeProbabilityBoxes.get(i).getText();
+                if (textIsNotProbability(s))
+                    edgesWithMissingProbability.add(String.valueOf(i));
+            }
+
+            for (int i = 0; i < nodeCount; i++) {
+                String s = nodeProbabilityBoxes.get(i).getText();
+                if (textIsNotProbability(s))
+                    nodesWithMissingProbability.add(String.valueOf(i));
             }
         }
 
-        if (edgesWithMissingProbability.size() != 0 || nodesWithMissingProbability.size() != 0 || seriesValuesMissing) {
+
+        if (edgesWithMissingProbability.size() != 0 || nodesWithMissingProbability.size() != 0
+                || seriesValuesMissing || sameReliabilityValuesMissing) {
             //Dieser Block zeigt nur ein Hinweisfenster an, falls Wahrscheinlichkeiten fehlen
             //Strings für fehlende Kanten und Knoten generieren
             MyIterator it = edgesWithMissingProbability.iterator();
@@ -800,167 +774,101 @@ public class Resinet3 extends JFrame
                 str += "Please check the input for the calculation series.";
             }
 
-            //Toolkit.getDefaultToolkit().beep();
+            if (sameReliabilityValuesMissing) {
+                str += "Please check the input for the same reliability fields.";
+            }
+
             JOptionPane.showMessageDialog(mainFrame, str, "Warning!", JOptionPane.ERROR_MESSAGE);
-
-            return;
+            return false;
         }
-        //bis hierhin in diesem Block: testen, ob felder ausgefüllt wurden
-
-        for (int i = 0; i < edgeCount; i++) {
-            edgeProbabilityBoxes.get(i).setEditable(false);
-            String s = edgeProbabilityBoxes.get(i).getText();
-            Float fo = Float.valueOf(s);
-            edgeProbabilities[i] = fo;
-        }
-
-        for (int i = 0; i < nodeCount; i++) {
-            nodeProbabilityBoxes.get(i).setEditable(false);
-            String s = nodeProbabilityBoxes.get(i).getText();
-            Float fo = Float.valueOf(s);
-            nodeProbabilities[i] = fo;
-        }
-
-        resetProbabilitiesBtn.setEnabled(true);
-        probabilitiesOkBtn.setEnabled(false);
-
-        if (graph != null)
-            calcReliabilityBtn.setEnabled(true);
-        resilienceBtn.setEnabled(true);
-
-        /*Wahrscheinlichkeiten neu zuordnen.*/
-        reassignProbabilities();
-
-
-        //End value und step size zuordnen
-        if (sameReliabilityRadioBtn.isSelected()) {
-            if (sameReliabilityEdgeProbBox.getText().length() != 0) {
-                edgeStartValue = new BigDecimal(sameReliabilityEdgeProbBox.getText());
-                System.out.println("StartValue Edges: " + edgeStartValue);
-            }
-
-            if (edgeEndProbabilityBox.getText().length() != 0) {
-                edgeEndValue = new BigDecimal(edgeEndProbabilityBox.getText());
-                System.out.println("EndValue Edges: " + edgeEndValue);
-            }
-
-            if (edgeProbabilityStepSizeBox.getText().length() != 0) {
-                edgeStepSize = new BigDecimal(edgeProbabilityStepSizeBox.getText());
-                System.out.println("StepSize Edges: " + edgeStepSize);
-            }
-
-            if (sameReliabilityNodeProbBox.getText().length() != 0) {
-                nodeStartValue = new BigDecimal(sameReliabilityNodeProbBox.getText());
-                System.out.println("StartValue Nodes: " + nodeStartValue);
-            }
-
-            if (nodeEndProbabilityBox.getText().length() != 0) {
-                nodeEndValue = new BigDecimal(nodeEndProbabilityBox.getText());
-                System.out.println("EndValue Nodes: " + nodeEndValue);
-            }
-
-            if (nodeProbabilityStepSizeBox.getText().length() != 0) {
-                nodeStepSize = new BigDecimal(nodeProbabilityStepSizeBox.getText());
-                System.out.println("StepSize Nodes: " + nodeStepSize);
-            }
-        }
-
-
+        return true;
     }
 
+    /**
+     * Prüft alle Wahrscheinlichkeitsfelder und speicher die Werte in die entsprechenden Variablen
+     */
+    private void insertProbabilities(CalculationParams params) {
+        if (!probabilitiesValid()) {
+            //Abbrechen, falls nicht alle Wahrscheinlichkeiten zulässig sind
+            return;
+        }
 
-    private void checkGraph() {
+        if (sameReliabilityRadioBtn.isSelected()) {
+            params.setReliabilityMode(true);
+            //Serienberechnungsvariablen zuweisen
+            Double edgeStartValue = Double.valueOf(sameReliabilityEdgeProbBox.getText());
+            Double nodeStartValue = Double.valueOf(sameReliabilityNodeProbBox.getText());
+            Double edgeEndValue = 0.0, edgeStepSize = 0.0, nodeEndValue = 0.0, nodeStepSize = 0.0;
+            try {
+                edgeEndValue = Double.valueOf(edgeEndProbabilityBox.getText());
+                edgeStepSize = Double.valueOf(edgeProbabilityStepSizeBox.getText());
+                nodeEndValue = Double.valueOf(nodeEndProbabilityBox.getText());
+                nodeStepSize = Double.valueOf(nodeProbabilityStepSizeBox.getText());
+            } catch (Exception ignored) {
+            }
 
+            //Nur wenn alle Variablen für die Serienberechnung gegeben sind, Serienberechnung zulassen
+            if (edgeEndValue > 0 && edgeStepSize > 0 && nodeStepSize > 0 && nodeEndValue > 0) {
+                params.setSeriesParams(edgeStartValue, edgeEndValue, edgeStepSize, nodeStartValue, nodeEndValue, nodeStepSize);
+            } else {
+                params.setSameReliabilityParams(edgeStartValue, nodeStartValue);
+            }
+        } else {
+            params.setReliabilityMode(false);
+            int edgeCount = edgeProbabilityBoxes.size();
+            int nodeCount = nodeProbabilityBoxes.size();
+            double[] edgeProbabilities = new double[edgeCount];
+            double[] nodeProbabilities = new double[nodeCount];
+            for (int i = 0; i < edgeCount; i++) {
+                edgeProbabilities[i] = Double.valueOf(edgeProbabilityBoxes.get(i).getText());
+            }
+
+            for (int i = 0; i < nodeCount; i++) {
+                nodeProbabilities[i] = Double.valueOf(nodeProbabilityBoxes.get(i).getText());
+            }
+
+            params.setSingleReliabilityParams(edgeProbabilities, nodeProbabilities);
+        }
+    }
+
+    /**
+     * Prüft, ob der Graph alle notwendigen Bedingungen erfüllt
+     *
+     * @return Ob der Graph zulässig ist
+     */
+    private boolean graphIsValid(Graph graph) {
         if (netPanel.drawnEdges.size() == 0) {
             //Dieser Block zeigt ein Hinweisfenster an, wenn keine Knoten vorhanden sind und bricht die Methode ab
             String str = "Your Network does not contain edges!";
-
-            Toolkit.getDefaultToolkit().beep();
-
             JOptionPane.showMessageDialog(mainFrame, str, "Warning!", JOptionPane.ERROR_MESSAGE);
-            return;
+            return false;
         }
 
         //Anzahl Konnektionsknoten bestimmen
-        int count = 0;
+        int cNodeCount = 0;
         MyIterator np = netPanel.drawnNodes.iterator();
         while (np.hasNext()) {
             NodePoint n = (NodePoint) np.next();
             if (n.k)
-                count = count + 1;
+                cNodeCount = cNodeCount + 1;
         }
 
-        if (count < 2) {
+        if (cNodeCount < 2) {
             //Der Code in diesem Block zeigt nur ein Hinweisfenster an und bricht die Funktion ab
             String str = "Your Network does not contain at least 2 c-drawnNodes! \nYou can draw a new c-node by " +
                     "pressing the right mouse button. \nIf you want to transform an existing node into a c-node, " +
                     "\nplease hold the Ctrl-Key on your keyboard while left-clicking on the node.";
 
             JOptionPane.showMessageDialog(mainFrame, str, "Warning!", JOptionPane.ERROR_MESSAGE);
-            return;
-        }
-    }
-
-    /**
-     * Weist alle Wahrscheinlichkeiten aus den Eingabefeldern den Elementen im Graphen neu zu
-     */
-    private void reassignProbabilities() {
-        /*
-        Diese Listen sind Klone der Kantenlisten des Graphen, aber halten anscheinend die selben Referenzen auf Kanten
-        wie die Kantenliste des Graphen, also eine flache Kopie.
-        */
-        MyList edgeList = graph.getEdgelist();
-        //Kantenwahrscheinlichkeiten
-        for (int i = 0; i < edgeProbabilities.length; i++) {
-            Edge e = (Edge) edgeList.get(i);
-            e.prob = edgeProbabilities[i];
+            return false;
         }
 
-        MyList nodeList = graph.getNodelist();
-
-        //Knotenwahrscheinlichkeiten
-        for (int i = 0; i < nodeProbabilities.length; i++) {
-            Node e = (Node) nodeList.get(i);
-            e.prob = nodeProbabilities[i];
+        //Prüfen ob das Netz zusammenhängt
+        if (!Con_check.isConnected(graph)) {
+            JOptionPane.showMessageDialog(mainFrame, "Your Graph is not connected", "Error", JOptionPane.ERROR_MESSAGE);
+            return false;
         }
-    }
-
-    private double getPathProbability(MySet path) {
-        double p = 1;
-        String output = "Pfad";
-
-        MyIterator it = path.iterator();
-        while (it.hasNext()) {
-            Object obj = it.next();
-            if (obj instanceof Edge) {
-                Edge e = (Edge) obj;
-                p = p * e.prob;
-                output += " e" + e.edge_no;
-            } else {
-                Node n = ((Node) obj);
-                p = p * n.prob;
-                output += " n" + n.node_no;
-            }
-        }
-        System.out.println(Double.toString(p) + " für " + output);
-        return p;
-    }
-
-    private String getNo(MySet hs) {
-        String s = "";
-        MyIterator it = hs.iterator();
-
-        while (it.hasNext()) {
-            Object obj = it.next();
-            if (obj instanceof Edge) {
-                Edge e = (Edge) obj;
-                s += " r" + e.edge_no;
-            } else {
-                Node n = ((Node) obj);
-                s += " n" + n.node_no;
-            }
-        }
-        return s;
+        return true;
     }
 
     /**
@@ -1047,575 +955,36 @@ public class Resinet3 extends JFrame
         return new Graph(nodeList, edgeList);
     }
 
-    //TODO für die Berechnung graphen vorher checken
-    //TODO graph für Berechnung erzeugen mit graph = makeGraph();
-
     /**
-     * Zuverlaessigkeitsberechnung mit nur einem Algorithmus Bei einem zusammenhängenden Graphen wird Heidtmanns
-     * Algorithmus verwendet, sonst die Faktorisierungsmethode
+     * Startet die Berechnung
+     *
+     * @param mode Resilienz oder Zuverlässigkeit
      */
-    private void calculate_reliability_faster() {
-        resultText = "Calculating...";
-        resultTextArea.setText(resultText);
+    private void startCalculation(CALCULATION_MODES mode) {
+        Graph graph = makeGraph();
+        if (!graphIsValid(graph))
+            return;
 
-        //Prüfen ob das Netz zusammenhängt
-        boolean graphConnected;
-        //com.resinet.model.Graph ist zusammenhängend
-        graphConnected = (Con_check.check(graph) == -1);
+        CalculationParams params = new CalculationParams(graph);
+        insertProbabilities(params);
 
-        if (graphConnected) {
-            heidtmanns_reliability();
-            resultText = "The reliability of the network is: " + prob;
-        } else {
-            JOptionPane.showMessageDialog(mainFrame, "Your Graph is not connected!", "Error", JOptionPane.ERROR_MESSAGE);
-        }
-        resultTextArea.setText(resultText);
-    }
+        ProbabilityCalculator calculator = ProbabilityCalculator.create(this, params);
+        setGUIState(GUI_STATES.CALCULATION_RUNNING);
 
-    /**
-     * Zuverlaessigkeitsberechnung mit 2 Algorithmen (ReNeT)
-     */
-    private void calculate_reliability_2_Algorithms() {
-        resultText = "Please use the scrollbar to scroll through the results. \n \n";
-
-        calcReliabilityBtn.setEnabled(true);
-        resilienceBtn.setEnabled(true);
-
-        zer = new Zerleg(graph);
-        zer.start();
-        try {
-            zer.join();
-        } catch (InterruptedException ignored) {
-        }
-
-        reassignProbabilities();
-
-        if (graph.edgeList.size() == 1) {
-            Edge e = (Edge) graph.getEdgelist().get(0);
-            if ((e.left_node.c_node) && (e.right_node.c_node)) {
-                prob = e.prob;
-                prob *= e.left_node.prob;
-                prob *= e.right_node.prob;
-            } else
-                prob = 0;
-            resultText = "The reduced network contains only one edge.\nThe reliability of the network is:\nP=" + prob;
-
-        } else {
-            prob = 0;
-            String str3 = "P=";
-            int count = 0;
-            MyIterator it = zer.hz.iterator();
-            while (it.hasNext()) {
-                MyList al = (MyList) it.next();
-                MySet hs = (MySet) al.get(0);
-                double p;
-                p = getPathProbability(hs);
-                String s = getNo(hs);
-                for (int i = 1; i < al.size(); i++) {
-                    MySet hs1 = (MySet) al.get(i);
-                    if (hs1.isEmpty())
-                        continue;
-                    p = p * (1 - getPathProbability(hs1));
-                    String s2 = getNo(hs1);
-                    if (s2.lastIndexOf('r') == 0) {
-                        s2 = s2.replace('r', 'u');
-                        s2 = s2.replace('n', 'v');
-                        s = s + s2;
-                    } else
-                        s = s + "(1-" + s2 + ")";
-                }
-                if (count != 0)
-                    s = "+" + s;
-                count++;
-                prob = prob + p;
-                str3 = str3 + s;
-            }
-            String str1 = "The network is decomposed with Heidtmann's Algorithm:\n";
-            String str2 = "The reliability of the network is:\n";
-
-            resultText = resultText + str1 + str3 + "\n" + str2 + prob;
-
-            //now beginning to calculate the value from AZerleg
-
-            resultText = resultText + "\n\n-------------------------\n\n";
-            prob = 0;
-            String s = "P=";
-            it = zer.az.iterator();
-            while (it.hasNext()) {
-                ResultA ra = (ResultA) it.next();
-                MySet si = ra.i;
-                MySet sd = ra.d;
-                double pi = 1;
-                MyIterator it1 = si.iterator();
-                while (it1.hasNext()) {
-                    Object obj = it1.next();
-                    if (obj instanceof Edge) {
-                        Edge e = (Edge) obj;
-                        pi = pi * e.prob;
-                        s = s + "r" + String.valueOf(e.edge_no);
-                    } else {
-                        Node n = (Node) obj;
-                        pi = pi * n.prob;
-                        s = s + "r" + String.valueOf(n.node_no);
-                    }
-                }
-                double pd = 1;
-                MyIterator it2 = sd.iterator();
-                while (it2.hasNext()) {
-                    Object obj = it2.next();
-                    if (obj instanceof Edge) {
-                        Edge e = (Edge) obj;
-                        pd = pd * (1 - e.prob);
-                        s = s + "u" + String.valueOf(e.edge_no);
-                    } else {
-                        Node n = (Node) obj;
-                        pd = pd * (1 - n.prob);
-                        s = s + "v" + String.valueOf(n.node_no);
-                    }
-                }
-                prob = prob + pi * pd;
-                s = s + '+';
-            }
-            int last_id = s.lastIndexOf('+');
-            if (last_id != -1) {
-                s = s.substring(0, last_id); //remove the last "+"
-            }
-            str1 = "The network is decomposed with Abraham's Algorithm:\n";
-            str2 = "The reliability of the network is:\n";
-
-            resultText = resultText + str1 + s + "\n" + str2 + prob;
-
-        }
-        resultTextArea.setText(resultText);
-        //calcReliabilityBtn.setEnabled(false);
-    }
-
-
-//////////////////Zuverlaessigkeitsberechnung nur mit Heidtmann's Algorithm //////////////////  
-
-    private double heidtmanns_reliability() {
-        long start = new Date().getTime();
-
-
-        if (calculationSeriesMode == 0 && !onlyReliabilityFast) {
-            resultText = "Step " + counter + " of " + combinations;
-            resultTextArea.setText(resultText);
-        }
-
-
-        zer = new Zerleg(graph);
-        zer.start();
-        try {
-            zer.join();
-        } catch (InterruptedException ignored) {
-        }
-
-        //Die Zerlegung verbraucht die meiste Zeit, beim Testnetz etwa 300ms, während der Rest nur max 1 ms braucht
-        System.out.println("Laufzeit Heidtmann bis Zerlegung: " + ((new Date()).getTime() - start));
-        reassignProbabilities();
-
-        if (graph.edgeList.size() == 1) {
-            Edge e = (Edge) graph.getEdgelist().get(0);
-            if ((e.left_node.c_node) && (e.right_node.c_node)) {
-                prob = e.prob;
-                prob *= e.left_node.prob;
-                prob *= e.right_node.prob;
-            } else prob = 0;
-            resultText = "The reduced network contains only one edge.\nThe reliability of the network is:\nP=" + prob;
-
-        } else {
-            prob = 0;
-            MyIterator it = zer.hz.iterator();
-            while (it.hasNext()) {
-                System.out.println("Neuer Pfad");
-                MyList al = (MyList) it.next();
-                MySet hs = (MySet) al.get(0);
-                double p;
-                //hs enthält hier anscheinend einen Pfad im Graphen zwischen den K-Knoten
-                p = getPathProbability(hs);
-
-                for (int i = 1; i < al.size(); i++) {
-                    MySet hs1 = (MySet) al.get(i);
-                    if (hs1.isEmpty())
-                        continue;
-                    p = p * (1 - getPathProbability(hs1));
-
-                }
-                System.out.println("Wahrscheinlichkeit: " + Double.toString(p));
-                prob = prob + p;
-
-            }
-        /*
-        String str1 = "The network is decomposed with Heidtmann's Algorithm:\n";
-		String str2 = "The reliability of the network is:\n";
-
-		if(lang=='D')
-		    {
-			str1 = "Das Netz wird mit dem Algorithmus von Heidtmann zerlegt:\n";
-			str2 = "Die Zuverlaessigkeit des Netzes ist:\n";
-		    }
-		    */
-
-            //resultText="Schritt " + counter + " von " + combinations;
-            //resultText = resultText+str1+"\n"+str2+prob;
-
-            calcReliabilityBtn.setEnabled(true);
-            resilienceBtn.setEnabled(true);
-
-            //resultTextArea.setText(resultText);
-        }
-        long runningTime = new Date().getTime() - start;
-        System.out.println("Laufzeit Heidtmann: " + runningTime);
-        System.out.println("Prob. Heidtmann: " + prob);
-        return prob;
-    }
-
-
-///////////////////////////// Binomialkoeffizient ////////////////////////////////// 
-
-
-    private BigInteger binomial(long n, long k) {
-//    	long start = new Date().getTime();
-        BigInteger binomialCoefficient = BigInteger.ONE;
-
-        // Nutze die Symmetrie des Pascalschen Dreiecks um den Aufwand zu minimieren.
-        if (k > n / 2) {
-            k = n - k;
-        }
-
-        if (k > n) {
-            binomialCoefficient = BigInteger.ZERO;
-        } else if (k == 0 | n == k) {
-            binomialCoefficient = BigInteger.ONE;
-        } else if (k == 1 | k == n - 1) {
-            binomialCoefficient = BigInteger.valueOf(n);
-        } else {
-            for (long i = 1; i <= k; i++) {
-                binomialCoefficient = binomialCoefficient.multiply(BigInteger.valueOf(n - k + i));
-                binomialCoefficient = binomialCoefficient.divide(BigInteger.valueOf(i));
-            }
-        }
-        //System.out.println(binomialCoefficient);
-//		long runningTime = new Date().getTime() - start; 
-//        System.out.println("Laufzeit: " + runningTime);
-        return binomialCoefficient;
-    }
-
-
-///////////////////////////// Resilienz //////////////////////////////////    
-
-
-    private int total_nodes;
-    private int c_nodes;
-    private BigInteger combinations;
-    private double result_resilience;
-    private int counter;
-
-    // Hauptmethode, die den Algorithmus zur Berechnung der Resilienz beinhaltet.
-    private void calculate_resilience() {
-        long start = new Date().getTime();
-
-        resultText = "Calculating...";
-        resultTextArea.setText(resultText);
-
-        //Anzahl der Knoten     		
-        total_nodes = netPanel.drawnNodes.size();
-
-        //Anzahl der K-Knoten
-        c_nodes = 0;
-
-        // Sicherung der K-Knotenliste
-        String cNodeList = "";
-        for (int i = 0; i < total_nodes; i++) {
-            NodePoint nodeSave = (NodePoint) netPanel.drawnNodes.get(i);
-            if (nodeSave.k) {
-                c_nodes++;
-                cNodeList = cNodeList + "1";
+        if (mode == CALCULATION_MODES.RESILIENCE) {
+            if (params.calculationSeries) {
+                calculator.calculateResilienceSeries();
             } else {
-                cNodeList = cNodeList + "0";
-            }
-        }
-
-        //Prüfen ob das Netz zusammenhängt
-        if (Con_check.check(graph) != -1) {
-            JOptionPane.showMessageDialog(mainFrame, "Your Graph is not connected", "Error", JOptionPane.ERROR_MESSAGE);
-            return;
-        }
-
-        Graph graphSave = null;
-
-        try {
-            graphSave = (Graph) Util.serialClone(graph); //clone Graphen
-        } catch (IOException | ClassNotFoundException e1) {
-            System.err.println(e1.toString());
-        }
-
-        // Berechne Anzahl der Kombinationen
-        combinations = binomial(total_nodes, c_nodes);
-
-        // Erzeuge leere Menge für die Knotenmengen.
-        Set set1 = new HashSet();
-
-        //Hier werden alle Kombinationen an Binärstrings erzeugt, die k Einsen und n-k Nullen haben
-        Set<String> combinationStrings = generateCombinations(cNodeList);
-
-        for (String binary : combinationStrings) {
-            // Erzeuge neue Teilmenge
-            Set subset = new HashSet();
-
-            // Für jeden Knoten: Wenn in der Binärzahl an der Stelle j eine 1 steht, füge den Knoten j der Teilmenge hinzu.
-            for (int j = 0; j < total_nodes; j++) {
-                if (binary.charAt(j) == '1') {
-                    subset.add(j);
-                }
-            }
-            set1.add(subset);
-        }
-
-        counter = 0;
-        result_resilience = 0;
-
-        // Für jede Kombination der K-Knoten
-        for (Object c : set1) {
-            HashSet d = (HashSet) c;
-
-            // Für jeden Knoten: Falls er in der aktuellen Kombination enthalten ist, setze ihn auf "K-Knoten".
-            for (int i = 0; i < total_nodes; i++) {
-                // Entsprechenden Knoten holen
-                NodePoint node1 = (NodePoint) netPanel.drawnNodes.get(i);
-                //com.resinet.model.Node node1 = (com.resinet.model.Node)graph.nodeList.get(i);
-
-                // Dann auf true, falls K-Knoten
-                node1.k = d.contains(i);
-
-                // Schreibe jeden Knoten neu in die Knotenliste.
-                netPanel.drawnNodes.set(i, node1);
-                //graph.nodeList.set(i, node1);
-
-            }
-
-            // Erhöhe pro Kombination den Zähler um 1.
-            counter++;
-
-            graph = makeGraph();
-
-
-            // Wahrscheinlichkeiten neu zuordnen.
-            reassignProbabilities();
-
-            // Berechne die Zuverlässigkeit für die aktuelle Kombination und addiere sie zur bisherigen Summe. 
-            result_resilience = result_resilience + heidtmanns_reliability();
-
-        }
-
-        // Teile die Summe der Zuverlässigkeiten durch die Anzahl der Kombinationen.
-        result_resilience = result_resilience / combinations.longValue();
-
-        //K-Knotenliste zurücksetzen
-        for (int i = 0; i < total_nodes; i++) {
-            // Entsprechenden Knoten holen
-            NodePoint nodeReset = (NodePoint) netPanel.drawnNodes.get(i);
-
-            // Dann auf true, falls K-Knoten
-            nodeReset.k = cNodeList.charAt(i) == '1';
-
-            // Schreibe jeden Knoten neu in die Knotenliste.
-            netPanel.drawnNodes.set(i, nodeReset);
-        }
-
-        try {
-
-            graph = (Graph) Util.serialClone(graphSave); //clone Graphen
-        } catch (IOException | ClassNotFoundException e1) {
-            System.err.println(e1.toString());
-        }
-
-        long runningTime = new Date().getTime() - start;
-        System.out.println("Laufzeit Resilienz: " + runningTime);
-    }
-
-
-    /// Hilfsmethode zum Erzeugen aller Kombinationen von K-Knoten
-    private Set<String> generateCombinations(String inputString) {
-        Set<String> combinationsSet = new HashSet<>();
-        if (inputString.length() == 0)
-            return combinationsSet;
-
-        Character c = inputString.charAt(0);
-
-        if (inputString.length() > 1) {
-            inputString = inputString.substring(1);
-
-            Set<String> permSet = generateCombinations(inputString);
-
-            for (String s : permSet) {
-                for (int i = 0; i <= s.length(); i++) {
-                    combinationsSet.add(s.substring(0, i) + c + s.substring(i));
-                }
+                calculator.calculateResilience();
             }
         } else {
-            combinationsSet.add(c + "");
-        }
-        return combinationsSet;
-    }
-
-
-    private BigDecimal edgeStartValue, edgeEndValue, edgeStepSize;
-    private BigDecimal nodeStartValue, nodeEndValue, nodeStepSize;
-    private int calculationSeriesMode = 0; //1 = resilience, 2 = reliability;
-    private boolean onlyReliabilityFast;
-
-    //Für die Serienberechnung in Schritten
-    private void calculationSeries() {
-        //Prüfen ob das Netz zusammenhängt
-
-        if (Con_check.check(graph) != -1) {
-            JOptionPane.showMessageDialog(mainFrame, "Your Graph is not connected!", "Error", JOptionPane.ERROR_MESSAGE);
-            return;
-        }
-
-        //Sicherungskopie
-        Graph graphSave = null;
-
-        try {
-            graphSave = (Graph) Util.serialClone(graph); //clone Graphen
-        } catch (IOException | ClassNotFoundException e1) {
-            System.err.println(e1.toString());
-        }
-
-        double[] probsSave = edgeProbabilities.clone();
-
-        //Dialog zum Datei auswählen
-        JFileChooser chooseSaveFile = new JFileChooser();
-        chooseSaveFile.setDialogType(JFileChooser.SAVE_DIALOG);
-
-        FileNameExtensionFilter resultFilter = new FileNameExtensionFilter("Textdateien", "txt");
-        chooseSaveFile.setFileFilter(resultFilter);
-        chooseSaveFile.setDialogTitle("Save results as...");
-        chooseSaveFile.setSelectedFile(new File("myResults.txt"));
-
-
-        String filepath;
-
-        int state = chooseSaveFile.showSaveDialog(null);
-        if (state == JFileChooser.APPROVE_OPTION) {
-            filepath = chooseSaveFile.getSelectedFile().toString();
-        } else {
-            return;
-        }
-
-        //Ab hier in die Datei schreiben
-        Writer writer;
-
-        try {
-            writer = new FileWriter(filepath);
-
-            if (calculationSeriesMode == 1) {
-                writer.write("Reliability of every edge                 Reliability of every node                 Resilience of the network");
+            if (params.calculationSeries) {
+                calculator.calculateReliabilitySeries();
             } else {
-                writer.write("Reliability of every edge                 Reliability of every node                 Reliability of the network");
+                calculator.calculateReliability();
             }
-
-            writer.append(System.getProperty("line.separator"));
-
-            //Ab hier Berechnungsserie
-            int counter = 1;
-
-            BigInteger edgeStepCount = edgeEndValue.subtract(edgeStartValue).divide(edgeStepSize, BigDecimal.ROUND_FLOOR)
-                    .add(BigDecimal.ONE).toBigInteger();
-            BigInteger nodeStepCount = nodeEndValue.subtract(nodeStartValue).divide(nodeStepSize, BigDecimal.ROUND_FLOOR)
-                    .add(BigDecimal.ONE).toBigInteger();
-
-            String stepCount = edgeStepCount.multiply(nodeStepCount).toString();
-
-            for (BigDecimal currentEdgeProb = edgeStartValue; currentEdgeProb.compareTo(edgeEndValue) <= 0;
-                 currentEdgeProb = currentEdgeProb.add(edgeStepSize)) {
-
-                for (BigDecimal currentNodeProb = nodeStartValue; currentNodeProb.compareTo(nodeEndValue) <= 0;
-                     currentNodeProb = currentNodeProb.add(nodeStepSize)) {
-
-                    resultText = "Calculation Series: Step " + counter + " of " + stepCount;
-                    resultTextArea.setText(resultText);
-                    counter++;
-
-                    //currentEdgeProb ist reliability
-                    //Neue/aktuelle Wahrscheinlichkeiten zuweisen
-                    for (int j = 0; j < edgeProbabilities.length; j++) {
-                        edgeProbabilities[j] = currentEdgeProb.floatValue();
-                    }
-                    for (int j = 0; j < nodeProbabilities.length; j++) {
-                        nodeProbabilities[j] = currentNodeProb.floatValue();
-                    }
-
-                    if (calculationSeriesMode == 1) {
-                        //Resilienz
-                        calculate_resilience();
-                    } else {
-                        //Reliability
-                        // Wahrscheinlichkeiten neu zuordnen. (wird in calculate_resilience() auch gemacht)
-                        reassignProbabilities();
-
-                        heidtmanns_reliability();
-                    }
-
-                    writer.append(System.getProperty("line.separator"));
-
-                    String reliabilityString = currentEdgeProb.toString();
-
-                    while (reliabilityString.length() < edgeStepSize.toString().length()) {
-                        reliabilityString = reliabilityString + "0";
-                    }
-
-                    while (reliabilityString.length() < 42) {
-                        reliabilityString = reliabilityString + " ";
-                    }
-
-                    reliabilityString += currentNodeProb.toString();
-                    while (reliabilityString.length() < 42 + nodeStepSize.toString().length()) {
-                        reliabilityString = reliabilityString + "0";
-                    }
-
-                    while (reliabilityString.length() < 84) {
-                        reliabilityString = reliabilityString + " ";
-                    }
-
-                    if (calculationSeriesMode == 1) {
-                        writer.write(reliabilityString + result_resilience);
-                    } else {
-                        writer.write(reliabilityString + prob);
-                    }
-                }
-
-            }
-
-            writer.close();
-
-
-        } catch (IOException e) {
-            e.printStackTrace();
-            return;
         }
 
-        //Setze den intern gespeicherten Graphen auf Anfangszustand zurück
-        try {
-
-            graph = (Graph) Util.serialClone(graphSave); //clone Graphen
-        } catch (IOException | ClassNotFoundException e1) {
-            System.err.println(e1.toString());
-        }
-
-        edgeProbabilities = probsSave.clone();
-
-
-        calculationSeriesMode = 0;
-
-        // Wahrscheinlichkeiten neu zuordnen.
-        reassignProbabilities();
-
-        resultText = "Calculation series finished. Please check your output file for the results.";
-        resultTextArea.setText(resultText);
-
+        setGUIState(GUI_STATES.ENTER_GRAPH);
     }
-
-
 }

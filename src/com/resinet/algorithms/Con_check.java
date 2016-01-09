@@ -102,6 +102,10 @@ public class Con_check {
         }
     }
 
+    public static boolean isConnected(Graph g) {
+        return check(g) == -1;
+    }
+
     public static int check(Graph g) {
         MyList nd;
         nd = g.nodeList;
