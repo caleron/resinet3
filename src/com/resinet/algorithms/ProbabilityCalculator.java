@@ -12,6 +12,7 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.Writer;
+import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.Date;
 import java.util.HashSet;
@@ -307,15 +308,21 @@ public class ProbabilityCalculator {
             //Ab hier Berechnungsserie
             int counter = 1;
 
-            int edgeStepCount = (int) Math.floor((params.edgeEndValue - params.edgeStartValue) / params.edgeStepSize) + 1;
-            int nodeStepCount = (int) Math.floor((params.nodeEndValue - params.nodeStartValue) / params.nodeStepSize) + 1;
 
-            String stepCount = Integer.toString(edgeStepCount * nodeStepCount);
+            BigInteger edgeStepCount = params.edgeEndValue.subtract(params.edgeStartValue).divide(params.edgeStepSize, BigDecimal.ROUND_FLOOR)
+                    .add(BigDecimal.ONE).toBigInteger();
+            BigInteger nodeStepCount = params.nodeEndValue.subtract(params.nodeStartValue).divide(params.nodeStepSize, BigDecimal.ROUND_FLOOR)
+                    .add(BigDecimal.ONE).toBigInteger();
 
-            for (Double currentEdgeProb = params.edgeStartValue; currentEdgeProb <= params.edgeEndValue; currentEdgeProb += params.edgeStepSize) {
+            String stepCount = edgeStepCount.multiply(nodeStepCount).toString();
 
-                for (Double currentNodeProb = params.nodeStartValue; currentNodeProb <= params.nodeEndValue; currentNodeProb += params.nodeStepSize) {
+            for (BigDecimal currentEdgeProb = params.edgeStartValue; currentEdgeProb.compareTo(params.edgeEndValue) <= 0;
+                 currentEdgeProb = currentEdgeProb.add(params.edgeStepSize)) {
 
+                for (BigDecimal currentNodeProb = params.nodeStartValue; currentNodeProb.compareTo(params.nodeEndValue) <= 0;
+                     currentNodeProb = currentNodeProb.add(params.nodeStepSize)) {
+
+                    //TODO berechnung im Background-Thread, damit GUI während der Berechnung aktualisiert werden kann
                     updateStatus("Calculation Series: Step " + counter + " of " + stepCount);
                     counter++;
 
@@ -537,9 +544,9 @@ public class ProbabilityCalculator {
         //Kantenwahrscheinlichkeiten
         for (int i = 0; i < edgeCount; i++) {
             Edge e = (Edge) edgeList.get(i);
-            
+
             if (params.sameReliabilityMode) {
-                e.prob = params.edgeValue;
+                e.prob = params.edgeValue.doubleValue();
             } else {
                 e.prob = params.edgeProbabilities[i];
             }
@@ -553,7 +560,7 @@ public class ProbabilityCalculator {
             Node e = (Node) nodeList.get(i);
 
             if (params.sameReliabilityMode) {
-                e.prob = params.nodeValue;
+                e.prob = params.nodeValue.doubleValue();
             } else {
                 e.prob = params.nodeProbabilities[i];
             }

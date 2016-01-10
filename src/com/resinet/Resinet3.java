@@ -796,19 +796,21 @@ public class Resinet3 extends JFrame
         if (sameReliabilityRadioBtn.isSelected()) {
             params.setReliabilityMode(true);
             //Serienberechnungsvariablen zuweisen
-            Double edgeStartValue = Double.valueOf(sameReliabilityEdgeProbBox.getText());
-            Double nodeStartValue = Double.valueOf(sameReliabilityNodeProbBox.getText());
-            Double edgeEndValue = 0.0, edgeStepSize = 0.0, nodeEndValue = 0.0, nodeStepSize = 0.0;
+            BigDecimal edgeStartValue = new BigDecimal(sameReliabilityEdgeProbBox.getText());
+            BigDecimal nodeStartValue = new BigDecimal(sameReliabilityNodeProbBox.getText());
+            BigDecimal edgeEndValue = BigDecimal.ZERO, edgeStepSize = BigDecimal.ZERO, nodeEndValue = BigDecimal.ZERO, nodeStepSize = BigDecimal.ZERO;
             try {
-                edgeEndValue = Double.valueOf(edgeEndProbabilityBox.getText());
-                edgeStepSize = Double.valueOf(edgeProbabilityStepSizeBox.getText());
-                nodeEndValue = Double.valueOf(nodeEndProbabilityBox.getText());
-                nodeStepSize = Double.valueOf(nodeProbabilityStepSizeBox.getText());
+                edgeEndValue = new BigDecimal(edgeEndProbabilityBox.getText());
+                edgeStepSize = new BigDecimal(edgeProbabilityStepSizeBox.getText());
+                nodeEndValue = new BigDecimal(nodeEndProbabilityBox.getText());
+                nodeStepSize = new BigDecimal(nodeProbabilityStepSizeBox.getText());
             } catch (Exception ignored) {
             }
 
             //Nur wenn alle Variablen für die Serienberechnung gegeben sind, Serienberechnung zulassen
-            if (edgeEndValue > 0 && edgeStepSize > 0 && nodeStepSize > 0 && nodeEndValue > 0) {
+            if (edgeEndValue.compareTo(BigDecimal.ZERO) == 1 && edgeStepSize.compareTo(BigDecimal.ZERO) == 1
+                    && nodeStepSize.compareTo(BigDecimal.ZERO) == 1 && nodeEndValue.compareTo(BigDecimal.ZERO) == 1) {
+
                 params.setSeriesParams(edgeStartValue, edgeEndValue, edgeStepSize, nodeStartValue, nodeEndValue, nodeStepSize);
             } else {
                 params.setSameReliabilityParams(edgeStartValue, nodeStartValue);

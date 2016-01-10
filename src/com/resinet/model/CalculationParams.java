@@ -1,5 +1,7 @@
 package com.resinet.model;
 
+import java.math.BigDecimal;
+
 /**
  * Dies ist eine Wrapper-Klasse für die Berechnungsparameter
  */
@@ -9,10 +11,10 @@ public class CalculationParams {
     public boolean calculationSeries = false;
 
     //für die Serienberechnung
-    public Double edgeStartValue, edgeEndValue, edgeStepSize, nodeStartValue, nodeEndValue, nodeStepSize;
+    public BigDecimal edgeStartValue, edgeEndValue, edgeStepSize, nodeStartValue, nodeEndValue, nodeStepSize;
 
     //Für Berechnung mit gleichen Wahrscheinlichkeiten für alle Komponenten
-    public Double edgeValue, nodeValue;
+    public BigDecimal edgeValue, nodeValue;
 
     //Für Berechnung mit einzelnen Wahrscheinlichkeiten
     public double[] edgeProbabilities, nodeProbabilities;
@@ -52,7 +54,7 @@ public class CalculationParams {
      * @param edgeValue Wahrscheinlichkeit für alle Kanten
      * @param nodeValue Wahrscheinlichkeit für alle Knoten
      */
-    public void setSameReliabilityParams(double edgeValue, double nodeValue) {
+    public void setSameReliabilityParams(BigDecimal edgeValue, BigDecimal nodeValue) {
         this.edgeValue = edgeValue;
         this.nodeValue = nodeValue;
     }
@@ -67,8 +69,8 @@ public class CalculationParams {
      * @param nodeEndValue   Der Endwert für die Kanten
      * @param nodeStepSize   Die Schrittweite für die Kanten
      */
-    public void setSeriesParams(double edgeStartValue, double edgeEndValue, double edgeStepSize,
-                                double nodeStartValue, double nodeEndValue, double nodeStepSize) {
+    public void setSeriesParams(BigDecimal edgeStartValue, BigDecimal edgeEndValue, BigDecimal edgeStepSize,
+                                BigDecimal nodeStartValue, BigDecimal nodeEndValue, BigDecimal nodeStepSize) {
         this.edgeValue = edgeStartValue;
         this.edgeStartValue = edgeStartValue;
         this.edgeEndValue = edgeEndValue;
