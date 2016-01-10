@@ -52,15 +52,13 @@ public class ProbabilityCalculator {
         }
     }
 
-    public Double calculateResilience() {
+    public void calculateResilience() {
 
-/*        setResultText("The network has " + total_nodes + " Nodes, containing " + c_nodes + " c-Nodes.\n" +
-                "There are " + combinations + " combinations.\n" + "The resilience of the network is: " + result_resilience);*/
-        return getResilience();
+        getResilience(true);
     }
 
-    public Double calculateReliability() {
-        return getHeidtmannsReliability();
+    public void calculateReliability() {
+        getHeidtmannsReliability(true);
     }
 
     public void calculateResilienceSeries() {
@@ -86,7 +84,7 @@ public class ProbabilityCalculator {
         return zer;
     }
 
-    public double getHeidtmannsReliability() {
+    private double getHeidtmannsReliability(boolean writeOutput) {
         long startTime = new Date().getTime();
         double prob;
 
@@ -136,11 +134,22 @@ public class ProbabilityCalculator {
         long runningTime = new Date().getTime() - startTime;
         System.out.println("Laufzeit Heidtmann: " + runningTime);
         System.out.println("Prob. Heidtmann: " + prob);
+
+        if (writeOutput) {
+            updateStatus("The reliability of the network is: " + prob);
+        }
+
         return prob;
     }
 
-    // Hauptmethode, die den Algorithmus zur Berechnung der Resilienz beinhaltet.
-    private Double getResilience() {
+
+    /**
+     * Hauptmethode, die den Algorithmus zur Berechnung der Resilienz beinhaltet.
+     *
+     * @param writeOutput True, wenn das Ergebnis als Statusupdate ausgegeben werden soll
+     * @return Die Resilienz des Netzwerks
+     */
+    private Double getResilience(boolean writeOutput) {
         long start = new Date().getTime();
 
         updateStatus("Calculating...");
@@ -216,7 +225,7 @@ public class ProbabilityCalculator {
             updateStatus("Step " + counter + " of " + combinations);
 
             // Berechne die Zuverlässigkeit für die aktuelle Kombination und addiere sie zur bisherigen Summe.
-            result += getHeidtmannsReliability();
+            result += getHeidtmannsReliability(false);
 
         }
 
@@ -225,6 +234,11 @@ public class ProbabilityCalculator {
 
         long runningTime = new Date().getTime() - start;
         System.out.println("Laufzeit Resilienz: " + runningTime);
+
+        if (writeOutput) {
+            updateStatus("The network has " + total_nodes + " Nodes, containing " + c_nodes + " c-Nodes.\n" +
+                    "There are " + combinations + " combinations.\n" + "The resilience of the network is: " + result);
+        }
 
         return result;
     }
@@ -305,25 +319,20 @@ public class ProbabilityCalculator {
                     updateStatus("Calculation Series: Step " + counter + " of " + stepCount);
                     counter++;
 
-                    //currentEdgeProb ist reliability
                     //Neue/aktuelle Wahrscheinlichkeiten zuweisen
-                    for (int j = 0; j < params.edgeProbabilities.length; j++) {
-                        params.edgeProbabilities[j] = currentEdgeProb;
-                    }
-                    for (int j = 0; j < params.nodeProbabilities.length; j++) {
-                        params.nodeProbabilities[j] = currentNodeProb;
-                    }
+                    params.nodeValue = currentNodeProb;
+                    params.edgeValue = currentEdgeProb;
 
                     Double prob;
                     if (calculationSeriesMode == CalculationSeriesMode.Resilience) {
                         //Resilienz
-                        prob = getResilience();
+                        prob = getResilience(false);
                     } else {
                         //Reliability
                         // Wahrscheinlichkeiten neu zuordnen. (wird in getResilience() auch gemacht)
                         reassignProbabilities();
 
-                        prob = getHeidtmannsReliability();
+                        prob = getHeidtmannsReliability(false);
                     }
 
                     writer.append(System.getProperty("line.separator"));
@@ -524,18 +533,30 @@ public class ProbabilityCalculator {
         wie die Kantenliste des Graphen, also eine flache Kopie.
         */
         MyList edgeList = workingGraph.getEdgelist();
+        int edgeCount = edgeList.size();
         //Kantenwahrscheinlichkeiten
-        for (int i = 0; i < params.edgeProbabilities.length; i++) {
+        for (int i = 0; i < edgeCount; i++) {
             Edge e = (Edge) edgeList.get(i);
-            e.prob = params.edgeProbabilities[i];
+            
+            if (params.sameReliabilityMode) {
+                e.prob = params.edgeValue;
+            } else {
+                e.prob = params.edgeProbabilities[i];
+            }
         }
 
         MyList nodeList = workingGraph.getNodelist();
+        int nodeCount = nodeList.size();
 
         //Knotenwahrscheinlichkeiten
-        for (int i = 0; i < params.nodeProbabilities.length; i++) {
+        for (int i = 0; i < nodeCount; i++) {
             Node e = (Node) nodeList.get(i);
-            e.prob = params.nodeProbabilities[i];
+
+            if (params.sameReliabilityMode) {
+                e.prob = params.nodeValue;
+            } else {
+                e.prob = params.nodeProbabilities[i];
+            }
         }
     }
 

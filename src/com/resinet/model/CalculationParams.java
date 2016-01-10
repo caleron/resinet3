@@ -69,12 +69,16 @@ public class CalculationParams {
      */
     public void setSeriesParams(double edgeStartValue, double edgeEndValue, double edgeStepSize,
                                 double nodeStartValue, double nodeEndValue, double nodeStepSize) {
+        this.edgeValue = edgeStartValue;
         this.edgeStartValue = edgeStartValue;
         this.edgeEndValue = edgeEndValue;
         this.edgeStepSize = edgeStepSize;
+
+        this.nodeValue = nodeStartValue;
         this.nodeStartValue = nodeStartValue;
         this.nodeEndValue = nodeEndValue;
         this.nodeStepSize = nodeStepSize;
+
         calculationSeries = true;
     }
 }
