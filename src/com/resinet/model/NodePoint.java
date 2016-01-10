@@ -5,5 +5,5 @@ package com.resinet.model;
  */
 public class NodePoint {
     public int x, y;
-    public boolean k = false;
+    public boolean c_node = false;
 }

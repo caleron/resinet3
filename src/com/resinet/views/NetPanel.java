@@ -3,7 +3,6 @@ package com.resinet.views;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionAdapter;
 import java.awt.image.BufferedImage;
 
@@ -58,7 +57,7 @@ public class NetPanel extends JPanel {
             int x = nodePoint.x;
             int y = nodePoint.y;
             String s = String.valueOf(count);
-            if (!nodePoint.k)
+            if (!nodePoint.c_node)
                 imgGraphics.drawOval(x, y, 20, 20);
             else {
                 imgGraphics.fillOval(x, y, 20, 20);
@@ -150,7 +149,7 @@ public class NetPanel extends JPanel {
 
                         //Vorhandene Knoten zu K-Knoten machen
                         if (evt.isControlDown()) {
-                            nps.k = !nps.k;
+                            nps.c_node = !nps.c_node;
 
                             drawnNodes.set(cnt1, nps);
                         }
@@ -170,7 +169,7 @@ public class NetPanel extends JPanel {
                 else
                     np.y = y1 + 20 - (y1 % 20) - 10;
                 if (evt.isMetaDown())
-                    np.k = true;
+                    np.c_node = true;
                 drawnNodes.add(np);
                 raiseGraphChangedEvent();
                 repaint();

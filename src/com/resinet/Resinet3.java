@@ -18,7 +18,7 @@ import javax.swing.*;
 
 public class Resinet3 extends JFrame
         implements ActionListener, NetPanel.GraphChangedListener, ProbabilityCalculator.CalculationProgressListener {
-    private NetPanel netPanel;
+    public NetPanel netPanel;
 
     private JTextArea graphPanelTextArea, resultTextArea;
     private JTextField edgeEndProbabilityBox, edgeProbabilityStepSizeBox, nodeEndProbabilityBox, nodeProbabilityStepSizeBox,
@@ -525,7 +525,7 @@ public class Resinet3 extends JFrame
 
         if (button == exportNetBtn) {
             //Aktuellen Graph speichern
-            GraphSaving.exportNet(netPanel);
+            GraphSaving.exportNet(mainFrame, netPanel);
         }
 
         if (button == resetGraphBtn) {
@@ -601,7 +601,7 @@ public class Resinet3 extends JFrame
     /**
      * Aktualisiert das Wahrscheinlichkeitspanel
      */
-    private void updateSingleReliabilityProbPanel() {
+    public void updateSingleReliabilityProbPanel() {
         if (sameReliabilityRadioBtn.isSelected())
             return;
 
@@ -684,12 +684,16 @@ public class Resinet3 extends JFrame
         singleReliabilityPanel.add(panel);
     }
 
+    public void loadCalculationParams(CalculationParams params) {
+        //TODO laden
+    }
+
     /**
      * Prüft alle Eingabefelder auf zulässige Werte
      *
      * @return True, wenn alle Felder Wahrscheinlichkeiten zwischen 0 und 1 enthalten
      */
-    private boolean probabilitiesValid() {
+    private boolean probabilitiesValid(boolean suppressWarning) {
         int edgeCount = edgeProbabilityBoxes.size();
         int nodeCount = nodeProbabilityBoxes.size();
         boolean seriesValuesMissing = false;
@@ -745,20 +749,32 @@ public class Resinet3 extends JFrame
 
         if (edgesWithMissingProbability.size() != 0 || nodesWithMissingProbability.size() != 0
                 || seriesValuesMissing || sameReliabilityValuesMissing) {
-            //Dieser Block zeigt nur ein Hinweisfenster an, falls Wahrscheinlichkeiten fehlen
-            //Strings für fehlende Kanten und Knoten generieren
-            MyIterator it = edgesWithMissingProbability.iterator();
-            String missingProbabilityEdges = (String) it.next();
-            while (it.hasNext()) {
-                String s2 = (String) it.next();
-                missingProbabilityEdges = missingProbabilityEdges + ", " + s2;
+
+            if (suppressWarning) {
+                //Wenn keine Warnungen ausgegeben werden soll, einfach abbrechen
+                return false;
             }
 
-            it = nodesWithMissingProbability.iterator();
-            String missingProbabilityNodes = (String) it.next();
-            while (it.hasNext()) {
-                String s2 = (String) it.next();
-                missingProbabilityNodes = missingProbabilityNodes + ", " + s2;
+            //Dieser Block zeigt nur ein Hinweisfenster an, falls Wahrscheinlichkeiten fehlen
+            //Strings für fehlende Kanten und Knoten generieren
+            String missingProbabilityEdges = "";
+            if (edgesWithMissingProbability.size() != 0) {
+                MyIterator it = edgesWithMissingProbability.iterator();
+                missingProbabilityEdges = (String) it.next();
+                while (it.hasNext()) {
+                    String s2 = (String) it.next();
+                    missingProbabilityEdges = missingProbabilityEdges + ", " + s2;
+                }
+            }
+
+            String missingProbabilityNodes = "";
+            if (nodesWithMissingProbability.size() != 0) {
+                MyIterator it = nodesWithMissingProbability.iterator();
+                missingProbabilityNodes = (String) it.next();
+                while (it.hasNext()) {
+                    String s3 = (String) it.next();
+                    missingProbabilityNodes = missingProbabilityNodes + ", " + s3;
+                }
             }
 
             String str = "The reliability of an edge is a probability, thus\nit must be a number in format x.xxxxxx " +
@@ -786,11 +802,19 @@ public class Resinet3 extends JFrame
 
     /**
      * Prüft alle Wahrscheinlichkeitsfelder und speicher die Werte in die entsprechenden Variablen
+     *
+     * @return Das Objekt oder null, wenn nicht alle Voraussetzungen erfüllt sind
      */
-    private void insertProbabilities(CalculationParams params) {
-        if (!probabilitiesValid()) {
+    public CalculationParams buildCalculationParams(boolean suppressWarning) {
+        Graph graph = makeGraph();
+        if (!graphIsValid(graph))
+            return null;
+
+        CalculationParams params = new CalculationParams(graph);
+
+        if (!probabilitiesValid(suppressWarning)) {
             //Abbrechen, falls nicht alle Wahrscheinlichkeiten zulässig sind
-            return;
+            return null;
         }
 
         if (sameReliabilityRadioBtn.isSelected()) {
@@ -831,6 +855,7 @@ public class Resinet3 extends JFrame
 
             params.setSingleReliabilityParams(edgeProbabilities, nodeProbabilities);
         }
+        return params;
     }
 
     /**
@@ -851,7 +876,7 @@ public class Resinet3 extends JFrame
         MyIterator np = netPanel.drawnNodes.iterator();
         while (np.hasNext()) {
             NodePoint n = (NodePoint) np.next();
-            if (n.k)
+            if (n.c_node)
                 cNodeCount = cNodeCount + 1;
         }
 
@@ -932,7 +957,7 @@ public class Resinet3 extends JFrame
             Node node = new Node(cnt);
             node.xposition = np.x;
             node.yposition = np.y;
-            if (np.k)
+            if (np.c_node)
                 node.c_node = true;
             nodeList.add(node);
             cnt++;
@@ -963,12 +988,11 @@ public class Resinet3 extends JFrame
      * @param mode Resilienz oder Zuverlässigkeit
      */
     private void startCalculation(CALCULATION_MODES mode) {
-        Graph graph = makeGraph();
-        if (!graphIsValid(graph))
-            return;
+        CalculationParams params = buildCalculationParams(false);
 
-        CalculationParams params = new CalculationParams(graph);
-        insertProbabilities(params);
+        //Wenn params == null, sind nicht alle Voraussetzungen erfüllt und eine Meldung wurde angezeigt
+        if (params == null)
+            return;
 
         ProbabilityCalculator calculator = ProbabilityCalculator.create(this, params);
         setGUIState(GUI_STATES.CALCULATION_RUNNING);

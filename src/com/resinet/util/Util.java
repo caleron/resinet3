@@ -6,7 +6,9 @@ import com.resinet.model.Node;
 
 import java.io.*;
 import java.math.BigInteger;
+import java.util.ArrayList;
 import java.util.Hashtable;
+import java.util.Vector;
 //import java.util.*;
 
 public class Util {
@@ -55,11 +57,24 @@ public class Util {
     }
 
     /**
-     * Serien- Polygon- Ketten- Reduktion
-     * Diese Funktion reduziert den Graphen und weist den neuen Kanten die Ursprungskanten zu (parent_edges)
-     * getEdgeProbability weist dann den neuen Kanten Wahrscheinlichkeiten zu
-     * Wird nicht verwendet und scheint auch nicht richtig zu funktionieren
-     * @param g der Graph
+     * Konvertiert einen Vector mit Double-Werten in einen Array mit primitiven double-Werten
+     *
+     * @param list Die umzuwandelnde Liste
+     * @return den entsprechenden double-Array
+     */
+    public static double[] toPrimitiveDoubleArray(Vector<Double> list) {
+        double[] outputArray = new double[list.size()];
+        for (int i = 0; i < list.size(); i++)
+            outputArray[i] = list.get(i);
+        return outputArray;
+    }
+
+    /**
+     * Serien- Polygon- Ketten- Reduktion Diese Funktion reduziert den Graphen und weist den neuen Kanten die
+     * Ursprungskanten zu (parent_edges) getEdgeProbability weist dann den neuen Kanten Wahrscheinlichkeiten zu Wird
+     * nicht verwendet und scheint auch nicht richtig zu funktionieren
+     *
+     * @param g             der Graph
      * @param factorisation kp
      */
     public static void skpReduce(Graph g, boolean factorisation) {
@@ -779,7 +794,7 @@ public class Util {
                 double f1 = p1 * p2 * p3 * p4 * p5 * p6 * (1 + q1 / p1 + q2 / p2 + q3 / p3 + q4 / p4 + q5 / p5 + q6 / p6);
                 double f2 = q1 * p2 * p3 * q4 * p5 * p6;
                 double f3 = p1 * q2 * p3 * (q4 * p5 * p6 + p4 * q5 * p6 + p4 * p5 * q6) + p1 * p2 * q3 * p6 * (p4 * q5 + q4 * p5) +
-                   q1 * p2 * p3 * p4 * (q5 * p6 + p5 * q6);
+                        q1 * p2 * p3 * p4 * (q5 * p6 + p5 * q6);
                 double f4 = p1 * p2 * q3 * p4 * p5 * q6;
                 Edge index = null;
                 if (type.equals("R7")) {
