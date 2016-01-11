@@ -28,7 +28,6 @@ public class Resinet3 extends JFrame
     private JRadioButton singleReliabilityRadioBtn, sameReliabilityRadioBtn;
 
     private JScrollPane probabilityFieldsScrollPane;
-    private JCheckBox reliabilityCompareCheckBox;
 
     JPanel sameReliabilityPanel, singleReliabilityPanel;
 
@@ -324,10 +323,6 @@ public class Resinet3 extends JFrame
         calcReliabilityBtn.addActionListener(this);
         gbc = makegbc(0, 1, 1, 1, 0, 0);
         calculatePanel.add(calcReliabilityBtn, gbc);
-
-        reliabilityCompareCheckBox = new JCheckBox("Compare 2 algorithms");
-        gbc = makegbc(1, 1, 1, 1, 1, 0);
-        calculatePanel.add(reliabilityCompareCheckBox, gbc);
     }
 
     /**
@@ -453,7 +448,6 @@ public class Resinet3 extends JFrame
 
         calcReliabilityBtn.setEnabled(state == GUI_STATES.ENTER_GRAPH);
         resilienceBtn.setEnabled(state == GUI_STATES.ENTER_GRAPH);
-        reliabilityCompareCheckBox.setEnabled(state == GUI_STATES.ENTER_GRAPH);
 
         //Status für alle Wahrscheinlichkeitsfelder setzen
         boolean probabilityBoxesEnabled = (state == GUI_STATES.ENTER_GRAPH);
@@ -684,8 +678,49 @@ public class Resinet3 extends JFrame
         singleReliabilityPanel.add(panel);
     }
 
+    /**
+     * Trägt die Berechnungsparameter in die Felder ein Voraussetzung ist, dass bereits der richtige Graph geladen
+     * wurde
+     *
+     * @param params Die Berechnungsparameter
+     */
     public void loadCalculationParams(CalculationParams params) {
-        //TODO laden
+        //richtiges Panel laden
+        setComponentReliabilityMode(params.sameReliabilityMode);
+        if (params.sameReliabilityMode) {
+            //Radiobutton auswählen
+            sameReliabilityRadioBtn.setSelected(true);
+
+            //Werte eintragen
+            sameReliabilityEdgeProbBox.setText(params.edgeStartValue.toString());
+            sameReliabilityNodeProbBox.setText(params.nodeStartValue.toString());
+
+            //Die Parameter sind null, wenn keine Berechnungsserie eingestellt ist
+            if (params.calculationSeries) {
+                edgeProbabilityStepSizeBox.setText(params.edgeStepSize.toString());
+                nodeProbabilityStepSizeBox.setText(params.nodeStepSize.toString());
+
+                edgeEndProbabilityBox.setText(params.edgeEndValue.toString());
+                nodeEndProbabilityBox.setText(params.nodeEndValue.toString());
+            } else {
+                //Felder leer setzen, wenn nichts dazu eingespeichert
+                edgeProbabilityStepSizeBox.setText("");
+                nodeProbabilityStepSizeBox.setText("");
+
+                edgeEndProbabilityBox.setText("");
+                nodeEndProbabilityBox.setText("");
+            }
+        } else {
+            singleReliabilityRadioBtn.setSelected(true);
+            //Einzelwahrscheinlichkeiten in die Felder eintragen
+            for (int i = 0; i < edgeProbabilityBoxes.size(); i++) {
+                edgeProbabilityBoxes.get(i).setText(Double.toString(params.edgeProbabilities[i]));
+            }
+
+            for (int i = 0; i < nodeProbabilityBoxes.size(); i++) {
+                nodeProbabilityBoxes.get(i).setText(Double.toString(params.nodeProbabilities[i]));
+            }
+        }
     }
 
     /**

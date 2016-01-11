@@ -14,7 +14,7 @@ import org.xml.sax.SAXException;
 import sun.nio.ch.*;
 
 import javax.swing.*;
-import javax.swing.filechooser.FileNameExtensionFilter;
+import javax.swing.filechooser.*;
 import javax.swing.tree.ExpandVetoException;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -343,17 +343,31 @@ public class GraphSaving {
             path = chooseSaveFile.getSelectedFile().toString();
             saveNetFile = new File(path);
 
-            //Akzeptiert nur .net Dateien. Andernfalls Abbruch!
             if (pajekFilter.accept(saveNetFile)) {
                 writePajekNetwork(path, netPanel);
             } else if (resinetvFilter.accept(saveNetFile)) {
                 writeResinetNetwork(path, resinet3);
             } else {
-                exportError(netPanel);
+                //Dateierweiterung fehlt wohl
+                //Ausgewählten Filter finden
+                javax.swing.filechooser.FileFilter selectedFilter = chooseSaveFile.getFileFilter();
+
+                //entsprechende Dateierweiterung an den Pfad anfügen und dann so speichern
+                if (selectedFilter.equals(pajekFilter)) {
+                    writePajekNetwork(path + ".net", netPanel);
+                } else if (selectedFilter.equals(resinetvFilter)) {
+                    writeResinetNetwork(path + ".resinet", resinet3);
+                }
             }
         }
     }
 
+    /**
+     * Schreibt das Netzwerk in ein Pajek-kompatibles Dateiformat
+     *
+     * @param path     Der Zielpfad
+     * @param netPanel Das NetPanel als Datenquelle
+     */
     private static void writePajekNetwork(String path, NetPanel netPanel) {
         //Ab hier in die Datei schreiben
         Writer writer;
@@ -443,10 +457,10 @@ public class GraphSaving {
             }
             writer.close();
 
-
+            JOptionPane.showMessageDialog(netPanel, "Successfully saved.");
         } catch (IOException e) {
             e.printStackTrace();
-            exportError(netPanel);
+            JOptionPane.showMessageDialog(netPanel, "Saving failed!");
         }
     }
 
@@ -525,7 +539,7 @@ public class GraphSaving {
                     rootElement.appendChild(nodeStartValue);
 
                     Element edgeStartValue = doc.createElement("seriesParam");
-                    nodeStartValue.setAttribute("type", "edgeStart");
+                    edgeStartValue.setAttribute("type", "edgeStart");
                     edgeStartValue.setAttribute("value", params.edgeValue.toString());
                     rootElement.appendChild(edgeStartValue);
 
@@ -543,12 +557,12 @@ public class GraphSaving {
 
 
                         Element edgeEndValue = doc.createElement("seriesParam");
-                        nodeStartValue.setAttribute("type", "edgeEnd");
+                        edgeStartValue.setAttribute("type", "edgeEnd");
                         edgeEndValue.setAttribute("value", params.edgeEndValue.toString());
                         rootElement.appendChild(edgeEndValue);
 
                         Element edgeStepSizeValue = doc.createElement("seriesParam");
-                        nodeStartValue.setAttribute("type", "edgeStepSize");
+                        edgeStartValue.setAttribute("type", "edgeStepSize");
                         edgeStepSizeValue.setAttribute("value", params.edgeStepSize.toString());
                         rootElement.appendChild(edgeStepSizeValue);
                     }
@@ -586,15 +600,9 @@ public class GraphSaving {
 
         } catch (ParserConfigurationException | TransformerException e) {
             e.printStackTrace();
+            JOptionPane.showMessageDialog(resinet3, "Saving failed!");
         }
 
-    }
-
-    public static void exportError(Component parentComponent) {
-        //Error-Popup ausgeben
-        String str = "Your output was invalid! Please choose a valid filepath and use the file extension '.net'.";
-
-        JOptionPane.showMessageDialog(parentComponent, str, "Warning!", JOptionPane.ERROR_MESSAGE);
     }
 
 }
