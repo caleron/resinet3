@@ -1,5 +1,6 @@
 package com.resinet.algorithms;
 
+import com.resinet.Resinet3;
 import com.resinet.model.*;
 import com.resinet.util.MyIterator;
 import com.resinet.util.MyList;
@@ -21,11 +22,31 @@ import java.util.Set;
 /**
  * Für zukünftige Entwicklung soll hier die Zuverlässigkeitsberechnung stehen
  */
-public class ProbabilityCalculator {
+public class ProbabilityCalculator extends Thread {
     CalculationProgressListener listener;
     CalculationParams params;
 
     Graph workingGraph;
+
+    @Override
+    public void run() {
+        System.out.println("ProbabilityCalculator: " + Thread.currentThread().getName());
+        if (params.calculationMode == Resinet3.CALCULATION_MODES.RELIABILITY) {
+            //Zuverlässigkeit berechnen
+            if (params.calculationSeries) {
+                calculationSeries(CalculationSeriesMode.Reliability);
+            } else {
+                getHeidtmannsReliability(true);
+            }
+        } else {
+            //Resilienz berechnen
+            if (params.calculationSeries) {
+                calculationSeries(CalculationSeriesMode.Resilience);
+            } else {
+                getResilience(true);
+            }
+        }
+    }
 
     public static ProbabilityCalculator create(CalculationProgressListener listener, CalculationParams params) {
         return new ProbabilityCalculator(listener, params);
@@ -51,23 +72,6 @@ public class ProbabilityCalculator {
         } catch (IOException | ClassNotFoundException e1) {
             System.err.println(e1.toString());
         }
-    }
-
-    public void calculateResilience() {
-
-        getResilience(true);
-    }
-
-    public void calculateReliability() {
-        getHeidtmannsReliability(true);
-    }
-
-    public void calculateResilienceSeries() {
-        calculationSeries(CalculationSeriesMode.Resilience);
-    }
-
-    public void calculateReliabilitySeries() {
-        calculationSeries(CalculationSeriesMode.Reliability);
     }
 
     /**

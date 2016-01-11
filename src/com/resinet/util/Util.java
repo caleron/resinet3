@@ -8,6 +8,7 @@ import java.io.*;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Hashtable;
+import java.util.List;
 import java.util.Vector;
 //import java.util.*;
 
@@ -62,7 +63,7 @@ public class Util {
      * @param list Die umzuwandelnde Liste
      * @return den entsprechenden double-Array
      */
-    public static double[] toPrimitiveDoubleArray(Vector<Double> list) {
+    public static double[] listToPrimitiveDoubleArray(List<Double> list) {
         double[] outputArray = new double[list.size()];
         for (int i = 0; i < list.size(); i++)
             outputArray[i] = list.get(i);

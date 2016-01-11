@@ -1,5 +1,7 @@
 package com.resinet.model;
 
+import com.resinet.Resinet3;
+
 import java.math.BigDecimal;
 
 /**
@@ -9,6 +11,7 @@ public class CalculationParams {
     public Graph graph;
     public boolean sameReliabilityMode = false;
     public boolean calculationSeries = false;
+    public Resinet3.CALCULATION_MODES calculationMode;
 
     //für die Serienberechnung
     public BigDecimal edgeStartValue, edgeEndValue, edgeStepSize, nodeStartValue, nodeEndValue, nodeStepSize;
@@ -22,9 +25,11 @@ public class CalculationParams {
     /**
      * Erzeugt ein Objekt für die Berechnungsparameter
      *
+     * @param mode  Der Berechnungsmodus (Resilienz oder Zuverlässigkeit)
      * @param graph Der Graph
      */
-    public CalculationParams(Graph graph) {
+    public CalculationParams(Resinet3.CALCULATION_MODES mode, Graph graph) {
+        this.calculationMode = mode;
         this.graph = graph;
     }
 
@@ -83,4 +88,5 @@ public class CalculationParams {
 
         calculationSeries = true;
     }
+
 }

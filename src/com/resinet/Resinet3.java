@@ -840,12 +840,12 @@ public class Resinet3 extends JFrame
      *
      * @return Das Objekt oder null, wenn nicht alle Voraussetzungen erfüllt sind
      */
-    public CalculationParams buildCalculationParams(boolean suppressWarning) {
+    public CalculationParams buildCalculationParams(CALCULATION_MODES mode, boolean suppressWarning) {
         Graph graph = makeGraph();
         if (!graphIsValid(graph))
             return null;
 
-        CalculationParams params = new CalculationParams(graph);
+        CalculationParams params = new CalculationParams(mode, graph);
 
         if (!probabilitiesValid(suppressWarning)) {
             //Abbrechen, falls nicht alle Wahrscheinlichkeiten zulässig sind
@@ -1023,7 +1023,7 @@ public class Resinet3 extends JFrame
      * @param mode Resilienz oder Zuverlässigkeit
      */
     private void startCalculation(CALCULATION_MODES mode) {
-        CalculationParams params = buildCalculationParams(false);
+        CalculationParams params = buildCalculationParams(mode, false);
 
         //Wenn params == null, sind nicht alle Voraussetzungen erfüllt und eine Meldung wurde angezeigt
         if (params == null)
@@ -1032,19 +1032,10 @@ public class Resinet3 extends JFrame
         ProbabilityCalculator calculator = ProbabilityCalculator.create(this, params);
         setGUIState(GUI_STATES.CALCULATION_RUNNING);
 
-        if (mode == CALCULATION_MODES.RESILIENCE) {
-            if (params.calculationSeries) {
-                calculator.calculateResilienceSeries();
-            } else {
-                calculator.calculateResilience();
-            }
-        } else {
-            if (params.calculationSeries) {
-                calculator.calculateReliabilitySeries();
-            } else {
-                calculator.calculateReliability();
-            }
-        }
+        System.out.println("startCalculation: " + Thread.currentThread().getName());
+        //Starte die Berechnung
+        calculator.start();
+        System.out.println("startCalculation: " + Thread.currentThread().getName());
 
         setGUIState(GUI_STATES.ENTER_GRAPH);
     }

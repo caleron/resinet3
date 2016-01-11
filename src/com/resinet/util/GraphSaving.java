@@ -5,17 +5,14 @@ import com.resinet.model.CalculationParams;
 import com.resinet.model.EdgeLine;
 import com.resinet.model.NodePoint;
 import com.resinet.views.NetPanel;
-import com.sun.deploy.util.ArrayUtil;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
-import sun.nio.ch.*;
 
 import javax.swing.*;
 import javax.swing.filechooser.*;
-import javax.swing.tree.ExpandVetoException;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
@@ -25,8 +22,6 @@ import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 import java.awt.*;
-import java.awt.geom.Arc2D;
-import java.awt.print.Book;
 import java.io.*;
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -239,7 +234,7 @@ public class GraphSaving {
             }
 
             //Zuverlässigkeiten einlesen
-            CalculationParams calculationParams = new CalculationParams(null);
+            CalculationParams calculationParams = new CalculationParams(null, null);
             //Modus einlesen
             nodeList = doc.getElementsByTagName("reliabilityMode");
             Node reliabilityModeNode = nodeList.item(0);
@@ -283,27 +278,29 @@ public class GraphSaving {
             } else {
                 nodeList = doc.getElementsByTagName("singleReliability");
 
+                int nodeCount = nodeList.getLength();
                 //Arraylisten mit der größe der gesamten Liste initialisieren, damit mit Sicherheit alle reinpassen
-                Vector<Double> edgeProbabilities = new Vector<>(),
-                        nodeProbabilities = new Vector<>();
+                ArrayList<Double> edgeProbabilities = new ArrayList<>(nodeCount),
+                        nodeProbabilities = new ArrayList<>(nodeCount);
 
-                for (Integer i = 0; i < nodeList.getLength(); i++) {
+                for (Integer i = 0; i < nodeCount; i++) {
                     Node node = nodeList.item(i);
 
                     if (node.getNodeType() == Node.ELEMENT_NODE) {
                         Element nodeElement = (Element) node;
                         Integer position = Integer.parseInt(nodeElement.getAttribute("number"));
                         Double reliability = Double.parseDouble(nodeElement.getAttribute("reliability"));
+
                         if (nodeElement.getAttribute("type").equals("node")) {
-                            nodeProbabilities.set(position, reliability);
+                            nodeProbabilities.add(position, reliability);
                         } else {
-                            edgeProbabilities.set(position, reliability);
+                            edgeProbabilities.add(position, reliability);
                         }
                     }
                 }
                 //Vector in primitive Arrays umwandeln und dann in das Objekt einspeisen
-                calculationParams.setSingleReliabilityParams(Util.toPrimitiveDoubleArray(edgeProbabilities),
-                        Util.toPrimitiveDoubleArray(nodeProbabilities));
+                calculationParams.setSingleReliabilityParams(Util.listToPrimitiveDoubleArray(edgeProbabilities),
+                        Util.listToPrimitiveDoubleArray(nodeProbabilities));
 
             }
 
@@ -471,7 +468,7 @@ public class GraphSaving {
      * @param resinet3 Das Hauptfenster
      */
     private static void writeResinetNetwork(String path, Resinet3 resinet3) {
-        CalculationParams params = resinet3.buildCalculationParams(true);
+        CalculationParams params = resinet3.buildCalculationParams(null, true);
 
         if (params == null) {
             //Voraussetzungen zum Berechnen sind nicht erfüllt
