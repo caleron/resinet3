@@ -105,7 +105,7 @@ public class ProbabilityCalculator extends Thread {
                 prob *= e.right_node.prob;
             } else
                 prob = 0;
-            //updateStatus("The reduced network contains only one edge.\nThe reliability of the network is:\nP=" + prob);
+            //reportResult("The reduced network contains only one edge.\nThe reliability of the network is:\nP=" + prob);
 
         } else {
             Zerleg zer = getDecomposition();
@@ -141,7 +141,7 @@ public class ProbabilityCalculator extends Thread {
         System.out.println("Prob. Heidtmann: " + prob);
 
         if (writeOutput) {
-            updateStatus("The reliability of the network is: " + prob);
+            reportResult("The reliability of the network is: " + prob);
         }
 
         return prob;
@@ -156,8 +156,6 @@ public class ProbabilityCalculator extends Thread {
      */
     private Double getResilience(boolean writeOutput) {
         long start = new Date().getTime();
-
-        updateStatus("Calculating...");
 
         //Anzahl der Knoten
         int total_nodes = workingGraph.nodeList.size();
@@ -179,6 +177,11 @@ public class ProbabilityCalculator extends Thread {
 
         // Berechne Anzahl der Kombinationen
         BigInteger combinations = Util.binomial(total_nodes, c_nodes);
+
+        //Wenn keine Berechnungsserie, dann Schrittzahl mitteilen
+        if (!params.calculationSeries) {
+            reportStepCount(combinations.intValue());
+        }
 
         // Erzeuge leere Menge für die Knotenmengen.
         Set set1 = new HashSet();
@@ -227,7 +230,11 @@ public class ProbabilityCalculator extends Thread {
             // Wahrscheinlichkeiten neu zuordnen.
             reassignProbabilities();
 
-            updateStatus("Step " + counter + " of " + combinations);
+            //nur wenn keine Serienberechnung, dann Fortschritt angeben
+            if (!params.calculationSeries) {
+                reportProgressChange(counter);
+            }
+            //reportResult("Step " + counter + " of " + combinations);
 
             // Berechne die Zuverlässigkeit für die aktuelle Kombination und addiere sie zur bisherigen Summe.
             result += getHeidtmannsReliability(false);
@@ -241,7 +248,7 @@ public class ProbabilityCalculator extends Thread {
         System.out.println("Laufzeit Resilienz: " + runningTime);
 
         if (writeOutput) {
-            updateStatus("The network has " + total_nodes + " Nodes, containing " + c_nodes + " c-Nodes.\n" +
+            reportResult("The network has " + total_nodes + " Nodes, containing " + c_nodes + " c-Nodes.\n" +
                     "There are " + combinations + " combinations.\n" + "The resilience of the network is: " + result);
         }
 
@@ -318,7 +325,10 @@ public class ProbabilityCalculator extends Thread {
             BigInteger nodeStepCount = params.nodeEndValue.subtract(params.nodeStartValue).divide(params.nodeStepSize, BigDecimal.ROUND_FLOOR)
                     .add(BigDecimal.ONE).toBigInteger();
 
-            String stepCount = edgeStepCount.multiply(nodeStepCount).toString();
+            Integer stepCount = edgeStepCount.multiply(nodeStepCount).intValue();
+
+            //Schrittzahl weitergeben
+            reportStepCount(stepCount);
 
             for (BigDecimal currentEdgeProb = params.edgeStartValue; currentEdgeProb.compareTo(params.edgeEndValue) <= 0;
                  currentEdgeProb = currentEdgeProb.add(params.edgeStepSize)) {
@@ -326,8 +336,7 @@ public class ProbabilityCalculator extends Thread {
                 for (BigDecimal currentNodeProb = params.nodeStartValue; currentNodeProb.compareTo(params.nodeEndValue) <= 0;
                      currentNodeProb = currentNodeProb.add(params.nodeStepSize)) {
 
-                    //TODO berechnung im Background-Thread, damit GUI während der Berechnung aktualisiert werden kann
-                    updateStatus("Calculation Series: Step " + counter + " of " + stepCount);
+                    reportProgressChange(counter);
                     counter++;
 
                     //Neue/aktuelle Wahrscheinlichkeiten zuweisen
@@ -381,119 +390,7 @@ public class ProbabilityCalculator extends Thread {
         // Wahrscheinlichkeiten neu zuordnen.
         reassignProbabilities();
 
-        updateStatus("Calculation series finished. Please check your output file for the results.");
-    }
-
-    /**
-     * Zuverlaessigkeitsberechnung mit 2 Algorithmen (ReNeT)
-     */
-    private void calculate_reliability_2_Algorithms() {
-        Double prob;
-
-        String resultText = "Please use the scrollbar to scroll through the results. \n \n";
-
-        Zerleg zer = getDecomposition();
-
-        reassignProbabilities();
-
-        if (workingGraph.edgeList.size() == 1) {
-            Edge e = (Edge) workingGraph.getEdgelist().get(0);
-            if ((e.left_node.c_node) && (e.right_node.c_node)) {
-                prob = e.prob;
-                prob *= e.left_node.prob;
-                prob *= e.right_node.prob;
-            } else
-                prob = 0.0;
-            resultText = "The reduced network contains only one edge.\nThe reliability of the network is:\nP=" + prob;
-
-        } else {
-            prob = 0.0;
-            String str3 = "P=";
-            int count = 0;
-            MyIterator it = zer.hz.iterator();
-            while (it.hasNext()) {
-                MyList al = (MyList) it.next();
-                MySet hs = (MySet) al.get(0);
-                double p;
-                p = getPathProbability(hs);
-                String s = getNo(hs);
-                for (int i = 1; i < al.size(); i++) {
-                    MySet hs1 = (MySet) al.get(i);
-                    if (hs1.isEmpty())
-                        continue;
-                    p = p * (1 - getPathProbability(hs1));
-                    String s2 = getNo(hs1);
-                    if (s2.lastIndexOf('r') == 0) {
-                        s2 = s2.replace('r', 'u');
-                        s2 = s2.replace('n', 'v');
-                        s = s + s2;
-                    } else
-                        s = s + "(1-" + s2 + ")";
-                }
-                if (count != 0)
-                    s = "+" + s;
-                count++;
-                prob = prob + p;
-                str3 = str3 + s;
-            }
-            String str1 = "The network is decomposed with Heidtmann's Algorithm:\n";
-            String str2 = "The reliability of the network is:\n";
-
-            resultText = resultText + str1 + str3 + "\n" + str2 + prob;
-
-            //now beginning to calculate the value from AZerleg
-
-            resultText = resultText + "\n\n-------------------------\n\n";
-            prob = 0.0;
-            String s = "P=";
-            it = zer.az.iterator();
-            while (it.hasNext()) {
-                ResultA ra = (ResultA) it.next();
-                MySet si = ra.i;
-                MySet sd = ra.d;
-                double pi = 1;
-                MyIterator it1 = si.iterator();
-                while (it1.hasNext()) {
-                    Object obj = it1.next();
-                    if (obj instanceof Edge) {
-                        Edge e = (Edge) obj;
-                        pi = pi * e.prob;
-                        s = s + "r" + String.valueOf(e.edge_no);
-                    } else {
-                        Node n = (Node) obj;
-                        pi = pi * n.prob;
-                        s = s + "r" + String.valueOf(n.node_no);
-                    }
-                }
-                double pd = 1;
-                MyIterator it2 = sd.iterator();
-                while (it2.hasNext()) {
-                    Object obj = it2.next();
-                    if (obj instanceof Edge) {
-                        Edge e = (Edge) obj;
-                        pd = pd * (1 - e.prob);
-                        s = s + "u" + String.valueOf(e.edge_no);
-                    } else {
-                        Node n = (Node) obj;
-                        pd = pd * (1 - n.prob);
-                        s = s + "v" + String.valueOf(n.node_no);
-                    }
-                }
-                prob = prob + pi * pd;
-                s = s + '+';
-            }
-            int last_id = s.lastIndexOf('+');
-            if (last_id != -1) {
-                s = s.substring(0, last_id); //remove the last "+"
-            }
-            str1 = "The network is decomposed with Abraham's Algorithm:\n";
-            str2 = "The reliability of the network is:\n";
-
-            resultText = resultText + str1 + s + "\n" + str2 + prob;
-
-        }
-        updateStatus(resultText);
-        //calcReliabilityBtn.setEnabled(false);
+        reportResult("Calculation series finished. Please check your output file for the results.");
     }
 
 
@@ -572,12 +469,24 @@ public class ProbabilityCalculator extends Thread {
     }
 
 
-    private void updateStatus(String status) {
-        listener.calculationProgressChanged(status);
+    private void reportResult(String status) {
+        listener.calculationFinished(status);
+    }
+
+    private void reportStepCount(Integer stepCount) {
+        listener.reportCalculationStepCount(stepCount);
+    }
+
+    private void reportProgressChange(Integer currentStep) {
+        listener.calculationProgressChanged(currentStep);
     }
 
     public interface CalculationProgressListener {
-        void calculationProgressChanged(String status);
+        void calculationProgressChanged(Integer currentStep);
+
+        void calculationFinished(String status);
+
+        void reportCalculationStepCount(Integer stepCount);
     }
 
     private enum CalculationSeriesMode {

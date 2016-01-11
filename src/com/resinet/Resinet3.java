@@ -29,6 +29,8 @@ public class Resinet3 extends JFrame
 
     private JScrollPane probabilityFieldsScrollPane;
 
+    private JProgressBar calculationProgressBar;
+
     JPanel sameReliabilityPanel, singleReliabilityPanel;
 
     public List<JTextField> edgeProbabilityBoxes = new ArrayList<>();
@@ -314,15 +316,20 @@ public class Resinet3 extends JFrame
         GridBagConstraints gbc = makegbc(0, 16, 1, 1, 1, 0);
         add(calculatePanel, gbc);
 
-        resilienceBtn = new JButton("Calculate the resilience of the network");
-        resilienceBtn.addActionListener(this);
-        gbc = makegbc(0, 0, 1, 1, 0, 0);
-        calculatePanel.add(resilienceBtn, gbc);
-
         calcReliabilityBtn = new JButton("Calculate the reliability of the network");
         calcReliabilityBtn.addActionListener(this);
-        gbc = makegbc(0, 1, 1, 1, 0, 0);
+        gbc = makegbc(0, 0, 1, 1, 1, 0);
         calculatePanel.add(calcReliabilityBtn, gbc);
+
+        resilienceBtn = new JButton("Calculate the resilience of the network");
+        resilienceBtn.addActionListener(this);
+        gbc = makegbc(1, 0, 1, 1, 1, 0);
+        calculatePanel.add(resilienceBtn, gbc);
+
+        calculationProgressBar = new JProgressBar();
+        calculationProgressBar.setStringPainted(true);
+        gbc = makegbc(0, 1, 2, 1, 1, 0);
+        calculatePanel.add(calculationProgressBar, gbc);
     }
 
     /**
@@ -585,11 +592,29 @@ public class Resinet3 extends JFrame
     /**
      * Wird ausgelöst, wenn sich der Berechnungsstatus ändert
      *
-     * @param status Der Berechnungsstatus
+     * @param currentStep Der aktuelle Schritt
      */
     @Override
-    public void calculationProgressChanged(String status) {
+    public void calculationProgressChanged(Integer currentStep) {
+        calculationProgressBar.setValue(currentStep);
+        setResultText("Step " + currentStep + " of " + calculationProgressBar.getMaximum());
+    }
+
+    @Override
+    public void reportCalculationStepCount(Integer stepCount) {
+        calculationProgressBar.setValue(0);
+        calculationProgressBar.setMaximum(stepCount);
+        setResultText("Step 0 of " + stepCount);
+    }
+
+    /**
+     * Wird ausgelöst, wenn die Berechnung fertig ist
+     *
+     * @param status Das Ergebnis
+     */
+    public void calculationFinished(String status) {
         setResultText(status);
+        setGUIState(GUI_STATES.ENTER_GRAPH);
     }
 
     /**
@@ -1030,13 +1055,12 @@ public class Resinet3 extends JFrame
             return;
 
         ProbabilityCalculator calculator = ProbabilityCalculator.create(this, params);
+
+        //Elemente der GUI während der Berechnung deaktivieren
         setGUIState(GUI_STATES.CALCULATION_RUNNING);
 
         System.out.println("startCalculation: " + Thread.currentThread().getName());
         //Starte die Berechnung
         calculator.start();
-        System.out.println("startCalculation: " + Thread.currentThread().getName());
-
-        setGUIState(GUI_STATES.ENTER_GRAPH);
     }
 }
