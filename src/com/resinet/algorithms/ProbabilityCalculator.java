@@ -415,23 +415,6 @@ public class ProbabilityCalculator extends Thread {
         return p;
     }
 
-    private String getNo(MySet hs) {
-        String s = "";
-        MyIterator it = hs.iterator();
-
-        while (it.hasNext()) {
-            Object obj = it.next();
-            if (obj instanceof Edge) {
-                Edge e = (Edge) obj;
-                s += " r" + e.edge_no;
-            } else {
-                Node n = ((Node) obj);
-                s += " n" + n.node_no;
-            }
-        }
-        return s;
-    }
-
     /**
      * Weist alle Wahrscheinlichkeiten aus den Eingabefeldern den Elementen im Graphen neu zu
      */

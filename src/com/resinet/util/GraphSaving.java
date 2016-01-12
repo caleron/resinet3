@@ -28,12 +28,14 @@ import java.util.ArrayList;
 import java.util.Vector;
 
 public class GraphSaving {
-    //TODO dateiformat hinzufügen, wo auch k-knoten gespeichert werden
+
     //Methode zum Einlesen von Netzen aus Textdateien im Pajek-Format
     public static void inputNet(Resinet3 resinet3, NetPanel netPanel) {
         //Dialog zum Datei auswählen
         JFileChooser chooseFile = new JFileChooser();
         chooseFile.setDialogTitle("Open File");
+
+        //Dateifilter für Resinet- und Pajek-Netzwerke einfpgen
         FileNameExtensionFilter resinetFilter = new FileNameExtensionFilter("ResiNeTV-Networks", "resinet");
         FileNameExtensionFilter pajekFilter = new FileNameExtensionFilter("Pajek-Networks", "txt", "net");
         chooseFile.setFileFilter(resinetFilter);
@@ -41,6 +43,7 @@ public class GraphSaving {
 
         int state = chooseFile.showOpenDialog(null);
         File netFile;
+        //Falls abgebrochen wurde, auch hier abbrechen
         if (state == JFileChooser.APPROVE_OPTION) {
             netFile = chooseFile.getSelectedFile();
         } else {
@@ -55,7 +58,7 @@ public class GraphSaving {
             readPajekNetwork(netFile, netPanel);
             resinet3.updateSingleReliabilityProbPanel();
         } else {
-            System.out.print("Error");
+            JOptionPane.showMessageDialog(resinet3, "Your selected File has no known extension.", "Failed", JOptionPane.ERROR_MESSAGE);
         }
     }
 
@@ -316,7 +319,7 @@ public class GraphSaving {
         //Error-Popup ausgeben
         String str = "Your input was invalid! Please choose a valid file created by Pajek or ResiNeT.";
 
-        JOptionPane.showMessageDialog(parentComponent, str, "Warning!", JOptionPane.ERROR_MESSAGE);
+        JOptionPane.showMessageDialog(parentComponent, str, "Error!", JOptionPane.ERROR_MESSAGE);
     }
 
     public static void exportNet(Resinet3 resinet3, NetPanel netPanel) {
@@ -529,7 +532,7 @@ public class GraphSaving {
                 rootElement.appendChild(reliabilityMode);
 
                 if (params.sameReliabilityMode) {
-
+                    //Startwahrscheinlichkeiten speichern
                     Element nodeStartValue = doc.createElement("seriesParam");
                     nodeStartValue.setAttribute("type", "nodeStart");
                     nodeStartValue.setAttribute("value", params.nodeValue.toString());

@@ -176,7 +176,6 @@ class Tree extends Thread {
             //zur Menge ktree hinzugefügt wurde, und fügt den Knoten hinzu, falls er noch nicht in der Menge ist.
             Edge edge = (Edge) it.next();
             output += " e" + edge.edge_no;
-            //TODO testen
 
             if (!consideredNodes.contains(edge.left_node)) {
                 consideredNodes.add(edge.left_node);

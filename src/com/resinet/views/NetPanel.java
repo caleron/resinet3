@@ -38,8 +38,6 @@ public class NetPanel extends JPanel {
 
     @Override
     public void paint(Graphics g) {
-        //g.drawRect(0, 0, 600, 200);
-        //System.out.println(netPanel.getHeight());
         BufferedImage img = new BufferedImage(getWidth(), getHeight(), BufferedImage.TYPE_INT_RGB);
         Graphics2D imgGraphics = img.createGraphics();
 

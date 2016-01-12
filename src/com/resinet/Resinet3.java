@@ -596,12 +596,27 @@ public class Resinet3 extends JFrame
      */
     @Override
     public void calculationProgressChanged(Integer currentStep) {
+        //Falls das nicht der EventDispatchThread von Swing ist, auf dem entsprechenden Thread invoken
+        if (!SwingUtilities.isEventDispatchThread()) {
+            SwingUtilities.invokeLater(() -> calculationProgressChanged(currentStep));
+            return;
+        }
         calculationProgressBar.setValue(currentStep);
         setResultText("Step " + currentStep + " of " + calculationProgressBar.getMaximum());
     }
 
+    /**
+     * Wird ausgelöst, um die Schrittzahl festzusetzen
+     *
+     * @param stepCount Die maximale Anzahl an Schritten der aktuellen Berechnungsaufgabe
+     */
     @Override
     public void reportCalculationStepCount(Integer stepCount) {
+        //Falls das nicht der EventDispatchThread von Swing ist, auf dem entsprechenden Thread invoken
+        if (!SwingUtilities.isEventDispatchThread()) {
+            SwingUtilities.invokeLater(() -> reportCalculationStepCount(stepCount));
+            return;
+        }
         calculationProgressBar.setValue(0);
         calculationProgressBar.setMaximum(stepCount);
         setResultText("Step 0 of " + stepCount);
@@ -612,8 +627,15 @@ public class Resinet3 extends JFrame
      *
      * @param status Das Ergebnis
      */
+    @Override
     public void calculationFinished(String status) {
+        //Falls das nicht der EventDispatchThread von Swing ist, auf dem entsprechenden Thread invoken
+        if (!SwingUtilities.isEventDispatchThread()) {
+            SwingUtilities.invokeLater(() -> calculationFinished(status));
+            return;
+        }
         setResultText(status);
+        //GUI wieder aktivieren, da Berechnung fertig
         setGUIState(GUI_STATES.ENTER_GRAPH);
     }
 
@@ -822,8 +844,7 @@ public class Resinet3 extends JFrame
                 MyIterator it = edgesWithMissingProbability.iterator();
                 missingProbabilityEdges = (String) it.next();
                 while (it.hasNext()) {
-                    String s2 = (String) it.next();
-                    missingProbabilityEdges = missingProbabilityEdges + ", " + s2;
+                    missingProbabilityEdges += ", " + it.next();
                 }
             }
 
@@ -832,8 +853,7 @@ public class Resinet3 extends JFrame
                 MyIterator it = nodesWithMissingProbability.iterator();
                 missingProbabilityNodes = (String) it.next();
                 while (it.hasNext()) {
-                    String s3 = (String) it.next();
-                    missingProbabilityNodes = missingProbabilityNodes + ", " + s3;
+                    missingProbabilityNodes += ", " + it.next();
                 }
             }
 

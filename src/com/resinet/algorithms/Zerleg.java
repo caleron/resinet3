@@ -11,115 +11,30 @@ public class Zerleg extends Thread {
     private Tree ktrees;
     private MyList trs;
 
-    public MySet az;
     /**
      * Enthält alle Zerlegungen nach Heidtmann. Ein Element ist eine Liste aus Pfaden, wobei der erste Pfad der hin-Pfad
      * ist und die weiteren Pfade die Ergebnisse aus dem Disjunktmachen mit den bisherigen Pfaden sind
      */
     public MySet hz;
 
-    private AZerleg azer;
     private HZerleg hzer;
-
-    private int azer_i;
-    private int hzer_i;
 
     public Zerleg(Graph graph) {
         ktrees = new Tree(graph);
         trs = ktrees.trs;
-        azer = new AZerleg();
         hzer = new HZerleg();
-        az = new MySet();
         hz = new MySet();
     }
 
     public void run() {
         ktrees.start();
-        azer.start();
         hzer.start();
 
         try {
             ktrees.join();
-            azer.join();
             hzer.join();
         } catch (Exception ignored) {
         }
-    }
-
-    class AZerleg extends Thread {
-
-        public void run() {
-            aZerlegen();
-        }
-
-        private void aZerlegen() {
-            if (!ktrees.dead) {
-                synchronized (trs) {
-                    try {
-                        trs.wait(1000);
-                    } catch (InterruptedException ignored) {
-                    }
-                }
-            }
-
-            for (int i = 0; i < trs.size(); i++) {
-                MySet setK = (MySet) trs.get(i);
-                MySet setD = new MySet();
-                aZer(setK, setD, i, 0);
-
-                if (i == trs.size() - 1 && !ktrees.dead) {
-                    synchronized (trs) {
-                        try {
-                            //Durch diese Abfrage treten auch ohne Wartezeit keine Deadlocks mehr auf
-                            if (!ktrees.dead) {
-                                trs.wait();
-                            }
-                        } catch (InterruptedException e) {
-                            System.out.println(e.toString());
-                        }
-                    }
-                }
-            }
-
-        }
-
-        private void aZer(MySet superI, MySet superD, int k, int i) {
-            MySet setI = (MySet) superI.clone();
-            MySet setD = (MySet) superD.clone();
-
-            if (i == k) {
-                ResultA ra = new ResultA(setI, setD);
-                azer_i++;
-                az.add(ra);
-            } else {
-                MySet setIi = (MySet) trs.get(i);
-
-                MySet cut = (MySet) setIi.clone();
-                cut.retainAll(setD);
-
-                // falls (Ii /\ D) != {}
-                if (!cut.isEmpty())
-                    aZer(setI, setD, k, i + 1);
-                else {
-                    MySet rest = (MySet) setIi.clone();
-                    rest.removeAll(setI);
-                    rest.removeAll(setD);
-                    // Ii-(I\/D)
-
-                    MyIterator it = rest.iterator();
-
-                    while (it.hasNext()) {
-                        Object ob = it.next();
-                        MySet setD2 = (MySet) setD.clone();
-                        setD2.add(ob);
-                        //setD2 = setD + ob, setD soll unveraendert bleiben
-                        aZer(setI, setD2, k, i + 1);
-                        setI.add(ob);
-                    }
-                }
-            }
-        }
-
     }
 
 
@@ -170,7 +85,6 @@ public class Zerleg extends Thread {
 
         private void hZer(MyList listK, int k, int i) {
             if (i == k) {
-                hzer_i++;
                 //listK.remove(k);
                 MyList al = cloneList(listK);
                 hz.add(al);
