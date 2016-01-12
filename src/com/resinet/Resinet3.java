@@ -602,6 +602,8 @@ public class Resinet3 extends JFrame
             return;
         }
         calculationProgressBar.setValue(currentStep);
+        //Damit lässt sich der Text auf der Progressbar ändern (für später)
+        //calculationProgressBar.setString("");
         setResultText("Step " + currentStep + " of " + calculationProgressBar.getMaximum());
     }
 
