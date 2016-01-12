@@ -1,9 +1,7 @@
 package com.resinet.views;
 
 import java.awt.*;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
-import java.awt.event.MouseMotionAdapter;
+import java.awt.event.*;
 import java.awt.image.BufferedImage;
 
 import com.resinet.*;
@@ -17,13 +15,19 @@ public class NetPanel extends JPanel {
     private Resinet3 resinet3;
 
     //die Kante, die gezeichnet wird, während man die Maus gedrückt hält (beim Kanten erstellen)
-    public EdgeLine el;
-    public boolean valid = false;
+    public EdgeLine draggingLine;
+    public boolean lineDragging = false;
+
+    private boolean nodeHovered = false;
+    private boolean edgeHovered = false;
 
     public MyList drawnNodes;
     public MyList drawnEdges;
 
-    public boolean probability_mode = false;
+    public boolean singleReliabilityMode = false;
+
+
+    private Cursor switchCursor, deleteCursor;
 
     public NetPanel(Resinet3 resinet3) {
         this.resinet3 = resinet3;
@@ -33,9 +37,20 @@ public class NetPanel extends JPanel {
 
         addMouseListener(new MyMouseListener());
         addMouseMotionListener(new MyMouseMotionListener());
+        addKeyListener(new MyKeyListener());
         setCursor(new Cursor(Cursor.CROSSHAIR_CURSOR));
+
+        setFocusable(true);
+
+        //Eigene Cursor initialisieren
+        Image switchCursorImage = getToolkit().getImage(getClass().getResource("../img/cursor_state_switch.png"));
+        Image deleteCursorImage = getToolkit().getImage(getClass().getResource("../img/cursor_delete.png"));
+
+        switchCursor = getToolkit().createCustomCursor(switchCursorImage, new Point(0, 0), "Switch State");
+        deleteCursor = getToolkit().createCustomCursor(deleteCursorImage, new Point(0, 0), "Delete Element");
     }
 
+    //TODO Kanten und Knoten mit Circle bzw. Rectangle ausstatten und daran Clicks erkennen
     @Override
     public void paint(Graphics g) {
         BufferedImage img = new BufferedImage(getWidth(), getHeight(), BufferedImage.TYPE_INT_RGB);
@@ -52,35 +67,34 @@ public class NetPanel extends JPanel {
         while (iterator.hasNext()) {
             imgGraphics.setColor(Color.black);
             NodePoint nodePoint = (NodePoint) iterator.next();
-            int x = nodePoint.x;
-            int y = nodePoint.y;
-            String s = String.valueOf(count);
-            if (!nodePoint.c_node)
-                imgGraphics.drawOval(x, y, 20, 20);
-            else {
-                imgGraphics.fillOval(x, y, 20, 20);
+
+            if (nodePoint.c_node) {
+                imgGraphics.fill(nodePoint);
                 //Textfarbe weiß, da jetzt Hintergrund schwarz ist
                 imgGraphics.setColor(Color.white);
+            } else {
+                imgGraphics.draw(nodePoint);
             }
+
+            String s = String.valueOf(count);
             if (count < 10)
-                imgGraphics.drawString(s, x + 6, y + 13);
+                imgGraphics.drawString(s, (float) nodePoint.getX() + 6, (float) nodePoint.getY() + 15);
             else
-                imgGraphics.drawString(s, x + 1, y + 13);
+                imgGraphics.drawString(s, (float) nodePoint.getX() + 3, (float) nodePoint.getY() + 15);
             count++;
         }
 
         imgGraphics.setColor(Color.black);
         iterator = drawnEdges.iterator();
         while (iterator.hasNext()) {
-            EdgeLine e = (EdgeLine) iterator.next();
-            imgGraphics.drawLine(e.x1, e.y1, e.x2, e.y2);
-            String s = String.valueOf(drawnEdges.indexOf(e));
-            imgGraphics.drawString(s, e.x0, e.y0);
+            EdgeLine edgeLine = (EdgeLine) iterator.next();
+            imgGraphics.draw(edgeLine);
+            String s = String.valueOf(drawnEdges.indexOf(edgeLine));
+            imgGraphics.drawString(s, (float) edgeLine.textPositionX, (float) edgeLine.textPositionY);
         }
 
-
-        if (valid)
-            imgGraphics.drawLine(el.x1, el.y1, el.x2, el.y2);
+        if (lineDragging)
+            imgGraphics.draw(draggingLine);
 
         g.drawImage(img, 0, 0, this);
     }
@@ -94,215 +108,161 @@ public class NetPanel extends JPanel {
     }
 
     public void resetGraph() {
-
-        //TODO netPanel listener resetten
-        /*netPanel.removeMouseListener(drawMouseListener);
-        netPanel.removeMouseMotionListener(drawMouseMoveListener);
-        netPanel.addMouseListener(drawMouseListener);
-        netPanel.addMouseMotionListener(drawMouseMoveListener);*/
         drawnNodes.clear();
         drawnEdges.clear();
-        valid = false;
-        probability_mode = false;
+        lineDragging = false;
         repaint();
     }
-    //TODO ermöglichen, dass man Knoten und Kanten anklicken kann und sich der Cursor beim Hover verändert
+
     private class MyMouseListener extends MouseAdapter {
-        public void mouseClicked(MouseEvent evt) {
-            if (!probability_mode) {
-                int x1 = evt.getX();
-                int y1 = evt.getY();
-                int cnt1;
-                MyIterator it = drawnNodes.iterator();
-                while (it.hasNext()) {
-                    NodePoint nps = (NodePoint) it.next();
-                    cnt1 = drawnNodes.indexOf(nps);
-                    int px = nps.x;
-                    int py = nps.y;
-                    px = px + 10;
-                    py = py + 10;
-                    int dx = x1 - px;
-                    int dy = y1 - py;
-                    if ((dx * dx + dy * dy) <= 100) {
+        @Override
+        public void mouseClicked(MouseEvent mouseEvent) {
+            requestFocusInWindow();
 
-                        if (evt.isShiftDown()) //zum Löschen von Knoten
-                        {
-                            drawnNodes.remove(nps);
-                            for (int i = 0; i < drawnEdges.size(); i++) {
-                                EdgeLine edl = (EdgeLine) drawnEdges.get(i);
+            Integer clickX = mouseEvent.getX();
+            Integer clickY = mouseEvent.getY();
+            boolean nodeClicked = false;
 
-                                if (edl.node1 == cnt1 || edl.node2 == cnt1) {
-                                    drawnEdges.remove(edl);
-                                    i = i - 1;
-                                } else {
-                                    if (edl.node1 > cnt1) {
-                                        edl.node1 = edl.node1 - 1;
-                                    }
-                                    if (edl.node2 > cnt1) {
-                                        edl.node2 = edl.node2 - 1;
-                                    }
-                                }
+            //Prüfen, ob der Click einen Knoten getroffen hat
+            MyIterator it = drawnNodes.iterator();
+            while (it.hasNext()) {
+                NodePoint currentNode = (NodePoint) it.next();
+
+                if (currentNode.contains(clickX, clickY)) {
+                    nodeClicked = true;
+                    if (mouseEvent.isShiftDown()) {
+                        //Knoten löschen
+                        drawnNodes.remove(currentNode);
+
+                        //anliegende Kanten löschen
+                        for (int i = 0; i < drawnEdges.size(); i++) {
+                            EdgeLine edl = (EdgeLine) drawnEdges.get(i);
+                            if (edl.startNode == currentNode || edl.endNode == currentNode) {
+                                drawnEdges.remove(edl);
+                                i--;
                             }
                         }
-
-                        //Vorhandene Knoten zu K-Knoten machen
-                        if (evt.isControlDown()) {
-                            nps.c_node = !nps.c_node;
-
-                            drawnNodes.set(cnt1, nps);
-                        }
-                        repaint();
-                        raiseGraphChangedEvent();
-                        return;
+                    } else if (mouseEvent.isControlDown()) {
+                        //Knoten zum K-Knoten machen oder umgekehrt
+                        currentNode.c_node = !currentNode.c_node;
+                    } else {
+                        showInputNodeProbDialog(drawnNodes.indexOf(currentNode));
                     }
-                    //punkt (x,y) ist in dem Kreis(px, py)
                 }
-                NodePoint np = new NodePoint();
-                if ((x1 % 20) < 10) //Am Raster ausrichten. Kreise haben Durchmesser von 20.
-                    np.x = x1 - (x1 % 20) - 10;
-                else
-                    np.x = x1 + 20 - (x1 % 20) - 10;
-                if ((y1 % 20) < 10)
-                    np.y = y1 - (y1 % 20) - 10;
-                else
-                    np.y = y1 + 20 - (y1 % 20) - 10;
-                if (evt.isMetaDown())
-                    np.c_node = true;
-                drawnNodes.add(np);
-                raiseGraphChangedEvent();
-                repaint();
-            } else {
-                int r = 5;
-                double dr;
-                int cntedge = 0;
-                int x3 = evt.getX();
-                int y3 = evt.getY();
-                MyIterator it = drawnEdges.iterator();
+            }
+
+            if (!nodeClicked) {
+                boolean edgeClicked = false;
+                //Wenn kein Knoten angeklickt wurde, auf Kante prüfen
+                it = drawnEdges.iterator();
                 while (it.hasNext()) {
-                    EdgeLine edg = (EdgeLine) it.next();
-                    int x1 = edg.x1;
-                    int y1 = edg.y1;
-                    int x2 = edg.x2;
-                    int y2 = edg.y2;
-                    int diff_x2x1 = x2 - x1;
-                    int diff_y2y1 = y2 - y1;
-                    int min_x1x2 = x1;
-                    int max_x1x2 = x2;
-                    int min_y1y2 = y1;
-                    int max_y1y2 = y2;
-                    if (x2 < min_x1x2) {
-                        min_x1x2 = x2;
-                        max_x1x2 = x1;
-                    }
-                    if (y2 < min_y1y2) {
-                        min_y1y2 = y2;
-                        max_y1y2 = y1;
-                    }
+                    EdgeLine edgeLine = (EdgeLine) it.next();
 
-                    if (x1 == x2 && min_y1y2 <= y3 && y3 <= max_y1y2) {
-                        dr = Math.abs(x3 - x1);
-                        if (dr <= r) {
-                            showInputEdgeProbDialog(cntedge);
-                            break;
+                    if (edgeLine.ptSegDist(clickX, clickY) < 5) {
+                        if (mouseEvent.isShiftDown()) {
+                            drawnEdges.remove(edgeLine);
+                        } else {
+                            showInputEdgeProbDialog(drawnEdges.indexOf(edgeLine));
                         }
+                        edgeClicked = true;
+                        break;
                     }
-
-                    if (y1 == y2 && min_x1x2 <= x3 && x3 <= max_x1x2) {
-                        dr = Math.abs(y3 - y1);
-                        if (dr <= r) {
-                            showInputEdgeProbDialog(cntedge);
-                            break;
-                        }
-                    }
-
-                    if (x1 != x2 && y1 != y2 && min_x1x2 <= x3 && x3 <= max_x1x2 && min_y1y2 <= y3 && y3 <= max_y1y2) {
-                        dr = Math.sqrt(Math.pow(x3 - x1 - ((x3 - x1 + (-x3 * diff_y2y1 + y3 * diff_x2x1 + x1 *
-                                diff_y2y1 - y1 * diff_x2x1) / (diff_y2y1 + Math.pow(diff_x2x1, 2) / diff_y2y1)) / diff_x2x1)
-                                * diff_x2x1, 2) + Math.pow(y3 - y1 - ((x3 - x1 + (-x3 * diff_y2y1 + y3 * diff_x2x1 + x1
-                                * diff_y2y1 - y1 * diff_x2x1) / (diff_y2y1 + Math.pow(diff_x2x1, 2) / diff_y2y1)) / diff_x2x1)
-                                * diff_y2y1, 2));
-                        if (dr <= r) {
-                            showInputEdgeProbDialog(cntedge);
-                            break;
-                        }
-                    }
-                    cntedge++;
                 }
-                repaint();
+
+                if (!edgeClicked) {
+                    //Wenn kein bestehendes Element angeklickt wurde, neuen Knoten erzeugen
+                    int x = clickX - 10;
+                    int y = clickY - 10;
+
+                    boolean c_node = mouseEvent.isMetaDown();
+
+                    NodePoint newNode = new NodePoint(x, y, c_node);
+                    //Prüfen, ob der neue Knoten mit einem anderen überlappt
+                    for (int i = 0; i < drawnNodes.size(); i++) {
+                        NodePoint currentNode = (NodePoint) drawnNodes.get(i);
+
+                        //Falls er überlappt, den neuen Knoten in die entsprechende Richtung verschieben
+                        if (currentNode.getFrame().intersects(newNode.getFrame())) {
+                            if (x > currentNode.getX() && y > currentNode.getY()) {
+                                newNode = new NodePoint(x + 10, y + 10, c_node);
+                            } else if (x > currentNode.getX() && y < currentNode.getY()) {
+                                newNode = new NodePoint(x + 10, y - 10, c_node);
+                            } else if (x < currentNode.getX() && y > currentNode.getY()) {
+                                newNode = new NodePoint(x - 10, y + 10, c_node);
+                            } else {
+                                newNode = new NodePoint(x - 10, y - 10, c_node);
+                            }
+                        }
+                    }
+                    drawnNodes.add(newNode);
+                }
             }
+            repaint();
+            raiseGraphChangedEvent();
         }
 
-        private void showInputEdgeProbDialog(int edgeNumber) {
-            String str = "Input reliability of Edge " + edgeNumber;
-            String res = JOptionPane.showInputDialog(this, str);
-            if (res != null && res.length() > 0) {
-                resinet3.edgeProbabilityBoxes.get(edgeNumber).setText(res);
-            }
-        }
 
-        public void mousePressed(MouseEvent evt) {
-            if (evt.isShiftDown() || probability_mode)
+        @Override
+        public void mousePressed(MouseEvent mouseEvent) {
+            if (mouseEvent.isMetaDown()) {
                 return;
-            valid = false;
-            int x = evt.getX();
-            int y = evt.getY();
-            int cnt;
+            }
+
+            lineDragging = false;
+            int x = mouseEvent.getX();
+            int y = mouseEvent.getY();
+
+            //Prüfen, ob in ein Knoten gedrückt wurde, damit das Ziehen einer Kante gestartet wird
             MyIterator it = drawnNodes.iterator();
             while (it.hasNext()) {
                 NodePoint np = (NodePoint) it.next();
-                int px = np.x;
-                int py = np.y;
-                px = px + 10;
-                py = py + 10;
-                int dx = x - px;
-                int dy = y - py;
-                if ((dx * dx + dy * dy) <= 100) {
-                    cnt = drawnNodes.indexOf(np);
-                    el = new EdgeLine();
-                    el.x1 = px;
-                    el.y1 = py;
-                    el.node1 = cnt;
-                    valid = true;
+
+                if (np.contains(x, y)) {
+                    //Es wurde in den Kreis geklickt, also Kantenziehen starten
+                    draggingLine = new EdgeLine(np, null);
+                    lineDragging = true;
                     break;
                 }
-                //punkt (x,y) ist in dem Kreis(px, py)
             }
         }
 
-        public void mouseReleased(MouseEvent evt) {
-            if (!valid || evt.isShiftDown() || probability_mode)
+        @Override
+        public void mouseReleased(MouseEvent mouseEvent) {
+            if (!lineDragging || mouseEvent.isMetaDown())
                 return;
 
-            valid = false;
-            int x = evt.getX();
-            int y = evt.getY();
-            int cnt;
+            lineDragging = false;
+            int x = mouseEvent.getX();
+            int y = mouseEvent.getY();
+
+            //Prüft, ob die Maus innerhalb eines Knotens losgelassen wurde
             MyIterator it = drawnNodes.iterator();
             while (it.hasNext()) {
-                NodePoint np = (NodePoint) it.next();
-                int px = np.x;
-                int py = np.y;
-                px = px + 10;
-                py = py + 10;
-                int dx = x - px;
-                int dy = y - py;
-                if ((dx * dx + dy * dy) <= 100 && el.node1 != drawnNodes.indexOf(np)) {
-                    cnt = drawnNodes.indexOf(np);
-                    el.x2 = px;
-                    el.y2 = py;
-                    el.node2 = cnt;
-                    drawnEdges.add(el);
-                    valid = true;
+                NodePoint currentNode = (NodePoint) it.next();
 
-                    int lx = el.x2 - el.x1;
-                    int ly = el.y2 - el.y1;
-                    el.x0 = el.x2 - lx / 2;
-                    el.y0 = el.y2 - ly / 2;
+                if (currentNode.contains(x, y) && draggingLine.startNode != currentNode) {
+
+                    //Prüfen, ob eine Kante mit genau diesen anliegenden Knoten bereits existiert
+                    MyIterator it2 = drawnEdges.iterator();
+                    while (it2.hasNext()) {
+                        EdgeLine currentEdge = (EdgeLine) it2.next();
+
+                        //Wenn die Kante existiert, dann abbrechen
+                        if (currentEdge.startNode == currentNode && currentEdge.endNode == draggingLine.startNode
+                                || currentEdge.startNode == draggingLine.startNode && currentEdge.endNode == currentNode) {
+                            repaint();
+                            return;
+                        }
+                    }
+
+                    //Maus wurde in diesem Knoten losgelassen -> als Endknoten der Kante festlegen
+                    draggingLine.setEndNode(currentNode);
+                    drawnEdges.add(draggingLine);
 
                     raiseGraphChangedEvent();
-                    break;
+                    repaint();
+                    return;
                 }
-                //punkt (x,y) ist in dem Kreis(px, py)
             }
             repaint();
         }
@@ -310,13 +270,93 @@ public class NetPanel extends JPanel {
 
     private class MyMouseMotionListener extends MouseMotionAdapter {
         public void mouseDragged(MouseEvent evt) {
-            if (valid && !probability_mode) {
+            if (lineDragging) {
                 int x = evt.getX();
                 int y = evt.getY();
-                el.x2 = x;
-                el.y2 = y;
+                draggingLine.x2 = x;
+                draggingLine.y2 = y;
                 repaint();
             }
+        }
+
+        @Override
+        public void mouseMoved(MouseEvent mouseEvent) {
+            if (lineDragging)
+                return;
+
+            int x = mouseEvent.getX();
+            int y = mouseEvent.getY();
+
+            MyIterator it = drawnNodes.iterator();
+            while (it.hasNext()) {
+                NodePoint nodePoint = (NodePoint) it.next();
+
+                if (nodePoint.contains(x, y)) {
+                    nodeHovered = true;
+                    edgeHovered = false;
+                    setCursorHover(mouseEvent.isShiftDown(), mouseEvent.isControlDown(), true);
+                    return;
+                }
+            }
+
+            it = drawnEdges.iterator();
+            while (it.hasNext()) {
+                EdgeLine edgeLine = (EdgeLine) it.next();
+
+                if (edgeLine.ptSegDist(x, y) < 5) {
+                    nodeHovered = false;
+                    edgeHovered = true;
+                    setCursorHover(mouseEvent.isShiftDown(), mouseEvent.isControlDown(), true);
+                    return;
+                }
+            }
+            if (nodeHovered || edgeHovered) {
+                nodeHovered = false;
+                edgeHovered = false;
+                setCursorHover(mouseEvent.isShiftDown(), mouseEvent.isControlDown(), false);
+            }
+        }
+    }
+
+    public class MyKeyListener extends KeyAdapter {
+        @Override
+        public void keyPressed(KeyEvent keyEvent) {
+            setCursorHover(keyEvent.isShiftDown(), keyEvent.isControlDown(), false);
+        }
+
+        @Override
+        public void keyReleased(KeyEvent keyEvent) {
+            setCursorHover(keyEvent.isShiftDown(), keyEvent.isControlDown(), false);
+        }
+    }
+
+    private void setCursorHover(boolean shiftDown, boolean controlDown, boolean hovered) {
+        if (shiftDown && (nodeHovered || edgeHovered)) {
+            setCursor(deleteCursor);
+        } else if (controlDown && nodeHovered) {
+            setCursor(switchCursor);
+        } else if (singleReliabilityMode && hovered) {
+            setCursor(new Cursor(Cursor.HAND_CURSOR));
+        } else {
+            setCursor(new Cursor(Cursor.CROSSHAIR_CURSOR));
+        }
+    }
+
+    //TODO ermöglichen, dass man Knoten und Kanten anklicken kann und sich der Cursor beim Hover verändert
+
+    private void showInputEdgeProbDialog(int edgeNumber) {
+        String str = "Input reliability of Edge " + edgeNumber;
+        String res = JOptionPane.showInputDialog(this, str);
+        if (res != null && res.length() > 0) {
+            resinet3.edgeProbabilityBoxes.get(edgeNumber).setText(res);
+        }
+    }
+
+    private void showInputNodeProbDialog(int nodeNumber) {
+        String str = "Input reliability of Node " + nodeNumber;
+        String res = JOptionPane.showInputDialog(this, str);
+        if (res != null && res.length() > 0) {
+            resinet3.nodeProbabilityBoxes.get(nodeNumber).setText(res);
         }
     }
 
@@ -342,6 +382,10 @@ public class NetPanel extends JPanel {
 
     graph_width = highest_x_pos - smallest_x_pos + 25;
     graph_height = highest_y_pos - smallest_y_pos + 25;*/
+
+    public void setReliabilityMode(boolean sameReliabilityMode) {
+        singleReliabilityMode = !sameReliabilityMode;
+    }
 
     private void raiseGraphChangedEvent() {
         resinet3.graphChanged();

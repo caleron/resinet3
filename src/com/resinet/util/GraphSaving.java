@@ -25,7 +25,6 @@ import java.awt.*;
 import java.io.*;
 import java.math.BigDecimal;
 import java.util.ArrayList;
-import java.util.Vector;
 
 public class GraphSaving {
 
@@ -85,19 +84,16 @@ public class GraphSaving {
             //Erzeuge Knoten
             for (int i = 0; i < nodesCount; i++) {
                 actRow = lineReader.readLine();
-                NodePoint node1 = new NodePoint();
-                node1.c_node = false;
 
                 //Hole x-Koordinate
                 int position = actRow.indexOf('.');
 
                 Double xCoordinate = Double.parseDouble(actRow.substring(position - 1, position + 5));
-                node1.x = (int) (xCoordinate * panelWidth);
 
                 //Hole y-Koordinate
                 Double yCoordinate = Double.parseDouble(actRow.substring(position + 10, position + 16));
-                node1.y = (int) (yCoordinate * panelHeight);
 
+                NodePoint node1 = new NodePoint(xCoordinate * panelWidth, yCoordinate * panelHeight, false);
                 netPanel.drawnNodes.add(node1);
             }
 
@@ -144,22 +140,13 @@ public class GraphSaving {
                 }
 
                 //Füge aktuelle Kante inkl. Start- und Endknoten hinzu
-                EdgeLine edge1 = new EdgeLine();
-                edge1.node1 = Integer.parseInt(startnode) - 1;
-                edge1.node2 = Integer.parseInt(endnode) - 1;
+                Integer node1 = Integer.parseInt(startnode) - 1;
+                Integer node2 = Integer.parseInt(endnode) - 1;
 
-                NodePoint startNodePoint = (NodePoint) netPanel.drawnNodes.get(edge1.node1);
-                edge1.x1 = startNodePoint.x + 10;
-                edge1.y1 = startNodePoint.y + 10;
+                NodePoint startNodePoint = (NodePoint) netPanel.drawnNodes.get(node1);
+                NodePoint endNodePoint = (NodePoint) netPanel.drawnNodes.get(node2);
 
-                NodePoint endNodePoint = (NodePoint) netPanel.drawnNodes.get(edge1.node2);
-                edge1.x2 = endNodePoint.x + 10;
-                edge1.y2 = endNodePoint.y + 10;
-
-                int labelX = edge1.x2 - edge1.x1;
-                int labelY = edge1.y2 - edge1.y1;
-                edge1.x0 = edge1.x2 - labelX / 2;
-                edge1.y0 = edge1.y2 - labelY / 2;
+                EdgeLine edge1 = new EdgeLine(startNodePoint, endNodePoint);
 
                 netPanel.drawnEdges.add(edge1);
             }
@@ -189,13 +176,13 @@ public class GraphSaving {
 
                 if (node.getNodeType() == Node.ELEMENT_NODE) {
                     Element nodeElement = (Element) node;
-                    NodePoint np = new NodePoint();
                     //Nummer und Koordinaten einlesen
                     Integer position = Integer.parseInt(nodeElement.getAttribute("node_number"));
-                    np.x = Integer.parseInt(nodeElement.getAttribute("x"));
-                    np.y = Integer.parseInt(nodeElement.getAttribute("y"));
-                    np.c_node = Boolean.parseBoolean(nodeElement.getAttribute("c_node"));
+                    int x = Integer.parseInt(nodeElement.getAttribute("x"));
+                    int y = Integer.parseInt(nodeElement.getAttribute("y"));
+                    boolean c_node = Boolean.parseBoolean(nodeElement.getAttribute("c_node"));
 
+                    NodePoint np = new NodePoint(x, y, c_node);
                     //An der richtigen Position einfügen
                     drawnNodes.add(position, np);
                 }
@@ -208,27 +195,13 @@ public class GraphSaving {
 
                 if (node.getNodeType() == Node.ELEMENT_NODE) {
                     Element nodeElement = (Element) node;
-                    EdgeLine el = new EdgeLine();
                     //Anliegende Knoten bestimmen
                     Integer node1Number = Integer.parseInt(nodeElement.getAttribute("node1"));
                     Integer node2Number = Integer.parseInt(nodeElement.getAttribute("node2"));
                     NodePoint node1 = (NodePoint) drawnNodes.get(node1Number);
                     NodePoint node2 = (NodePoint) drawnNodes.get(node2Number);
 
-                    el.node1 = node1Number;
-                    el.node2 = node2Number;
-
-                    //Position der Linie bestimmen
-                    el.x1 = node1.x + 10;
-                    el.y1 = node1.y + 10;
-                    el.x2 = node2.x + 10;
-                    el.y2 = node2.y + 10;
-
-                    //Textkoordinaten bestimmen
-                    int labelX = el.x2 - el.x1;
-                    int labelY = el.y2 - el.y1;
-                    el.x0 = el.x2 - labelX / 2;
-                    el.y0 = el.y2 - labelY / 2;
+                    EdgeLine el = new EdgeLine(node1, node2);
 
                     //An der richtigen Position einfügen
                     Integer position = Integer.parseInt(nodeElement.getAttribute("edge_number"));
@@ -408,8 +381,8 @@ public class GraphSaving {
                 }
 
                 NodePoint node = (NodePoint) netPanel.drawnNodes.get(i - 1);
-                double xCoordinate = (double) node.x;
-                double yCoordinate = (double) node.y;
+                double xCoordinate = node.x;
+                double yCoordinate = node.y;
 
                 if (xCoordinate < 5) {
                     xCoordinate = 5;
@@ -448,8 +421,8 @@ public class GraphSaving {
             for (int i = 0; i < netPanel.drawnEdges.size(); i++) {
                 writer.append(System.getProperty("line.separator"));
                 EdgeLine edge = (EdgeLine) netPanel.drawnEdges.get(i);
-                String node1 = Integer.toString(edge.node1 + 1);
-                String node2 = Integer.toString(edge.node2 + 1);
+                String node1 = Integer.toString(netPanel.drawnNodes.indexOf(edge.startNode) + 1);
+                String node2 = Integer.toString(netPanel.drawnNodes.indexOf(edge.endNode) + 1);
 
                 while (node1.length() < Integer.toString(netPanel.drawnNodes.size()).length() + 1) {
                     node1 = " " + node1;
@@ -509,8 +482,8 @@ public class GraphSaving {
 
                 Element node = doc.createElement("node");
                 node.setAttribute("node_number", i.toString());
-                node.setAttribute("x", Integer.toString(graphNode.x));
-                node.setAttribute("y", Integer.toString(graphNode.y));
+                node.setAttribute("x", Integer.toString((int) graphNode.x));
+                node.setAttribute("y", Integer.toString((int) graphNode.y));
                 node.setAttribute("c_node", Boolean.toString(graphNode.c_node));
 
                 rootElement.appendChild(node);
@@ -523,8 +496,8 @@ public class GraphSaving {
 
                 Element edge = doc.createElement("edge");
                 edge.setAttribute("edge_number", i.toString());
-                edge.setAttribute("node1", Integer.toString(graphEdge.node1));
-                edge.setAttribute("node2", Integer.toString(graphEdge.node2));
+                edge.setAttribute("node1", Integer.toString(resinet3.netPanel.drawnNodes.indexOf(graphEdge.startNode)));
+                edge.setAttribute("node2", Integer.toString(resinet3.netPanel.drawnNodes.indexOf(graphEdge.endNode)));
 
                 rootElement.appendChild(edge);
             }

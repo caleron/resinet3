@@ -34,7 +34,7 @@ public class Resinet3 extends JFrame
     JPanel sameReliabilityPanel, singleReliabilityPanel;
 
     public List<JTextField> edgeProbabilityBoxes = new ArrayList<>();
-    private List<JTextField> nodeProbabilityBoxes = new ArrayList<>();
+    public List<JTextField> nodeProbabilityBoxes = new ArrayList<>();
     //private Color backgroundColor = new Color(85, 143, 180);
 
     private static Resinet3 mainFrame;
@@ -493,6 +493,7 @@ public class Resinet3 extends JFrame
 
             updateSingleReliabilityProbPanel();
         }
+        netPanel.setReliabilityMode(sameReliability);
     }
 
     /**
@@ -1047,8 +1048,8 @@ public class Resinet3 extends JFrame
         cnt = 0;
         while (it.hasNext()) {
             EdgeLine e = (EdgeLine) it.next();
-            int m = e.node1;
-            int n = e.node2;
+            int m = netPanel.drawnNodes.indexOf(e.startNode);
+            int n = netPanel.drawnNodes.indexOf(e.endNode);
             Edge edge = new Edge(cnt);
             Node node1 = (Node) nodeList.get(m);
             Node node2 = (Node) nodeList.get(n);
