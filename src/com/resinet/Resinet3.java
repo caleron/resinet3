@@ -1035,8 +1035,6 @@ public class Resinet3 extends JFrame
         while (it.hasNext()) {
             NodePoint np = (NodePoint) it.next();
             Node node = new Node(cnt);
-            node.xposition = np.x;
-            node.yposition = np.y;
             if (np.c_node)
                 node.c_node = true;
             nodeList.add(node);

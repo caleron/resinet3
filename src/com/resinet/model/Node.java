@@ -6,30 +6,30 @@ import java.io.Serializable;
 import java.math.BigDecimal;
 
 public class Node implements Serializable {
+    //Knotennummer
     public int node_no;
-    public boolean c_node = false;
+
     // Kennzeichen fuer Konnektionsknoten
+    public boolean c_node = false;
 
     //Attribut für KTree
     public Node left, right;
     //Anliegende Kanten
     public MyList node_edge = new MyList();
 
-    public int xposition;
-    public int yposition;
     //Grad des Knotens, d.h. Anzahl anliegender Kanten
     public int degree = 0;
 
-    int kt_nd = -1;
-
+    //Für die Tiefensuche beim Prüfen, ob der Graph zusammenhängend ist
     public boolean marked = false;
 
-    public boolean b_marked = false;
     //mark fuer K-Baum (com.resinet.model.KTree.java)
+    public boolean b_marked = false;
 
     //Intaktwahrscheinlichkeit
     public BigDecimal prob;
 
+    //Für die Baumsuche, wird aber niemals ausgelesen
     public boolean useless = false;
 
     public Node(int node_no) {

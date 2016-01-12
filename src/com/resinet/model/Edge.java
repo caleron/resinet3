@@ -6,9 +6,9 @@ import java.math.BigDecimal;
 public class Edge implements Serializable {
 
     public final int edge_no;
-    public Node left_node;
-    public Node right_node;
+
     // Knoten einer Kante
+    public Node left_node,right_node;
 
     public Edge q_left;
     public Edge q_right;
@@ -26,10 +26,7 @@ public class Edge implements Serializable {
 
     public Edge[] parent_edges;
     //bei der Reduktion werden zwei Kanten eliminiert, und entsteht eine neue
-    public String rdcType;
-    //Art der Reduktion, S, K, oder P
-    public Edge r = null;
-    //fuer Polygon-Ketten-Reduktion
+
     public BigDecimal prob;
     //Intaktwahrscheinlichkeit der Kante
 
