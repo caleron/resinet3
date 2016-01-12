@@ -20,7 +20,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 /**
- * Für zukünftige Entwicklung soll hier die Zuverlässigkeitsberechnung stehen
+ * Diese Klasse führt die eigentlichen Zuverlässigkeitsberechnungen auf einem eigenen Thread durch
  */
 public class ProbabilityCalculator extends Thread {
     CalculationProgressListener listener;
@@ -28,6 +28,9 @@ public class ProbabilityCalculator extends Thread {
 
     Graph workingGraph;
 
+    /**
+     * Startet die Berechnungen
+     */
     @Override
     public void run() {
         System.out.println("ProbabilityCalculator: " + Thread.currentThread().getName());
@@ -48,10 +51,24 @@ public class ProbabilityCalculator extends Thread {
         }
     }
 
+    /**
+     * Factory-Funktion, die ein Objekt erzeugt
+     *
+     * @param listener Das Objekt, dass über den Fortschritt informiert werden soll
+     * @param params   Die Berechnungsparameter
+     * @return Das neue ProbabilityCalculator-Objekt
+     */
     public static ProbabilityCalculator create(CalculationProgressListener listener, CalculationParams params) {
         return new ProbabilityCalculator(listener, params);
     }
 
+    /**
+     * Erzeugt ein neues Objekt und bereitet den Arbeitsgraphen vor. Der Konstruktor ist hier private; es macht aber
+     * keinen Unterschied, wenn man die Factory-Funktion entfernt und diesen Konstruktor public macht.
+     *
+     * @param listener Das Objekt, dass über den Fortschritt informiert werden soll
+     * @param params   Die Berechnungsparameter
+     */
     private ProbabilityCalculator(CalculationProgressListener listener, CalculationParams params) {
         this.listener = listener;
         this.params = params;
@@ -89,6 +106,12 @@ public class ProbabilityCalculator extends Thread {
         return zer;
     }
 
+    /**
+     * Startet die Berechnung der Zuverlässigkeit nach Heidtmann
+     *
+     * @param writeOutput Ob das Resultat als Ergebnis gemeldet werden soll
+     * @return Die Zuverlässigkeit des Arbeitsgraphen
+     */
     private double getHeidtmannsReliability(boolean writeOutput) {
         long startTime = new Date().getTime();
         double prob;
@@ -121,8 +144,9 @@ public class ProbabilityCalculator extends Thread {
                 MySet hs = (MySet) al.get(0);
                 double p;
                 //hs enthält hier anscheinend einen Pfad im Graphen zwischen den K-Knoten
+                //Das erste hs ist der Hin-Pfad
                 p = getPathProbability(hs);
-
+                //Die weiteren Pfade entstehen beim Disjunktmachen und Invertieren
                 for (int i = 1; i < al.size(); i++) {
                     MySet hs1 = (MySet) al.get(i);
                     if (hs1.isEmpty())
@@ -256,7 +280,12 @@ public class ProbabilityCalculator extends Thread {
     }
 
 
-    /// Hilfsmethode zum Erzeugen aller Kombinationen von K-Knoten
+    /**
+     * Hilfsmethode zum Erzeugen aller Kombinationen von K-Knoten
+     *
+     * @param inputString Bisherige Kombinationen?
+     * @return Alle möglichen Kombinationen
+     */
     private Set<String> generateCombinations(String inputString) {
         Set<String> combinationsSet = new HashSet<>();
         if (inputString.length() == 0)
@@ -281,7 +310,11 @@ public class ProbabilityCalculator extends Thread {
     }
 
 
-    //Für die Serienberechnung in Schritten
+    /**
+     * Führt die Serienberechnung aus
+     *
+     * @param calculationSeriesMode Der Berechnungsmodus (Zuverlässigkeit oder Resilienz)
+     */
     private void calculationSeries(CalculationSeriesMode calculationSeriesMode) {
 
         //Dialog zum Datei auswählen
@@ -393,7 +426,12 @@ public class ProbabilityCalculator extends Thread {
         reportResult("Calculation series finished. Please check your output file for the results.");
     }
 
-
+    /**
+     * Berechnet die Intaktwahrscheinlichkeit eines Pfades
+     *
+     * @param path Der Pfad
+     * @return Die Intaktwahrscheinlichkeit
+     */
     private double getPathProbability(MySet path) {
         double p = 1;
         String output = "Pfad";
@@ -451,19 +489,36 @@ public class ProbabilityCalculator extends Thread {
         }
     }
 
-
+    /**
+     * Teilt dem Listener das Ergebnis mit
+     *
+     * @param status Das Ergebnis
+     */
     private void reportResult(String status) {
         listener.calculationFinished(status);
     }
 
+    /**
+     * Teilt dem Listener die maximale Berechnungsschrittzahl mit
+     *
+     * @param stepCount Die Schrittzahl
+     */
     private void reportStepCount(Integer stepCount) {
         listener.reportCalculationStepCount(stepCount);
     }
 
+    /**
+     * Teilt dem Listener den aktuellen Fortschritt mit
+     *
+     * @param currentStep Der aktuelle Fortschritt (muss kleiner als stepCount in reportStepCount sein)
+     */
     private void reportProgressChange(Integer currentStep) {
         listener.calculationProgressChanged(currentStep);
     }
 
+    /**
+     * Definiert die nötigen Methoden eines Listeners
+     */
     public interface CalculationProgressListener {
         void calculationProgressChanged(Integer currentStep);
 
@@ -472,6 +527,9 @@ public class ProbabilityCalculator extends Thread {
         void reportCalculationStepCount(Integer stepCount);
     }
 
+    /**
+     * Die Berechnungsmodi der Serienberechnung
+     */
     private enum CalculationSeriesMode {
         Resilience,
         Reliability
