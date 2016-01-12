@@ -761,11 +761,11 @@ public class Resinet3 extends JFrame
             singleReliabilityRadioBtn.setSelected(true);
             //Einzelwahrscheinlichkeiten in die Felder eintragen
             for (int i = 0; i < edgeProbabilityBoxes.size(); i++) {
-                edgeProbabilityBoxes.get(i).setText(Double.toString(params.edgeProbabilities[i]));
+                edgeProbabilityBoxes.get(i).setText(params.edgeProbabilities[i].toString());
             }
 
             for (int i = 0; i < nodeProbabilityBoxes.size(); i++) {
-                nodeProbabilityBoxes.get(i).setText(Double.toString(params.nodeProbabilities[i]));
+                nodeProbabilityBoxes.get(i).setText(params.nodeProbabilities[i].toString());
             }
         }
     }
@@ -923,14 +923,14 @@ public class Resinet3 extends JFrame
             params.setReliabilityMode(false);
             int edgeCount = edgeProbabilityBoxes.size();
             int nodeCount = nodeProbabilityBoxes.size();
-            double[] edgeProbabilities = new double[edgeCount];
-            double[] nodeProbabilities = new double[nodeCount];
+            BigDecimal[] edgeProbabilities = new BigDecimal[edgeCount];
+            BigDecimal[] nodeProbabilities = new BigDecimal[nodeCount];
             for (int i = 0; i < edgeCount; i++) {
-                edgeProbabilities[i] = Double.valueOf(edgeProbabilityBoxes.get(i).getText());
+                edgeProbabilities[i] = new BigDecimal(edgeProbabilityBoxes.get(i).getText());
             }
 
             for (int i = 0; i < nodeCount; i++) {
-                nodeProbabilities[i] = Double.valueOf(nodeProbabilityBoxes.get(i).getText());
+                nodeProbabilities[i] = new BigDecimal(nodeProbabilityBoxes.get(i).getText());
             }
 
             params.setSingleReliabilityParams(edgeProbabilities, nodeProbabilities);

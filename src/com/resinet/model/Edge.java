@@ -1,6 +1,7 @@
 package com.resinet.model;/* Edge.java */
 
 import java.io.Serializable;
+import java.math.BigDecimal;
 
 public class Edge implements Serializable {
 
@@ -29,7 +30,7 @@ public class Edge implements Serializable {
     //Art der Reduktion, S, K, oder P
     public Edge r = null;
     //fuer Polygon-Ketten-Reduktion
-    public double prob;
+    public BigDecimal prob;
     //Intaktwahrscheinlichkeit der Kante
 
     public Edge(int edge_no) {

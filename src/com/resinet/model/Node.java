@@ -3,6 +3,7 @@ package com.resinet.model;/* com.resinet.model.Node.java */
 import com.resinet.util.MyList;
 
 import java.io.Serializable;
+import java.math.BigDecimal;
 
 public class Node implements Serializable {
     public int node_no;
@@ -27,7 +28,7 @@ public class Node implements Serializable {
     //mark fuer K-Baum (com.resinet.model.KTree.java)
 
     //Intaktwahrscheinlichkeit
-    public double prob;
+    public BigDecimal prob;
 
     public boolean useless = false;
 

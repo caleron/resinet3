@@ -278,12 +278,17 @@ public class GraphSaving {
                         }
                     }
                 }
+                //Falls Berechnungsserienparameter vorliegen, müssen alle abgespeichert worden sein,
+                //also reicht es hier, einen Parameter zu prüfen
+                if (calculationParams.edgeEndValue != null) {
+                    calculationParams.calculationSeries = true;
+                }
             } else {
                 nodeList = doc.getElementsByTagName("singleReliability");
 
                 int nodeCount = nodeList.getLength();
                 //Arraylisten mit der größe der gesamten Liste initialisieren, damit mit Sicherheit alle reinpassen
-                ArrayList<Double> edgeProbabilities = new ArrayList<>(nodeCount),
+                ArrayList<BigDecimal> edgeProbabilities = new ArrayList<>(nodeCount),
                         nodeProbabilities = new ArrayList<>(nodeCount);
 
                 for (Integer i = 0; i < nodeCount; i++) {
@@ -292,7 +297,7 @@ public class GraphSaving {
                     if (node.getNodeType() == Node.ELEMENT_NODE) {
                         Element nodeElement = (Element) node;
                         Integer position = Integer.parseInt(nodeElement.getAttribute("number"));
-                        Double reliability = Double.parseDouble(nodeElement.getAttribute("reliability"));
+                        BigDecimal reliability = new BigDecimal(nodeElement.getAttribute("reliability"));
 
                         if (nodeElement.getAttribute("type").equals("node")) {
                             nodeProbabilities.add(position, reliability);
@@ -302,8 +307,8 @@ public class GraphSaving {
                     }
                 }
                 //Vector in primitive Arrays umwandeln und dann in das Objekt einspeisen
-                calculationParams.setSingleReliabilityParams(Util.listToPrimitiveDoubleArray(edgeProbabilities),
-                        Util.listToPrimitiveDoubleArray(nodeProbabilities));
+                calculationParams.setSingleReliabilityParams(edgeProbabilities.toArray(new BigDecimal[edgeProbabilities.size()]),
+                        nodeProbabilities.toArray(new BigDecimal[nodeProbabilities.size()]));
 
             }
 
@@ -546,23 +551,23 @@ public class GraphSaving {
                     if (params.calculationSeries) {
                         //Serienberechnungsparameter speichern
                         Element nodeEndValue = doc.createElement("seriesParam");
-                        nodeStartValue.setAttribute("type", "nodeEnd");
+                        nodeEndValue.setAttribute("type", "nodeEnd");
                         nodeEndValue.setAttribute("value", params.nodeEndValue.toString());
                         rootElement.appendChild(nodeEndValue);
 
                         Element nodeStepSizeValue = doc.createElement("seriesParam");
-                        nodeStartValue.setAttribute("type", "nodeStepSize");
+                        nodeStepSizeValue.setAttribute("type", "nodeStepSize");
                         nodeStepSizeValue.setAttribute("value", params.nodeStepSize.toString());
                         rootElement.appendChild(nodeStepSizeValue);
 
 
                         Element edgeEndValue = doc.createElement("seriesParam");
-                        edgeStartValue.setAttribute("type", "edgeEnd");
+                        edgeEndValue.setAttribute("type", "edgeEnd");
                         edgeEndValue.setAttribute("value", params.edgeEndValue.toString());
                         rootElement.appendChild(edgeEndValue);
 
                         Element edgeStepSizeValue = doc.createElement("seriesParam");
-                        edgeStartValue.setAttribute("type", "edgeStepSize");
+                        edgeStepSizeValue.setAttribute("type", "edgeStepSize");
                         edgeStepSizeValue.setAttribute("value", params.edgeStepSize.toString());
                         rootElement.appendChild(edgeStepSizeValue);
                     }
@@ -574,7 +579,7 @@ public class GraphSaving {
                         Element singleReliability = doc.createElement("singleReliability");
                         singleReliability.setAttribute("type", "node");
                         singleReliability.setAttribute("number", i.toString());
-                        singleReliability.setAttribute("reliability", Double.toString(params.nodeProbabilities[i]));
+                        singleReliability.setAttribute("reliability", params.nodeProbabilities[i].toString());
                         rootElement.appendChild(singleReliability);
                     }
 
@@ -583,7 +588,7 @@ public class GraphSaving {
                         Element singleReliability = doc.createElement("singleReliability");
                         singleReliability.setAttribute("type", "edge");
                         singleReliability.setAttribute("number", i.toString());
-                        singleReliability.setAttribute("reliability", Double.toString(params.edgeProbabilities[i]));
+                        singleReliability.setAttribute("reliability", params.edgeProbabilities[i].toString());
                         rootElement.appendChild(singleReliability);
                     }
                 }

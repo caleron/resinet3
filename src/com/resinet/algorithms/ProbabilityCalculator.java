@@ -26,6 +26,9 @@ public class ProbabilityCalculator extends Thread {
     CalculationProgressListener listener;
     CalculationParams params;
 
+    //Die Anzahl der Nachkommastellen, die der Output haben soll
+    final Integer OUTPUT_PRECISION = 15;
+
     Graph workingGraph;
 
     /**
@@ -49,6 +52,8 @@ public class ProbabilityCalculator extends Thread {
                 getResilience(true);
             }
         }
+        //Garbage Collection starten (ist nicht notwendig, aber könnte die Arbeitsspeicherauslastung reduzieren)
+        System.gc();
     }
 
     /**
@@ -112,9 +117,9 @@ public class ProbabilityCalculator extends Thread {
      * @param writeOutput Ob das Resultat als Ergebnis gemeldet werden soll
      * @return Die Zuverlässigkeit des Arbeitsgraphen
      */
-    private double getHeidtmannsReliability(boolean writeOutput) {
+    private BigDecimal getHeidtmannsReliability(boolean writeOutput) {
         long startTime = new Date().getTime();
-        double prob;
+        BigDecimal prob;
 
         reassignProbabilities();
 
@@ -124,17 +129,17 @@ public class ProbabilityCalculator extends Thread {
             //Prüfe, ob die beiden Endknoten K-Knoten sind
             if ((e.left_node.c_node) && (e.right_node.c_node)) {
                 prob = e.prob;
-                prob *= e.left_node.prob;
-                prob *= e.right_node.prob;
+                prob = prob.multiply(e.left_node.prob);
+                prob = prob.multiply(e.right_node.prob);
             } else
-                prob = 0;
+                prob = BigDecimal.ZERO;
             //reportResult("The reduced network contains only one edge.\nThe reliability of the network is:\nP=" + prob);
 
         } else {
             Zerleg zer = getDecomposition();
 
             System.out.println("Laufzeit Heidtmann bis Zerlegung: " + ((new Date()).getTime() - startTime));
-            prob = 0;
+            prob = BigDecimal.ZERO;
             MyIterator it = zer.hz.iterator();
             while (it.hasNext()) {
 
@@ -142,7 +147,8 @@ public class ProbabilityCalculator extends Thread {
 
                 MyList al = (MyList) it.next();
                 MySet hs = (MySet) al.get(0);
-                double p;
+
+                BigDecimal p;
                 //hs enthält hier anscheinend einen Pfad im Graphen zwischen den K-Knoten
                 //Das erste hs ist der Hin-Pfad
                 p = getPathProbability(hs);
@@ -151,11 +157,11 @@ public class ProbabilityCalculator extends Thread {
                     MySet hs1 = (MySet) al.get(i);
                     if (hs1.isEmpty())
                         continue;
-                    p = p * (1 - getPathProbability(hs1));
+                    p = p.multiply(BigDecimal.ONE.subtract(getPathProbability(hs1)));
 
                 }
-                System.out.println("Wahrscheinlichkeit: " + Double.toString(p));
-                prob = prob + p;
+                System.out.println("Wahrscheinlichkeit: " + p.toString());
+                prob = prob.add(p);
 
             }
 
@@ -165,7 +171,8 @@ public class ProbabilityCalculator extends Thread {
         System.out.println("Prob. Heidtmann: " + prob);
 
         if (writeOutput) {
-            reportResult("The reliability of the network is: " + prob);
+            BigDecimal output = prob.setScale(OUTPUT_PRECISION, BigDecimal.ROUND_HALF_DOWN);
+            reportResult("The reliability of the network is: " + output);
         }
 
         return prob;
@@ -178,7 +185,7 @@ public class ProbabilityCalculator extends Thread {
      * @param writeOutput True, wenn das Ergebnis als Statusupdate ausgegeben werden soll
      * @return Die Resilienz des Netzwerks
      */
-    private Double getResilience(boolean writeOutput) {
+    private BigDecimal getResilience(boolean writeOutput) {
         long start = new Date().getTime();
 
         //Anzahl der Knoten
@@ -208,14 +215,14 @@ public class ProbabilityCalculator extends Thread {
         }
 
         // Erzeuge leere Menge für die Knotenmengen.
-        Set set1 = new HashSet();
+        Set<HashSet<Integer>> set1 = new HashSet<>();
 
         //Hier werden alle Kombinationen an Binärstrings erzeugt, die k Einsen und n-k Nullen haben
         Set<String> combinationStrings = generateCombinations(cNodeList);
 
         for (String binary : combinationStrings) {
             // Erzeuge neue Teilmenge
-            Set subset = new HashSet();
+            HashSet<Integer> subset = new HashSet<>();
 
             // Für jeden Knoten: Wenn in der Binärzahl an der Stelle j eine 1 steht, füge den Knoten j der Teilmenge hinzu.
             for (int j = 0; j < total_nodes; j++) {
@@ -227,13 +234,12 @@ public class ProbabilityCalculator extends Thread {
         }
 
         int counter = 0;
-        double result = 0;
+        BigDecimal result = BigDecimal.ZERO;
 
         // Für jede Kombination der K-Knoten
-        for (Object c : set1) {
+        for (HashSet d : set1) {
             renewWorkingGraph();
 
-            HashSet d = (HashSet) c;
             // Für jeden Knoten: Falls er in der aktuellen Kombination enthalten ist, setze ihn auf "K-Knoten".
             for (int i = 0; i < total_nodes; i++) {
                 // Entsprechenden Knoten holen
@@ -261,19 +267,20 @@ public class ProbabilityCalculator extends Thread {
             //reportResult("Step " + counter + " of " + combinations);
 
             // Berechne die Zuverlässigkeit für die aktuelle Kombination und addiere sie zur bisherigen Summe.
-            result += getHeidtmannsReliability(false);
+            result = result.add(getHeidtmannsReliability(false));
 
         }
 
         // Teile die Summe der Zuverlässigkeiten durch die Anzahl der Kombinationen.
-        result = result / combinations.longValue();
+        result = result.divide(new BigDecimal(combinations), BigDecimal.ROUND_HALF_EVEN);
 
         long runningTime = new Date().getTime() - start;
         System.out.println("Laufzeit Resilienz: " + runningTime);
 
         if (writeOutput) {
+            BigDecimal output = result.setScale(OUTPUT_PRECISION, BigDecimal.ROUND_HALF_DOWN);
             reportResult("The network has " + total_nodes + " Nodes, containing " + c_nodes + " c-Nodes.\n" +
-                    "There are " + combinations + " combinations.\n" + "The resilience of the network is: " + result);
+                    "There are " + combinations + " combinations.\n" + "The resilience of the network is: " + output);
         }
 
         return result;
@@ -376,7 +383,7 @@ public class ProbabilityCalculator extends Thread {
                     params.nodeValue = currentNodeProb;
                     params.edgeValue = currentEdgeProb;
 
-                    Double prob;
+                    BigDecimal prob;
                     if (calculationSeriesMode == CalculationSeriesMode.Resilience) {
                         //Resilienz
                         prob = getResilience(false);
@@ -410,6 +417,7 @@ public class ProbabilityCalculator extends Thread {
                         reliabilityString = reliabilityString + " ";
                     }
 
+                    prob = prob.setScale(OUTPUT_PRECISION, BigDecimal.ROUND_HALF_DOWN);
                     writer.write(reliabilityString + prob);
                 }
 
@@ -432,8 +440,8 @@ public class ProbabilityCalculator extends Thread {
      * @param path Der Pfad
      * @return Die Intaktwahrscheinlichkeit
      */
-    private double getPathProbability(MySet path) {
-        double p = 1;
+    private BigDecimal getPathProbability(MySet path) {
+        BigDecimal p = BigDecimal.ONE;
         String output = "Pfad";
 
         MyIterator it = path.iterator();
@@ -441,15 +449,15 @@ public class ProbabilityCalculator extends Thread {
             Object obj = it.next();
             if (obj instanceof Edge) {
                 Edge e = (Edge) obj;
-                p = p * e.prob;
+                p = p.multiply(e.prob);
                 output += " e" + e.edge_no;
             } else {
                 Node n = ((Node) obj);
-                p = p * n.prob;
+                p = p.multiply(n.prob);
                 output += " n" + n.node_no;
             }
         }
-        System.out.println(Double.toString(p) + " für " + output);
+        System.out.println(p.toString() + " für " + output);
         return p;
     }
 
@@ -468,7 +476,7 @@ public class ProbabilityCalculator extends Thread {
             Edge e = (Edge) edgeList.get(i);
 
             if (params.sameReliabilityMode) {
-                e.prob = params.edgeValue.doubleValue();
+                e.prob = params.edgeValue;
             } else {
                 e.prob = params.edgeProbabilities[i];
             }
@@ -482,7 +490,7 @@ public class ProbabilityCalculator extends Thread {
             Node e = (Node) nodeList.get(i);
 
             if (params.sameReliabilityMode) {
-                e.prob = params.nodeValue.doubleValue();
+                e.prob = params.nodeValue;
             } else {
                 e.prob = params.nodeProbabilities[i];
             }

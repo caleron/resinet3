@@ -78,6 +78,7 @@ public class Util {
      * @param g             der Graph
      * @param factorisation kp
      */
+    /*
     public static void skpReduce(Graph g, boolean factorisation) {
 
         MyList nd = g.nodeList;
@@ -560,9 +561,9 @@ public class Util {
 		Edge edge = (Edge)edgeList.get(i);
 		edge.edge_no=i;
 	    }*/
-    }
+    //}
 
-
+/*
     public static void getProbability(Graph g) {
         g.kprob = 1f;
         g.reducetype = "";
@@ -853,14 +854,14 @@ public class Util {
         }
         return node3;
     }
-
+*/
     /**
      * Describe <code>getOtherNode</code> method here.
      *
      * @param edge an <code>Edge</code> value
      * @param node a <code>com.resinet.model.Node</code> value
      * @return a <code>com.resinet.model.Node</code> value
-     */
+     *//*
     private static Node getOtherNode(Edge edge, Node node) {
         Node node2 = null;
 
@@ -876,5 +877,5 @@ public class Util {
         }
         return (node2);
     }
-
+*/
 }

@@ -20,7 +20,7 @@ public class CalculationParams {
     public BigDecimal edgeValue, nodeValue;
 
     //Für Berechnung mit einzelnen Wahrscheinlichkeiten
-    public double[] edgeProbabilities, nodeProbabilities;
+    public BigDecimal[] edgeProbabilities, nodeProbabilities;
 
     /**
      * Erzeugt ein Objekt für die Berechnungsparameter
@@ -39,7 +39,7 @@ public class CalculationParams {
      * @param edgeProbabilities Array aus Kantenwahrscheinlichkeiten
      * @param nodeProbabilities Array aus Knotenwahrscheinlichkeiten
      */
-    public void setSingleReliabilityParams(double[] edgeProbabilities, double[] nodeProbabilities) {
+    public void setSingleReliabilityParams(BigDecimal[] edgeProbabilities, BigDecimal[] nodeProbabilities) {
         this.edgeProbabilities = edgeProbabilities;
         this.nodeProbabilities = nodeProbabilities;
     }
