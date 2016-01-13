@@ -339,6 +339,7 @@ public class ProbabilityCalculator extends Thread {
         if (state == JFileChooser.APPROVE_OPTION) {
             filepath = chooseSaveFile.getSelectedFile().toString();
         } else {
+            reportResult("Calculation cancelled.");
             return;
         }
 
@@ -424,14 +425,15 @@ public class ProbabilityCalculator extends Thread {
             }
             writer.close();
 
+            reportResult("Calculation series finished. Please check your output file for the results.");
         } catch (IOException e) {
             e.printStackTrace();
+            reportResult("Calculation cancelled due to an error.");
             return;
         }
         // Wahrscheinlichkeiten neu zuordnen.
         reassignProbabilities();
 
-        reportResult("Calculation series finished. Please check your output file for the results.");
     }
 
     /**

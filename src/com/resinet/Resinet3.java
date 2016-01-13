@@ -24,8 +24,9 @@ public class Resinet3 extends JFrame
     private JTextField edgeEndProbabilityBox, edgeProbabilityStepSizeBox, nodeEndProbabilityBox, nodeProbabilityStepSizeBox,
             sameReliabilityEdgeProbBox, sameReliabilityNodeProbBox;
     private JButton drawBtn, resetGraphBtn, resetProbabilitiesBtn,
-            probabilitiesOkBtn, calcReliabilityBtn, resilienceBtn, inputNetBtn, exportNetBtn;
+            calcReliabilityBtn, resilienceBtn, inputNetBtn, exportNetBtn;
     private JRadioButton singleReliabilityRadioBtn, sameReliabilityRadioBtn;
+    private JCheckBox considerNodesBox, considerEdgesBox;
 
     private JScrollPane probabilityFieldsScrollPane;
 
@@ -40,6 +41,8 @@ public class Resinet3 extends JFrame
     private static Resinet3 mainFrame;
 
     private GUI_STATES guiState;
+    private boolean considerNodeSingleReliabilities = true;
+    private boolean considerEdgeSingleReliabilities = true;
 
     public enum GUI_STATES {
         SHOW_GRAPH_INFO,
@@ -151,16 +154,16 @@ public class Resinet3 extends JFrame
 
         graphPanel.add(netPanel, gbc);
         String notetext = "On this panel you can draw your network model after a click on the \"Draw\" button.\n" +
-                "Press the left button to draw a node and the right button to draw a connection-node. " +
-                "Delete a node by holding the <shift>-key an pressing the left button.\nTo draw an edge press the " +
-                "left button when the mouse pointer is on a node and hold it. Then drag the mouse to another " +
-                "node and release it. For deleting an edge delete its corresponding drawnNodes.\nAfter you have " +
-                "finished, click the \"Ok\" button.\n\nYou can also import a previously created network " +
-                "(ResiNeT or Pajek) by clicking the \"Load\" button. To turn an existing node into a connection-node " +
-                "hold the Ctrl-Key while left-clicking on the node.";
+                "Press the left button to draw a vertex and the right button to draw a connection-vertex.\n" +
+                "To turn an existing vertex into a connection-vertex hold the Ctrl-Key while left-clicking on the vertex.\n" +
+                "Delete a vertex or an edge by holding the <shift>-key and left clicking it.\n" +
+                "To draw an edge press the left button when the mouse pointer is on a vertex and hold it. " +
+                "Then drag the mouse to another vertex and release it. \n" +
+                "\nYou can also import a previously created network " +
+                "(ResiNeT or Pajek) by clicking the \"Load\" button. ";
 
         graphPanelTextArea = new JTextArea(notetext, 10, 50);
-        graphPanelTextArea.setFont(new Font("Calibri", Font.PLAIN, 12));
+        graphPanelTextArea.setFont(new Font("Tahoma", Font.PLAIN, 11));
         graphPanelTextArea.setBackground(Color.white);
         graphPanelTextArea.setLineWrap(true);
         graphPanelTextArea.setWrapStyleWord(true);
@@ -187,7 +190,7 @@ public class Resinet3 extends JFrame
         ButtonGroup buttonGroup = new ButtonGroup();
         singleReliabilityRadioBtn = new JRadioButton("components have different reliabilities");
         buttonGroup.add(singleReliabilityRadioBtn);
-        gbc = makegbc(0, 0, 2, 1, 1, 0, GridBagConstraints.BOTH, 5);
+        gbc = makegbc(0, 0, 1, 1, 1, 0, GridBagConstraints.BOTH, 5);
         probabilityGroupPanel.add(singleReliabilityRadioBtn, gbc);
 
         singleReliabilityRadioBtn.addItemListener((e) -> {
@@ -196,9 +199,27 @@ public class Resinet3 extends JFrame
             }
         });
 
+        considerNodesBox = new JCheckBox("Consider vertex reliabilities");
+        gbc = makegbc(1, 0, 1, 1, 1, 0);
+        probabilityGroupPanel.add(considerNodesBox, gbc);
+        considerNodesBox.setSelected(true);
+        considerNodesBox.addItemListener((e) -> {
+            considerNodeSingleReliabilities = (e.getStateChange() == ItemEvent.SELECTED);
+            updateConsideredComponents();
+        });
+
+        considerEdgesBox = new JCheckBox("Consider edge reliabilities");
+        gbc = makegbc(1, 1, 1, 1, 1, 0);
+        probabilityGroupPanel.add(considerEdgesBox, gbc);
+        considerEdgesBox.setSelected(true);
+        considerEdgesBox.addItemListener((e) -> {
+            considerEdgeSingleReliabilities = (e.getStateChange() == ItemEvent.SELECTED);
+            updateConsideredComponents();
+        });
+
         sameReliabilityRadioBtn = new JRadioButton("components have same reliabilities", true);
         buttonGroup.add(sameReliabilityRadioBtn);
-        gbc = makegbc(0, 1, 2, 1, 1, 0, GridBagConstraints.BOTH, 5);
+        gbc = makegbc(0, 1, 1, 1, 1, 0, GridBagConstraints.BOTH, 5);
         probabilityGroupPanel.add(sameReliabilityRadioBtn, gbc);
 
         sameReliabilityRadioBtn.addItemListener((e) -> {
@@ -217,13 +238,8 @@ public class Resinet3 extends JFrame
         //Reset-Button für alle Wahrscheinlichkeitstextfelder
         resetProbabilitiesBtn = new JButton("Reset");
         resetProbabilitiesBtn.addActionListener(this);
-        gbc = makegbc(0, 3, 1, 1, 1, 0);
+        gbc = makegbc(0, 3, 2, 1, 1, 0);
         probabilityGroupPanel.add(resetProbabilitiesBtn, gbc);
-
-        probabilitiesOkBtn = new JButton("Ok");
-        probabilitiesOkBtn.addActionListener(this);
-        gbc = makegbc(1, 3, 1, 1, 1, 0);
-        probabilityGroupPanel.add(probabilitiesOkBtn, gbc);
 
         initComponentReliabilityPanels();
     }
@@ -247,7 +263,7 @@ public class Resinet3 extends JFrame
         sameReliabilityPanel.add(sameReliabilityEdgeProbBox, gbc);
 
         //Knotenwahrscheinlichkeiten
-        JLabel nodeProbLabel = new JLabel("Reliability of every node:", SwingConstants.RIGHT);
+        JLabel nodeProbLabel = new JLabel("Reliability of every vertex:", SwingConstants.RIGHT);
         gbc = makegbc(0, 1, 2, 1, 1, 0, GridBagConstraints.NONE, 1, GridBagConstraints.LINE_END);
         sameReliabilityPanel.add(nodeProbLabel, gbc);
 
@@ -278,7 +294,7 @@ public class Resinet3 extends JFrame
         gbc = makegbc(3, 3, 1, 1, 1, 0, GridBagConstraints.NONE, 1, GridBagConstraints.LINE_START);
         sameReliabilityPanel.add(edgeProbabilityStepSizeBox, gbc);
 
-        JLabel nodeEndValueLbl = new JLabel("Node End value: ", SwingConstants.RIGHT);
+        JLabel nodeEndValueLbl = new JLabel("Vertex End value: ", SwingConstants.RIGHT);
         gbc = makegbc(0, 4, 1, 1, 1, 0, GridBagConstraints.NONE, 1, GridBagConstraints.LINE_END);
         sameReliabilityPanel.add(nodeEndValueLbl, gbc);
 
@@ -345,6 +361,7 @@ public class Resinet3 extends JFrame
 
         resultTextArea = new JTextArea();
         resultTextArea.setEditable(false);
+        resultTextArea.setFont(new Font("Tahoma", Font.PLAIN, 11));
         JScrollPane sp = new JScrollPane(resultTextArea);
 
         //Borderlayout mit CENTER nutzt den gesamten übrigen Platz
@@ -448,9 +465,12 @@ public class Resinet3 extends JFrame
         netPanel.setVisible(state != GUI_STATES.SHOW_GRAPH_INFO);
         graphPanelTextArea.setVisible(state == GUI_STATES.SHOW_GRAPH_INFO);
 
+        boolean sameReliability = sameReliabilityRadioBtn.isSelected();
+
         singleReliabilityRadioBtn.setEnabled(state == GUI_STATES.ENTER_GRAPH);
         sameReliabilityRadioBtn.setEnabled(state == GUI_STATES.ENTER_GRAPH);
-        probabilitiesOkBtn.setEnabled(state == GUI_STATES.ENTER_GRAPH);
+        considerNodesBox.setEnabled(state == GUI_STATES.ENTER_GRAPH && !sameReliability);
+        considerEdgesBox.setEnabled(state == GUI_STATES.ENTER_GRAPH && !sameReliability);
         resetProbabilitiesBtn.setEnabled(state == GUI_STATES.ENTER_GRAPH);
 
         calcReliabilityBtn.setEnabled(state == GUI_STATES.ENTER_GRAPH);
@@ -486,11 +506,12 @@ public class Resinet3 extends JFrame
      * @param sameReliability Ob für alle Komponenten die selbe Wahrscheinlichkeit gilt
      */
     private void setComponentReliabilityMode(boolean sameReliability) {
+        considerEdgesBox.setEnabled(!sameReliability);
+        considerNodesBox.setEnabled(!sameReliability);
         if (sameReliability) {
             probabilityFieldsScrollPane.getViewport().setView(sameReliabilityPanel);
         } else {
             probabilityFieldsScrollPane.getViewport().setView(singleReliabilityPanel);
-
             updateSingleReliabilityProbPanel();
         }
         netPanel.setReliabilityMode(sameReliability);
@@ -643,15 +664,25 @@ public class Resinet3 extends JFrame
     }
 
     /**
+     * Aktualisiert, was im Graphen angeklickt werden kann und aktualisiert das Wahrscheinlichkeitspanel
+     */
+    private void updateConsideredComponents() {
+        netPanel.edgeClickable = considerEdgeSingleReliabilities;
+        netPanel.nodeClickable = considerNodeSingleReliabilities;
+        updateSingleReliabilityProbPanel();
+    }
+
+    /**
      * Aktualisiert das Wahrscheinlichkeitspanel
      */
     public void updateSingleReliabilityProbPanel() {
         if (sameReliabilityRadioBtn.isSelected())
             return;
 
-        int edgeCount = netPanel.drawnEdges.size();
+        //Knoten/Kantenzahl auf 0 setzen, wenn sie nicht berücksichtigt werden sollen
+        int edgeCount = considerEdgeSingleReliabilities ? netPanel.drawnEdges.size() : 0;
         int edgeBoxCount = edgeProbabilityBoxes.size();
-        int nodeCount = netPanel.drawnNodes.size();
+        int nodeCount = considerNodeSingleReliabilities ? netPanel.drawnNodes.size() : 0;
         int nodeBoxCount = nodeProbabilityBoxes.size();
 
         //Fehlende Kantenwahrscheinlichkeitsfelder hinzufügen
@@ -706,7 +737,7 @@ public class Resinet3 extends JFrame
      */
     private void addFieldToProbPanel(int number, boolean isNodeProb) {
         String text;
-        String type = isNodeProb ? "Node " : "Edge";
+        String type = isNodeProb ? "Vertex " : "Edge";
         if (number < 10)
             text = type + number + " ";
         else
@@ -866,7 +897,7 @@ public class Resinet3 extends JFrame
             //Passende Texte hinzufügen
             if (edgesWithMissingProbability.size() != 0 || nodesWithMissingProbability.size() != 0) {
                 str += "Please check the in-\nput for edge\n" + missingProbabilityEdges +
-                        "\n and for node\n" + missingProbabilityNodes + "\n";
+                        "\n and for vertex\n" + missingProbabilityNodes + "\n";
             }
 
             if (seriesValuesMissing) {
@@ -924,16 +955,27 @@ public class Resinet3 extends JFrame
             }
         } else {
             params.setReliabilityMode(false);
+
+            //Einzelintaktwahrscheinlichkeiten einlesen
+            //Dabei die Intaktwahrscheinlichkeiten auf 1 setzen, wenn sie nicht berücksichtigt werden sollen.
             int edgeCount = edgeProbabilityBoxes.size();
             int nodeCount = nodeProbabilityBoxes.size();
             BigDecimal[] edgeProbabilities = new BigDecimal[edgeCount];
             BigDecimal[] nodeProbabilities = new BigDecimal[nodeCount];
             for (int i = 0; i < edgeCount; i++) {
-                edgeProbabilities[i] = new BigDecimal(edgeProbabilityBoxes.get(i).getText());
+                if (considerEdgeSingleReliabilities) {
+                    edgeProbabilities[i] = new BigDecimal(edgeProbabilityBoxes.get(i).getText());
+                } else {
+                    edgeProbabilities[i] = BigDecimal.ONE;
+                }
             }
 
             for (int i = 0; i < nodeCount; i++) {
-                nodeProbabilities[i] = new BigDecimal(nodeProbabilityBoxes.get(i).getText());
+                if (considerNodeSingleReliabilities) {
+                    nodeProbabilities[i] = new BigDecimal(nodeProbabilityBoxes.get(i).getText());
+                } else {
+                    nodeProbabilities[i] = BigDecimal.ONE;
+                }
             }
 
             params.setSingleReliabilityParams(edgeProbabilities, nodeProbabilities);
@@ -965,9 +1007,9 @@ public class Resinet3 extends JFrame
 
         if (cNodeCount < 2) {
             //Der Code in diesem Block zeigt nur ein Hinweisfenster an und bricht die Funktion ab
-            String str = "Your Network does not contain at least 2 c-drawnNodes! \nYou can draw a new c-node by " +
-                    "pressing the right mouse button. \nIf you want to transform an existing node into a c-node, " +
-                    "\nplease hold the Ctrl-Key on your keyboard while left-clicking on the node.";
+            String str = "Your Network does not contain at least 2 c-vertices! \nYou can draw a new c-vertex by " +
+                    "pressing the right mouse button. \nIf you want to transform an existing vertex into a c-vertex, " +
+                    "\nplease hold the Ctrl-Key on your keyboard while left-clicking on the vertex.";
 
             JOptionPane.showMessageDialog(mainFrame, str, "Warning!", JOptionPane.ERROR_MESSAGE);
             return false;

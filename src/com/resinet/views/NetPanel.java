@@ -25,6 +25,8 @@ public class NetPanel extends JPanel {
     public MyList drawnEdges;
 
     public boolean singleReliabilityMode = false;
+    public boolean nodeClickable = true;
+    public boolean edgeClickable = true;
 
     private Cursor switchCursor, deleteCursor;
 
@@ -155,7 +157,7 @@ public class NetPanel extends JPanel {
                         //Knoten zum K-Knoten machen oder umgekehrt
                         currentNode.c_node = !currentNode.c_node;
 
-                    } else if (singleReliabilityMode) {
+                    } else if (singleReliabilityMode && nodeClickable) {
                         //Nur wenn Einzelwahrscheinlichkeiten angegeben werden können, Dialog anzeigen
                         showInputNodeProbDialog(drawnNodes.indexOf(currentNode));
                     }
@@ -172,7 +174,7 @@ public class NetPanel extends JPanel {
                     if (edgeLine.ptSegDist(clickX, clickY) < 5) {
                         if (mouseEvent.isShiftDown()) {
                             drawnEdges.remove(edgeLine);
-                        } else if (singleReliabilityMode) {
+                        } else if (singleReliabilityMode && edgeClickable) {
                             showInputEdgeProbDialog(drawnEdges.indexOf(edgeLine));
                         }
                         edgeClicked = true;
@@ -318,7 +320,7 @@ public class NetPanel extends JPanel {
                 if (nodePoint.contains(x, y)) {
                     nodeHovered = true;
                     edgeHovered = false;
-                    setCursorHover(mouseEvent.isShiftDown(), mouseEvent.isControlDown(), true);
+                    setCursorHover(mouseEvent.isShiftDown(), mouseEvent.isControlDown());
                     return;
                 }
             }
@@ -333,7 +335,7 @@ public class NetPanel extends JPanel {
                 if (edgeLine.ptSegDist(x, y) < 5) {
                     nodeHovered = false;
                     edgeHovered = true;
-                    setCursorHover(mouseEvent.isShiftDown(), mouseEvent.isControlDown(), true);
+                    setCursorHover(mouseEvent.isShiftDown(), mouseEvent.isControlDown());
                     return;
                 }
             }
@@ -341,7 +343,7 @@ public class NetPanel extends JPanel {
                 //Cursor zurücksetzen, falls er auf keinem Element mehr ist
                 nodeHovered = false;
                 edgeHovered = false;
-                setCursorHover(mouseEvent.isShiftDown(), mouseEvent.isControlDown(), false);
+                setCursorHover(mouseEvent.isShiftDown(), mouseEvent.isControlDown());
             }
         }
     }
@@ -352,12 +354,12 @@ public class NetPanel extends JPanel {
     public class MyKeyListener extends KeyAdapter {
         @Override
         public void keyPressed(KeyEvent keyEvent) {
-            setCursorHover(keyEvent.isShiftDown(), keyEvent.isControlDown(), false);
+            setCursorHover(keyEvent.isShiftDown(), keyEvent.isControlDown());
         }
 
         @Override
         public void keyReleased(KeyEvent keyEvent) {
-            setCursorHover(keyEvent.isShiftDown(), keyEvent.isControlDown(), false);
+            setCursorHover(keyEvent.isShiftDown(), keyEvent.isControlDown());
         }
     }
 
@@ -366,14 +368,13 @@ public class NetPanel extends JPanel {
      *
      * @param shiftDown   Ob Shift gedrückt ist
      * @param controlDown Ob Strg gedrückt ist
-     * @param hovered     Ob der Cursor über einem Element liegt
      */
-    private void setCursorHover(boolean shiftDown, boolean controlDown, boolean hovered) {
+    private void setCursorHover(boolean shiftDown, boolean controlDown) {
         if (shiftDown && (nodeHovered || edgeHovered)) {
             setCursor(deleteCursor);
         } else if (controlDown && nodeHovered) {
             setCursor(switchCursor);
-        } else if (singleReliabilityMode && hovered) {
+        } else if (singleReliabilityMode && ((nodeHovered && nodeClickable) || (edgeHovered && edgeClickable))) {
             setCursor(new Cursor(Cursor.HAND_CURSOR));
         } else {
             setCursor(new Cursor(Cursor.CROSSHAIR_CURSOR));
