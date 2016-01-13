@@ -26,8 +26,8 @@ public class NetPanel extends JPanel {
 
     public boolean singleReliabilityMode = false;
 
-
     private Cursor switchCursor, deleteCursor;
+
 
     public NetPanel(Resinet3 resinet3) {
         this.resinet3 = resinet3;
@@ -40,6 +40,9 @@ public class NetPanel extends JPanel {
         addKeyListener(new MyKeyListener());
         setCursor(new Cursor(Cursor.CROSSHAIR_CURSOR));
 
+        /**
+         * Damit Tastendrücke erkannt werden können
+         */
         setFocusable(true);
 
         //Eigene Cursor initialisieren
@@ -50,18 +53,17 @@ public class NetPanel extends JPanel {
         deleteCursor = getToolkit().createCustomCursor(deleteCursorImage, new Point(0, 0), "Delete Element");
     }
 
-    //TODO Kanten und Knoten mit Circle bzw. Rectangle ausstatten und daran Clicks erkennen
     @Override
     public void paint(Graphics g) {
         BufferedImage img = new BufferedImage(getWidth(), getHeight(), BufferedImage.TYPE_INT_RGB);
         Graphics2D imgGraphics = img.createGraphics();
-
+        //Kantenglättung aktivieren
         imgGraphics.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 
         imgGraphics.setColor(Color.WHITE);
-
+        //Hintergrund zeichnen
         imgGraphics.fillRect(0, 0, getWidth(), getHeight());
-
+        //Knoten zeichnen
         MyIterator iterator = drawnNodes.iterator();
         int count = 0;
         while (iterator.hasNext()) {
@@ -75,7 +77,7 @@ public class NetPanel extends JPanel {
             } else {
                 imgGraphics.draw(nodePoint);
             }
-
+            //Zahl im Knoten zeichnen
             String s = String.valueOf(count);
             if (count < 10)
                 imgGraphics.drawString(s, (float) nodePoint.getX() + 6, (float) nodePoint.getY() + 15);
@@ -83,7 +85,7 @@ public class NetPanel extends JPanel {
                 imgGraphics.drawString(s, (float) nodePoint.getX() + 3, (float) nodePoint.getY() + 15);
             count++;
         }
-
+        //Kanten zeichnen
         imgGraphics.setColor(Color.black);
         iterator = drawnEdges.iterator();
         while (iterator.hasNext()) {
@@ -93,6 +95,7 @@ public class NetPanel extends JPanel {
             imgGraphics.drawString(s, (float) edgeLine.textPositionX, (float) edgeLine.textPositionY);
         }
 
+        //Linie während des Kantenziehens zeichnen
         if (lineDragging)
             imgGraphics.draw(draggingLine);
 
@@ -107,10 +110,14 @@ public class NetPanel extends JPanel {
         paint(g);
     }
 
+    /**
+     * Setzt den Graph zurück
+     */
     public void resetGraph() {
         drawnNodes.clear();
         drawnEdges.clear();
         lineDragging = false;
+        draggingLine = null;
         repaint();
     }
 
@@ -129,7 +136,9 @@ public class NetPanel extends JPanel {
                 NodePoint currentNode = (NodePoint) it.next();
 
                 if (currentNode.contains(clickX, clickY)) {
+                    //Knoten wurde angeklickt
                     nodeClicked = true;
+
                     if (mouseEvent.isShiftDown()) {
                         //Knoten löschen
                         drawnNodes.remove(currentNode);
@@ -145,7 +154,9 @@ public class NetPanel extends JPanel {
                     } else if (mouseEvent.isControlDown()) {
                         //Knoten zum K-Knoten machen oder umgekehrt
                         currentNode.c_node = !currentNode.c_node;
-                    } else {
+
+                    } else if (singleReliabilityMode) {
+                        //Nur wenn Einzelwahrscheinlichkeiten angegeben werden können, Dialog anzeigen
                         showInputNodeProbDialog(drawnNodes.indexOf(currentNode));
                     }
                 }
@@ -161,7 +172,7 @@ public class NetPanel extends JPanel {
                     if (edgeLine.ptSegDist(clickX, clickY) < 5) {
                         if (mouseEvent.isShiftDown()) {
                             drawnEdges.remove(edgeLine);
-                        } else {
+                        } else if (singleReliabilityMode) {
                             showInputEdgeProbDialog(drawnEdges.indexOf(edgeLine));
                         }
                         edgeClicked = true;
@@ -174,6 +185,7 @@ public class NetPanel extends JPanel {
                     int x = clickX - 10;
                     int y = clickY - 10;
 
+                    //isMetaDown() ist beim Rechtsklick true
                     boolean c_node = mouseEvent.isMetaDown();
 
                     NodePoint newNode = new NodePoint(x, y, c_node);
@@ -194,9 +206,11 @@ public class NetPanel extends JPanel {
                             }
                         }
                     }
+                    //neuen Knoten hinzufügen
                     drawnNodes.add(newNode);
                 }
             }
+            //neu zeichnen
             repaint();
             raiseGraphChangedEvent();
         }
@@ -205,6 +219,7 @@ public class NetPanel extends JPanel {
         @Override
         public void mousePressed(MouseEvent mouseEvent) {
             if (mouseEvent.isMetaDown()) {
+                //Rechtsklick ignorieren
                 return;
             }
 
@@ -271,6 +286,7 @@ public class NetPanel extends JPanel {
     private class MyMouseMotionListener extends MouseMotionAdapter {
         public void mouseDragged(MouseEvent evt) {
             if (lineDragging) {
+                //Während des Kantenziehens die Endposition der Kante aktualisieren, damit Sie immer unter dem Cursor endet
                 int x = evt.getX();
                 int y = evt.getY();
                 draggingLine.x2 = x;
@@ -279,6 +295,11 @@ public class NetPanel extends JPanel {
             }
         }
 
+        /**
+         * Prüft, ob der Cursor über einem Element liegt und verändert den Cursor entsprechend
+         *
+         * @param mouseEvent Das MouseEvent
+         */
         @Override
         public void mouseMoved(MouseEvent mouseEvent) {
             if (lineDragging)
@@ -287,6 +308,9 @@ public class NetPanel extends JPanel {
             int x = mouseEvent.getX();
             int y = mouseEvent.getY();
 
+            /**
+             * Prüfen, ob ein Knoten getroffen wird
+             */
             MyIterator it = drawnNodes.iterator();
             while (it.hasNext()) {
                 NodePoint nodePoint = (NodePoint) it.next();
@@ -299,6 +323,9 @@ public class NetPanel extends JPanel {
                 }
             }
 
+            /**
+             * Prüfen, ob der Cursor nahe einer Kante ist (nah ist hier maximal 5px Abstand)
+             */
             it = drawnEdges.iterator();
             while (it.hasNext()) {
                 EdgeLine edgeLine = (EdgeLine) it.next();
@@ -311,6 +338,7 @@ public class NetPanel extends JPanel {
                 }
             }
             if (nodeHovered || edgeHovered) {
+                //Cursor zurücksetzen, falls er auf keinem Element mehr ist
                 nodeHovered = false;
                 edgeHovered = false;
                 setCursorHover(mouseEvent.isShiftDown(), mouseEvent.isControlDown(), false);
@@ -318,6 +346,9 @@ public class NetPanel extends JPanel {
         }
     }
 
+    /**
+     * Reagiert auf Tastendrücke von Strg und Shift und verändert den Cursor entsprechend
+     */
     public class MyKeyListener extends KeyAdapter {
         @Override
         public void keyPressed(KeyEvent keyEvent) {
@@ -330,6 +361,13 @@ public class NetPanel extends JPanel {
         }
     }
 
+    /**
+     * Setzt den Cursor nach angegebenen Parametern
+     *
+     * @param shiftDown   Ob Shift gedrückt ist
+     * @param controlDown Ob Strg gedrückt ist
+     * @param hovered     Ob der Cursor über einem Element liegt
+     */
     private void setCursorHover(boolean shiftDown, boolean controlDown, boolean hovered) {
         if (shiftDown && (nodeHovered || edgeHovered)) {
             setCursor(deleteCursor);
@@ -342,8 +380,11 @@ public class NetPanel extends JPanel {
         }
     }
 
-    //TODO ermöglichen, dass man Knoten und Kanten anklicken kann und sich der Cursor beim Hover verändert
-
+    /**
+     * Zeigt einen Dialog an, um die Intaktwahrscheinlichkeit einer Kante zu setzen
+     *
+     * @param edgeNumber Die Kantennummer
+     */
     private void showInputEdgeProbDialog(int edgeNumber) {
         String str = "Input reliability of Edge " + edgeNumber;
         String res = JOptionPane.showInputDialog(this, str);
@@ -352,6 +393,11 @@ public class NetPanel extends JPanel {
         }
     }
 
+    /**
+     * Zeigt einen Dialog an, um die Intaktwahrscheinlichkeit eines Knotens zu setzen
+     *
+     * @param nodeNumber Die Knotennummer
+     */
     private void showInputNodeProbDialog(int nodeNumber) {
         String str = "Input reliability of Node " + nodeNumber;
         String res = JOptionPane.showInputDialog(this, str);
@@ -383,10 +429,18 @@ public class NetPanel extends JPanel {
     graph_width = highest_x_pos - smallest_x_pos + 25;
     graph_height = highest_y_pos - smallest_y_pos + 25;*/
 
+    /**
+     * Setzt den Komponentenwahrscheinlichkeitsmodus fest
+     *
+     * @param sameReliabilityMode Ob gleiche Intaktwahrscheinlichkeiten für alle Kanten/Knoten gelten
+     */
     public void setReliabilityMode(boolean sameReliabilityMode) {
         singleReliabilityMode = !sameReliabilityMode;
     }
 
+    /**
+     * Wird aufgerufen, wenn der Graph verändert wird
+     */
     private void raiseGraphChangedEvent() {
         resinet3.graphChanged();
     }
