@@ -4,7 +4,6 @@ import java.awt.*;
 import java.awt.event.*;
 import java.awt.image.BufferedImage;
 
-import com.resinet.*;
 import com.resinet.model.*;
 import com.resinet.util.MyIterator;
 import com.resinet.util.MyList;
@@ -12,7 +11,7 @@ import com.resinet.util.MyList;
 import javax.swing.*;
 
 public class NetPanel extends JPanel {
-    private Resinet3 resinet3;
+    private GraphChangedListener listener;
 
     //die Kante, die gezeichnet wird, während man die Maus gedrückt hält (beim Kanten erstellen)
     public EdgeLine draggingLine;
@@ -31,8 +30,8 @@ public class NetPanel extends JPanel {
     private Cursor switchCursor, deleteCursor;
 
 
-    public NetPanel(Resinet3 resinet3) {
-        this.resinet3 = resinet3;
+    public NetPanel(GraphChangedListener listener) {
+        this.listener = listener;
 
         drawnEdges = new MyList();
         drawnNodes = new MyList();
@@ -143,13 +142,16 @@ public class NetPanel extends JPanel {
 
                     if (mouseEvent.isShiftDown()) {
                         //Knoten löschen
+                        int currentNodeIndex = drawnNodes.indexOf(currentNode);
                         drawnNodes.remove(currentNode);
+                        listener.graphElementDeleted(true, currentNodeIndex);
 
                         //anliegende Kanten löschen
                         for (int i = 0; i < drawnEdges.size(); i++) {
                             EdgeLine edl = (EdgeLine) drawnEdges.get(i);
                             if (edl.startNode == currentNode || edl.endNode == currentNode) {
                                 drawnEdges.remove(edl);
+                                listener.graphElementDeleted(false, i);
                                 i--;
                             }
                         }
@@ -173,7 +175,10 @@ public class NetPanel extends JPanel {
 
                     if (edgeLine.ptSegDist(clickX, clickY) < 5) {
                         if (mouseEvent.isShiftDown()) {
+                            int edgeIndex = drawnEdges.indexOf(edgeLine);
                             drawnEdges.remove(edgeLine);
+                            listener.graphElementDeleted(false, edgeIndex);
+
                         } else if (singleReliabilityMode && edgeClickable) {
                             showInputEdgeProbDialog(drawnEdges.indexOf(edgeLine));
                         }
@@ -210,11 +215,11 @@ public class NetPanel extends JPanel {
                     }
                     //neuen Knoten hinzufügen
                     drawnNodes.add(newNode);
+                    listener.graphElementAdded(true, drawnNodes.size() - 1);
                 }
             }
             //neu zeichnen
             repaint();
-            raiseGraphChangedEvent();
         }
 
 
@@ -275,8 +280,8 @@ public class NetPanel extends JPanel {
                     //Maus wurde in diesem Knoten losgelassen -> als Endknoten der Kante festlegen
                     draggingLine.setEndNode(currentNode);
                     drawnEdges.add(draggingLine);
+                    listener.graphElementAdded(false, drawnEdges.size() - 1);
 
-                    raiseGraphChangedEvent();
                     repaint();
                     return;
                 }
@@ -390,7 +395,7 @@ public class NetPanel extends JPanel {
         String str = "Input reliability of Edge " + edgeNumber;
         String res = JOptionPane.showInputDialog(this, str);
         if (res != null && res.length() > 0) {
-            resinet3.edgeProbabilityBoxes.get(edgeNumber).setText(res);
+            listener.setElementReliability(false, edgeNumber, res);
         }
     }
 
@@ -403,7 +408,7 @@ public class NetPanel extends JPanel {
         String str = "Input reliability of Node " + nodeNumber;
         String res = JOptionPane.showInputDialog(this, str);
         if (res != null && res.length() > 0) {
-            resinet3.nodeProbabilityBoxes.get(nodeNumber).setText(res);
+            listener.setElementReliability(true, nodeNumber, res);
         }
     }
 
@@ -439,15 +444,13 @@ public class NetPanel extends JPanel {
         singleReliabilityMode = !sameReliabilityMode;
     }
 
-    /**
-     * Wird aufgerufen, wenn der Graph verändert wird
-     */
-    private void raiseGraphChangedEvent() {
-        resinet3.graphChanged();
-    }
 
     public interface GraphChangedListener {
-        void graphChanged();
+        void graphElementAdded(boolean isNode, int number);
+
+        void graphElementDeleted(boolean isNode, int number);
+
+        void setElementReliability(boolean isNode, int number, String value);
     }
 
 }

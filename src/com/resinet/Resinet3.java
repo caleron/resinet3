@@ -32,7 +32,7 @@ public class Resinet3 extends JFrame
 
     private JProgressBar calculationProgressBar;
 
-    JPanel sameReliabilityPanel, singleReliabilityPanel;
+    JPanel sameReliabilityPanel, singleReliabilitiesPanel;
 
     public List<JTextField> edgeProbabilityBoxes = new ArrayList<>();
     public List<JTextField> nodeProbabilityBoxes = new ArrayList<>();
@@ -232,6 +232,8 @@ public class Resinet3 extends JFrame
         probabilityFieldsScrollPane = new JScrollPane();//probabilityFieldsPanel);
         probabilityFieldsScrollPane.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
         probabilityFieldsScrollPane.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED);
+        probabilityFieldsScrollPane.getVerticalScrollBar().setUnitIncrement(10);
+        probabilityFieldsScrollPane.getHorizontalScrollBar().setUnitIncrement(10);
         gbc = makegbc(0, 2, 2, 1, 1, 1);
         probabilityGroupPanel.add(probabilityFieldsScrollPane, gbc);
 
@@ -313,11 +315,11 @@ public class Resinet3 extends JFrame
         sameReliabilityPanel.add(nodeProbabilityStepSizeBox, gbc);
 
         //Einzelwahrscheinlichkeiten für die Komponenten
-        singleReliabilityPanel = new JPanel();
-        //singleReliabilityPanel.setPreferredSize(new Dimension(600, ((netPanel.drawnEdges.size() + netPanel.drawnNodes.size()) / 2 + 1) * 30));
-        //singleReliabilityPanel.removeAll();
-        singleReliabilityPanel.setLayout(new FlowLayout(FlowLayout.LEFT));
-        singleReliabilityPanel.setPreferredSize(probabilityFieldsScrollPane.getSize());
+        singleReliabilitiesPanel = new JPanel();
+        //singleReliabilitiesPanel.setPreferredSize(new Dimension(600, ((netPanel.drawnEdges.size() + netPanel.drawnNodes.size()) / 2 + 1) * 30));
+        //singleReliabilitiesPanel.removeAll();
+        singleReliabilitiesPanel.setLayout(new FlowLayout(FlowLayout.LEFT));
+        singleReliabilitiesPanel.setPreferredSize(probabilityFieldsScrollPane.getSize());
         //Mit Modus für gleiche Komponentenwahrscheinlichkeiten initialisieren
         setComponentReliabilityMode(true);
     }
@@ -479,7 +481,7 @@ public class Resinet3 extends JFrame
         //Status für alle Wahrscheinlichkeitsfelder setzen
         boolean probabilityBoxesEnabled = (state == GUI_STATES.ENTER_GRAPH);
         if (singleReliabilityRadioBtn.isSelected()) {
-            setChildrenEnabled(singleReliabilityPanel, probabilityBoxesEnabled);
+            setChildrenEnabled(singleReliabilitiesPanel, probabilityBoxesEnabled);
         } else {
             setChildrenEnabled(sameReliabilityPanel, probabilityBoxesEnabled);
         }
@@ -511,7 +513,7 @@ public class Resinet3 extends JFrame
         if (sameReliability) {
             probabilityFieldsScrollPane.getViewport().setView(sameReliabilityPanel);
         } else {
-            probabilityFieldsScrollPane.getViewport().setView(singleReliabilityPanel);
+            probabilityFieldsScrollPane.getViewport().setView(singleReliabilitiesPanel);
             updateSingleReliabilityProbPanel();
         }
         netPanel.setReliabilityMode(sameReliability);
@@ -579,8 +581,8 @@ public class Resinet3 extends JFrame
 
         netPanel.resetGraph();
 
-        singleReliabilityPanel.removeAll();
-        singleReliabilityPanel.repaint();
+        singleReliabilitiesPanel.removeAll();
+        singleReliabilitiesPanel.repaint();
 
         nodeProbabilityBoxes.clear();
         edgeProbabilityBoxes.clear();
@@ -603,13 +605,6 @@ public class Resinet3 extends JFrame
         nodeProbabilityStepSizeBox.setText(null);
     }
 
-    /**
-     * Wird ausgelöst, wenn der Graph verändert wurde
-     */
-    @Override
-    public void graphChanged() {
-        updateSingleReliabilityProbPanel();
-    }
 
     /**
      * Wird ausgelöst, wenn sich der Berechnungsstatus ändert
@@ -663,6 +658,70 @@ public class Resinet3 extends JFrame
         setGUIState(GUI_STATES.ENTER_GRAPH);
     }
 
+
+    /**
+     * Wird ausgelöst, wenn im Graphen eine Komponente hinzugefügt wird
+     *
+     * @param isNode True bei Knoten, false bei Kante
+     * @param number Die Komponentennummer
+     */
+    public void graphElementAdded(boolean isNode, int number) {
+        if (sameReliabilityRadioBtn.isSelected())
+            return;
+
+        if ((!isNode && !considerEdgeSingleReliabilities) || (isNode && !considerNodeSingleReliabilities))
+            return;
+
+        addFieldToProbPanel(number, isNode);
+
+        refreshSingleReliabilityScrollPane();
+    }
+
+    /**
+     * Wird ausgelöst, wenn im Graphen eine Komponente gelöscht wird.
+     *
+     * @param isNode True bei Knoten, false bei Kante
+     * @param number Die Komponentennummer
+     */
+    public void graphElementDeleted(boolean isNode, int number) {
+        if (sameReliabilityRadioBtn.isSelected())
+            return;
+
+        List<JTextField> list;
+        if (isNode) {
+            list = nodeProbabilityBoxes;
+        } else {
+            list = edgeProbabilityBoxes;
+        }
+
+        //Alle Wahrscheinlichkeiten ein Feld vorrücken lassen
+        for (int i = number; i < list.size() - 1; i++) {
+            list.get(i).setText(list.get(i + 1).getText());
+        }
+
+        //Letztes Element entfernen
+        JTextField textField = list.get(list.size() - 1);
+        textField.getParent().getParent().remove(textField.getParent());
+        list.remove(textField);
+
+        refreshSingleReliabilityScrollPane();
+    }
+
+    /**
+     * Setzt die Zuverlässigkeit einer Netzwerkkomponente
+     *
+     * @param isNode True bei Knoten, false bei Kante
+     * @param number Die Komponentennummer
+     * @param value  Die Zuverlässigkeit der Komponente
+     */
+    public void setElementReliability(boolean isNode, int number, String value) {
+        if (isNode) {
+            nodeProbabilityBoxes.get(number).setText(value);
+        } else {
+            edgeProbabilityBoxes.get(number).setText(value);
+        }
+    }
+
     /**
      * Aktualisiert, was im Graphen angeklickt werden kann und aktualisiert das Wahrscheinlichkeitspanel
      */
@@ -708,24 +767,34 @@ public class Resinet3 extends JFrame
             nodeProbabilityBoxes.remove(textField);
         }
 
-        //Layouten einleiten
-        singleReliabilityPanel.revalidate();
+        refreshSingleReliabilityScrollPane();
+    }
 
-        //invokeLater, damit das erst ausgeführt wird, nachdem das singleReliabilityPanel validiert wurde.
+    /**
+     * Soll das Layout vom Scrollpane neu auslösen und die Größe festlegen
+     */
+    private void refreshSingleReliabilityScrollPane() {
+        //Layouten einleiten
+        singleReliabilitiesPanel.revalidate();
+
+        //invokeLater, damit das erst ausgeführt wird, nachdem das singleReliabilitiesPanel validiert wurde.
         //Sonst haben die Panels mit den Eingabefeldern keine Koordinaten, mit denen gerechnet werden kann
-        if (singleReliabilityPanel.getComponentCount() > 4) {
-            SwingUtilities.invokeLater(() -> {
+        SwingUtilities.invokeLater(() -> {
+            if (singleReliabilitiesPanel.getComponentCount() > 4) {
                 int maxY = 0;
-                for (Component comp : singleReliabilityPanel.getComponents()) {
+                for (Component comp : singleReliabilitiesPanel.getComponents()) {
                     if (comp.getY() > maxY) {
                         maxY = comp.getY();
                     }
                 }
                 int height = maxY + 70;
-                singleReliabilityPanel.setPreferredSize(new Dimension((probabilityFieldsScrollPane.getWidth() - 10), height));
-                probabilityFieldsScrollPane.revalidate();
-            });
-        }
+                singleReliabilitiesPanel.setPreferredSize(new Dimension(probabilityFieldsScrollPane.getWidth() - 10, height));
+            } else {
+                singleReliabilitiesPanel.setPreferredSize(new Dimension(probabilityFieldsScrollPane.getWidth() - 10, probabilityFieldsScrollPane.getHeight() - 10));
+            }
+            probabilityFieldsScrollPane.revalidate();
+            probabilityFieldsScrollPane.repaint();
+        });
     }
 
 
@@ -736,27 +805,30 @@ public class Resinet3 extends JFrame
      * @param isNodeProb True, wenn das Feld für einen Knoten ist, false bei Kante
      */
     private void addFieldToProbPanel(int number, boolean isNodeProb) {
-        String text;
-        String type = isNodeProb ? "Vertex " : "Edge";
-        if (number < 10)
-            text = type + number + " ";
-        else
-            text = type + number;
-
-        JLabel label = new JLabel(text, SwingConstants.RIGHT);
-        JTextField textField = new JTextField(20);
-        textField.setBackground(Color.white);
+        SingleReliabilityPanel newPanel = new SingleReliabilityPanel(isNodeProb, number);
 
         if (isNodeProb) {
-            nodeProbabilityBoxes.add(textField);
+            nodeProbabilityBoxes.add(newPanel.getTextField());
+            singleReliabilitiesPanel.add(newPanel);
         } else {
-            edgeProbabilityBoxes.add(textField);
+            edgeProbabilityBoxes.add(newPanel.getTextField());
+
+            //Vor dem ersten Knotenzuverlässigkeitsfeld einfügen, falls es dieses gibt
+            if (nodeProbabilityBoxes.size() > 0) {
+                int insertPosition = 0;
+
+                for (int i = 0; i < singleReliabilitiesPanel.getComponents().length; i++) {
+                    SingleReliabilityPanel panel = (SingleReliabilityPanel) singleReliabilitiesPanel.getComponent(i);
+                    if (panel.isNode()) {
+                        insertPosition = i;
+                        break;
+                    }
+                }
+                singleReliabilitiesPanel.add(newPanel, insertPosition);
+            } else {
+                singleReliabilitiesPanel.add(newPanel);
+            }
         }
-        JPanel panel = new JPanel();
-        panel.setDoubleBuffered(true);
-        panel.add(label);
-        panel.add(textField);
-        singleReliabilityPanel.add(panel);
     }
 
     /**
