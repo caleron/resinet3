@@ -32,7 +32,8 @@ public class Resinet3 extends JFrame
 
     private JProgressBar calculationProgressBar;
 
-    JPanel sameReliabilityPanel, singleReliabilitiesPanel;
+    JPanel sameReliabilityPanel;
+    SingleReliabilitiesPanel singleReliabilitiesPanel;
 
     public List<JTextField> edgeProbabilityBoxes = new ArrayList<>();
     public List<JTextField> nodeProbabilityBoxes = new ArrayList<>();
@@ -234,6 +235,7 @@ public class Resinet3 extends JFrame
         probabilityFieldsScrollPane.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED);
         probabilityFieldsScrollPane.getVerticalScrollBar().setUnitIncrement(10);
         probabilityFieldsScrollPane.getHorizontalScrollBar().setUnitIncrement(10);
+        //probabilityFieldsScrollPane.setDoubleBuffered(true);
         gbc = makegbc(0, 2, 2, 1, 1, 1);
         probabilityGroupPanel.add(probabilityFieldsScrollPane, gbc);
 
@@ -315,13 +317,12 @@ public class Resinet3 extends JFrame
         sameReliabilityPanel.add(nodeProbabilityStepSizeBox, gbc);
 
         //Einzelwahrscheinlichkeiten für die Komponenten
-        singleReliabilitiesPanel = new JPanel();
-        //singleReliabilitiesPanel.setPreferredSize(new Dimension(600, ((netPanel.drawnEdges.size() + netPanel.drawnNodes.size()) / 2 + 1) * 30));
-        //singleReliabilitiesPanel.removeAll();
-        singleReliabilitiesPanel.setLayout(new FlowLayout(FlowLayout.LEFT));
-        singleReliabilitiesPanel.setPreferredSize(probabilityFieldsScrollPane.getSize());
+        singleReliabilitiesPanel = new SingleReliabilitiesPanel();
+        //singleReliabilitiesPanel.setPreferredSize(probabilityFieldsScrollPane.getSize());
+
         //Mit Modus für gleiche Komponentenwahrscheinlichkeiten initialisieren
         setComponentReliabilityMode(true);
+
     }
 
     /**
@@ -774,27 +775,8 @@ public class Resinet3 extends JFrame
      * Soll das Layout vom Scrollpane neu auslösen und die Größe festlegen
      */
     private void refreshSingleReliabilityScrollPane() {
-        //Layouten einleiten
-        singleReliabilitiesPanel.revalidate();
-
-        //invokeLater, damit das erst ausgeführt wird, nachdem das singleReliabilitiesPanel validiert wurde.
-        //Sonst haben die Panels mit den Eingabefeldern keine Koordinaten, mit denen gerechnet werden kann
-        SwingUtilities.invokeLater(() -> {
-            if (singleReliabilitiesPanel.getComponentCount() > 4) {
-                int maxY = 0;
-                for (Component comp : singleReliabilitiesPanel.getComponents()) {
-                    if (comp.getY() > maxY) {
-                        maxY = comp.getY();
-                    }
-                }
-                int height = maxY + 70;
-                singleReliabilitiesPanel.setPreferredSize(new Dimension(probabilityFieldsScrollPane.getWidth() - 10, height));
-            } else {
-                singleReliabilitiesPanel.setPreferredSize(new Dimension(probabilityFieldsScrollPane.getWidth() - 10, probabilityFieldsScrollPane.getHeight() - 10));
-            }
-            probabilityFieldsScrollPane.revalidate();
-            probabilityFieldsScrollPane.repaint();
-        });
+        probabilityFieldsScrollPane.revalidate();
+        probabilityFieldsScrollPane.repaint();
     }
 
 
