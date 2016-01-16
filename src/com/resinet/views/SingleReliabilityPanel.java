@@ -8,8 +8,8 @@ import java.awt.*;
  */
 public class SingleReliabilityPanel extends JPanel {
 
-    JTextField textField;
-    boolean isNode;
+    private JTextField textField;
+    private boolean isNode;
 
     /**
      * Die bevorzugte Breite
@@ -18,7 +18,7 @@ public class SingleReliabilityPanel extends JPanel {
     /**
      * Die bevorzugte Höhe
      */
-    public static final int PREF_HEIGHT = 30;
+    private static final int PREF_HEIGHT = 30;
 
     /**
      * Konstruktor

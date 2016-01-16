@@ -8,10 +8,10 @@ import java.math.BigDecimal;
  * Dies ist eine Wrapper-Klasse für die Berechnungsparameter
  */
 public class CalculationParams {
-    public Graph graph;
+    public final Graph graph;
     public boolean sameReliabilityMode = false;
     public boolean calculationSeries = false;
-    public Resinet3.CALCULATION_MODES calculationMode;
+    public final Resinet3.CALCULATION_MODES calculationMode;
 
     //für die Serienberechnung
     public BigDecimal edgeStartValue, edgeEndValue, edgeStepSize, nodeStartValue, nodeEndValue, nodeStepSize;

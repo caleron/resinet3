@@ -14,8 +14,8 @@ public class NetPanel extends JPanel {
     private GraphChangedListener listener;
 
     //die Kante, die gezeichnet wird, während man die Maus gedrückt hält (beim Kanten erstellen)
-    public EdgeLine draggingLine;
-    public boolean lineDragging = false;
+    private EdgeLine draggingLine;
+    private boolean lineDragging = false;
 
     private boolean nodeHovered = false;
     private boolean edgeHovered = false;
@@ -23,7 +23,7 @@ public class NetPanel extends JPanel {
     public MyList drawnNodes;
     public MyList drawnEdges;
 
-    public boolean singleReliabilityMode = false;
+    private boolean singleReliabilityMode = false;
     public boolean nodeClickable = true;
     public boolean edgeClickable = true;
 
@@ -356,7 +356,7 @@ public class NetPanel extends JPanel {
     /**
      * Reagiert auf Tastendrücke von Strg und Shift und verändert den Cursor entsprechend
      */
-    public class MyKeyListener extends KeyAdapter {
+    private class MyKeyListener extends KeyAdapter {
         @Override
         public void keyPressed(KeyEvent keyEvent) {
             setCursorHover(keyEvent.isShiftDown(), keyEvent.isControlDown());

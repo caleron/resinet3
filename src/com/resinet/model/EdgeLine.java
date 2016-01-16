@@ -1,7 +1,5 @@
 package com.resinet.model;
 
-import com.sun.javafx.geom.Vec2d;
-
 import java.awt.geom.Line2D;
 
 /**
@@ -58,7 +56,7 @@ public class EdgeLine extends Line2D.Double {
     /**
      * Setzt die Beschriftungstextposition
      */
-    public void refresh() {
+    private void refresh() {
         double relativeX = getX2() - getX1();
         double relativeY = getY2() - getY1();
         textPositionX = getX2() - relativeX / 2;

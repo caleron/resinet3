@@ -21,18 +21,13 @@ public class Edge implements Serializable {
     //Mark fuer K-Baum (com.resinet.model.KTree.java)
 
     public boolean useless = false;
-    public boolean deleted = false;
-    public boolean marked = false;
 
-    public Edge[] parent_edges;
-    //bei der Reduktion werden zwei Kanten eliminiert, und entsteht eine neue
 
     public BigDecimal prob;
     //Intaktwahrscheinlichkeit der Kante
 
     public Edge(int edge_no) {
         this.edge_no = edge_no;
-        parent_edges = new Edge[6];
     }
 
 }

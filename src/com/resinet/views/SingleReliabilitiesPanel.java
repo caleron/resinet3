@@ -15,7 +15,7 @@ public class SingleReliabilitiesPanel extends JPanel {
     private Timer resizeTimer;
 
     private int currentColumns = 2;
-    ResizeListener resizeListener;
+    private ResizeListener resizeListener;
 
     public SingleReliabilitiesPanel() {
         setLayout(new GridLayout(0, currentColumns));
@@ -25,7 +25,7 @@ public class SingleReliabilitiesPanel extends JPanel {
         addAncestorListener(new MyAncestorListener());
     }
 
-    public void rebuildLayout() {
+    private void rebuildLayout() {
         int parentWidth = getParent().getWidth();
 
         if (Math.abs((parentWidth / SingleReliabilityPanel.PREF_WIDTH) - currentColumns) >= 1) {

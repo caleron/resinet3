@@ -32,11 +32,11 @@ public class Resinet3 extends JFrame
 
     private JProgressBar calculationProgressBar;
 
-    JPanel sameReliabilityPanel;
-    SingleReliabilitiesPanel singleReliabilitiesPanel;
+    private JPanel sameReliabilityPanel;
+    private SingleReliabilitiesPanel singleReliabilitiesPanel;
 
-    public List<JTextField> edgeProbabilityBoxes = new ArrayList<>();
-    public List<JTextField> nodeProbabilityBoxes = new ArrayList<>();
+    private List<JTextField> edgeProbabilityBoxes = new ArrayList<>();
+    private List<JTextField> nodeProbabilityBoxes = new ArrayList<>();
     //private Color backgroundColor = new Color(85, 143, 180);
 
     private static Resinet3 mainFrame;
@@ -76,7 +76,7 @@ public class Resinet3 extends JFrame
      * Leitet alle Initialisierungen ein
      */
     private void init() {
-        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
 
         //Windows Look-and-Feel setzen
         try {
@@ -525,7 +525,7 @@ public class Resinet3 extends JFrame
      *
      * @param text Der Text
      */
-    public void setResultText(String text) {
+    private void setResultText(String text) {
         resultTextArea.setText(text);
     }
 
@@ -589,7 +589,7 @@ public class Resinet3 extends JFrame
         edgeProbabilityBoxes.clear();
     }
 
-    public void resetProbabilityFields() {
+    private void resetProbabilityFields() {
         for (JTextField edgeProbabilityTextField : edgeProbabilityBoxes) {
             edgeProbabilityTextField.setText(null);
         }

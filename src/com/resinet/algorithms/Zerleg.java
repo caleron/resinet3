@@ -1,15 +1,13 @@
 package com.resinet.algorithms;/* Zerleg.java */
 
 
-import com.resinet.util.MyIterator;
 import com.resinet.util.MyList;
 import com.resinet.util.MySet;
 import com.resinet.model.Graph;
-import com.resinet.model.ResultA;
 
-public class Zerleg extends Thread {
+class Zerleg extends Thread {
     private Tree ktrees;
-    private MyList trs;
+    private final MyList trs;
 
     /**
      * Enthält alle Zerlegungen nach Heidtmann. Ein Element ist eine Liste aus Pfaden, wobei der erste Pfad der hin-Pfad

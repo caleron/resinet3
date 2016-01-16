@@ -293,7 +293,7 @@ public class GraphSaving {
         }
     }
 
-    public static void inputError(Component parentComponent) {
+    private static void inputError(Component parentComponent) {
         //Error-Popup ausgeben
         String str = "Your input was invalid! Please choose a valid file created by Pajek or ResiNeT.";
 

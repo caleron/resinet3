@@ -23,13 +23,13 @@ import java.util.Set;
  * Diese Klasse führt die eigentlichen Zuverlässigkeitsberechnungen auf einem eigenen Thread durch
  */
 public class ProbabilityCalculator extends Thread {
-    CalculationProgressListener listener;
-    CalculationParams params;
+    private CalculationProgressListener listener;
+    private CalculationParams params;
 
     //Die Anzahl der Nachkommastellen, die der Output haben soll
-    final Integer OUTPUT_PRECISION = 15;
+    private final Integer OUTPUT_PRECISION = 15;
 
-    Graph workingGraph;
+    private Graph workingGraph;
 
     /**
      * Startet die Berechnungen
@@ -52,8 +52,6 @@ public class ProbabilityCalculator extends Thread {
                 getResilience(true);
             }
         }
-        //Garbage Collection starten (ist nicht notwendig, aber könnte die Arbeitsspeicherauslastung reduzieren)
-        System.gc();
     }
 
     /**

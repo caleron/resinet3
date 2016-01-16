@@ -1,15 +1,7 @@
 package com.resinet.util;/* com.resinet.util.Util.java */
 
-import com.resinet.model.Edge;
-import com.resinet.model.Graph;
-import com.resinet.model.Node;
-
 import java.io.*;
 import java.math.BigInteger;
-import java.util.ArrayList;
-import java.util.Hashtable;
-import java.util.List;
-import java.util.Vector;
 //import java.util.*;
 
 public class Util {
@@ -41,9 +33,9 @@ public class Util {
 
         if (k > n) {
             binomialCoefficient = BigInteger.ZERO;
-        } else if (k == 0 | n == k) {
+        } else if (k == 0 || n == k) {
             binomialCoefficient = BigInteger.ONE;
-        } else if (k == 1 | k == n - 1) {
+        } else if (k == 1 || k == n - 1) {
             binomialCoefficient = BigInteger.valueOf(n);
         } else {
             for (long i = 1; i <= k; i++) {

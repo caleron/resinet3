@@ -10,7 +10,7 @@ public class NodePoint extends Ellipse2D.Double {
         this.c_node = c_node;
     }
 
-    public NodePoint(double x, double y) {
+    private NodePoint(double x, double y) {
         super(x, y, 20, 20);
     }
 }

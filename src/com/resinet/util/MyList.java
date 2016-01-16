@@ -12,15 +12,6 @@ public class MyList implements Cloneable, Serializable {
         v = new Vector();
     }
 
-    public MyList(MySet set) {
-        v = new Vector();
-        MyIterator it = set.iterator();
-        while (it.hasNext()) {
-            Object o = it.next();
-            v.addElement(o);
-        }
-    }
-
     public MyIterator iterator() {
         Enumeration e = v.elements();
         return new MyIterator(e);
@@ -46,24 +37,12 @@ public class MyList implements Cloneable, Serializable {
         return v.size();
     }
 
-    public boolean isEmpty() {
-        return v.isEmpty();
+    public void remove(Object o) {
+        v.removeElement(o);
     }
 
-    public Object remove(int i) {
-        Object o = v.elementAt(i);
-        v.removeElementAt(i);
-        return o;
-    }
-
-    public boolean remove(Object o) {
-        return v.removeElement(o);
-    }
-
-    public Object set(int i, Object o) {
-        Object o1 = v.elementAt(i);
+    public void set(int i, Object o) {
         v.setElementAt(o, i);
-        return o1;
     }
 
     public void clear() {

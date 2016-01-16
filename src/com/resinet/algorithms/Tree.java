@@ -14,7 +14,7 @@ import java.util.ArrayList;
 class Tree extends Thread {
     private Graph graph;
     private KTree b;
-    MyList trs;
+    final MyList trs;
     //Menge aller k-Baeume
     private Q q;
 
@@ -36,7 +36,6 @@ class Tree extends Thread {
         //Initialisierung
 
         Node node;
-        int i;
 
         MyIterator it = this.graph.nodeList.iterator();
         while (it.hasNext()) {
@@ -73,7 +72,6 @@ class Tree extends Thread {
     private Edge[] outside_add(Node w) {
         Edge[] n = new Edge[w.degree];
         int n_i = 0;
-        int i;
 
         MyIterator it = w.node_edge.iterator();
         while (it.hasNext()) {
@@ -93,7 +91,6 @@ class Tree extends Thread {
     private Edge[] inside_delete(Node w) {
         Edge[] m = new Edge[w.degree];
         int m_i = 0;
-        int i;
 
         MyIterator it = w.node_edge.iterator();
         while (it.hasNext()) {
@@ -149,7 +146,6 @@ class Tree extends Thread {
     }
 
     private void output_ktree() {
-        String s;
         Edge e = b.first_br;
 
         ktr_i++;
@@ -234,8 +230,6 @@ class Tree extends Thread {
         Edge[] n, m, q1;
 
         q1 = new Edge[q.count];
-        int n_i = 0;
-        int m_i = 0;
         int q1_i = 0;
 
         if (q.count == 0) {
@@ -308,7 +302,7 @@ class Tree extends Thread {
         }
     }
 
-    private class Q {
+    private static class Q {
         int count;
         Edge last;
 
