@@ -26,9 +26,21 @@ import java.io.*;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 
-public class GraphSaving {
+/**
+ * Diese Klasse enthält nur statische Methoden, mit denen Netzwerke und dessen Berechnungsparameter in Dateien
+ * gespeichtert werden können.
+ * <p>
+ * Dabei wurde mit ResiNet3 ein neues und eigenes Dateiformat basierend auf XML eingeführt. Des weiteren können auch
+ * Graphen im Pajek-Format eingelesen und gespeichert werden.
+ */
+public final class GraphSaving {
 
-    //Methode zum Einlesen von Netzen aus Textdateien im Pajek-Format
+    /**
+     * Methode zum Einlesen von Netzen aus Textdateien im Pajek-Format.
+     *
+     * @param resinet3 Das Hauptfenster
+     * @param netPanel Das NetPanel
+     */
     public static void inputNet(Resinet3 resinet3, NetPanel netPanel) {
         //Dialog zum Datei auswählen
         JFileChooser chooseFile = new JFileChooser();
@@ -61,6 +73,12 @@ public class GraphSaving {
         }
     }
 
+    /**
+     * Liest ein Netzwerk im Pajek-Format ein und lässt es im NetPanel darstellen
+     *
+     * @param netFile  Die Pajek-Netzwerk-Datei
+     * @param netPanel Das NetPanel
+     */
     private static void readPajekNetwork(File netFile, NetPanel netPanel) {
 
         //Ab hier zeilenweises Einlesen der ausgewählten Datei
@@ -157,6 +175,12 @@ public class GraphSaving {
         }
     }
 
+    /**
+     * Liest ein Resinet-Netzwerk ein und überträgt alle Daten in die GUI
+     *
+     * @param netFile  Die Resinet-Netzwerk-Datei
+     * @param resinet3 Das Hauptfenster
+     */
     private static void readResinetNetwork(File netFile, Resinet3 resinet3) {
         MyList drawnNodes = resinet3.netPanel.drawnNodes;
         MyList drawnEdges = resinet3.netPanel.drawnEdges;
@@ -290,9 +314,15 @@ public class GraphSaving {
             resinet3.loadCalculationParams(calculationParams);
         } catch (ParserConfigurationException | SAXException | IOException e) {
             e.printStackTrace();
+            inputError(resinet3);
         }
     }
 
+    /**
+     * Zeigt eine Fehlermeldung mit einem Text an, der aussagt, dass die Eingabedatei nicht korrekt ist.
+     *
+     * @param parentComponent Irgendeine UI-Komponente als Referenz für das Popup-Fenster
+     */
     private static void inputError(Component parentComponent) {
         //Error-Popup ausgeben
         String str = "Your input was invalid! Please choose a valid file created by Pajek or ResiNeT.";
@@ -300,6 +330,12 @@ public class GraphSaving {
         JOptionPane.showMessageDialog(parentComponent, str, "Error!", JOptionPane.ERROR_MESSAGE);
     }
 
+    /**
+     * Zeigt einen JFileChooser-Dialog an und speichert das aktuelle Netzwerk im gewünschten Format.
+     *
+     * @param resinet3 Das Hauptfenster
+     * @param netPanel Das NetPanel als Graph-Quelle
+     */
     public static void exportNet(Resinet3 resinet3, NetPanel netPanel) {
         //Dialog zum Datei auswählen
         JFileChooser chooseSaveFile = new JFileChooser();
@@ -438,7 +474,7 @@ public class GraphSaving {
             JOptionPane.showMessageDialog(netPanel, "Successfully saved.");
         } catch (IOException e) {
             e.printStackTrace();
-            JOptionPane.showMessageDialog(netPanel, "Saving failed!");
+            JOptionPane.showMessageDialog(netPanel, "Saving failed!", "Error", JOptionPane.ERROR_MESSAGE);
         }
     }
 
@@ -578,7 +614,7 @@ public class GraphSaving {
 
         } catch (ParserConfigurationException | TransformerException e) {
             e.printStackTrace();
-            JOptionPane.showMessageDialog(resinet3, "Saving failed!");
+            JOptionPane.showMessageDialog(resinet3, "Saving failed!", "Error", JOptionPane.ERROR_MESSAGE);
         }
 
     }

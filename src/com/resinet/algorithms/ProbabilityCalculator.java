@@ -84,7 +84,7 @@ public class ProbabilityCalculator extends Thread {
      * <p>
      * Dies ist vorerst nötig, da beim Auffinden minimaler Pfade (Klasse Tree) der Graph verändert wird, es aber
      * notwendig ist, dass das selbe Objekt für die Berechnung verwendet wird, damit die Referenzen auf die Elemente
-     * stimmen. TODO Elemente im Graphen durch ID's identifizieren
+     * stimmen.
      */
     private void renewWorkingGraph() {
         try {
