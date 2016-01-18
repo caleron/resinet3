@@ -36,9 +36,12 @@ public class NetPanel extends JPanel {
         drawnEdges = new MyList();
         drawnNodes = new MyList();
 
+        //EventListener setzen
         addMouseListener(new MyMouseListener());
         addMouseMotionListener(new MyMouseMotionListener());
         addKeyListener(new MyKeyListener());
+
+        //Standardcursor setzen
         setCursor(new Cursor(Cursor.CROSSHAIR_CURSOR));
 
         /**
@@ -47,8 +50,8 @@ public class NetPanel extends JPanel {
         setFocusable(true);
 
         //Eigene Cursor initialisieren
-        Image switchCursorImage = getToolkit().getImage(getClass().getResource("../img/cursor_state_switch.png"));
-        Image deleteCursorImage = getToolkit().getImage(getClass().getResource("../img/cursor_delete.png"));
+        Image switchCursorImage = getToolkit().getImage(ClassLoader.getSystemResource("com/resinet/img/cursor_state_switch.png"));
+        Image deleteCursorImage = getToolkit().getImage(ClassLoader.getSystemResource("com/resinet/img/cursor_delete.png"));
 
         switchCursor = getToolkit().createCustomCursor(switchCursorImage, new Point(0, 0), "Switch State");
         deleteCursor = getToolkit().createCustomCursor(deleteCursorImage, new Point(0, 0), "Delete Element");

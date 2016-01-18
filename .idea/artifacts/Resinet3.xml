@@ -1,7 +1,7 @@
 <component name="ArtifactManager">
-  <artifact type="jar" name="ResinetV">
-    <output-path>$PROJECT_DIR$/out/artifacts/ResinetV</output-path>
-    <root id="archive" name="ResinetV.jar">
+  <artifact type="jar" name="Resinet3">
+    <output-path>$PROJECT_DIR$/out/artifacts/Resinet3</output-path>
+    <root id="archive" name="Resinet3.jar">
       <element id="module-output" name="ResiNet3" />
       <element id="directory" name="META-INF">
         <element id="file-copy" path="$PROJECT_DIR$/META-INF/MANIFEST.MF" />
