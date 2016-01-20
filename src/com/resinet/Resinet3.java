@@ -99,7 +99,13 @@ public class Resinet3 extends JFrame
 
         setGUIState(GUI_STATES.SHOW_GRAPH_INFO);
     }
-
+    //TODO tests schreiben
+    //TODO Texte in Lokalisationsdatei auslagern
+    //TODO Konstanten in Interface schreiben, welches implementiert werden kann
+    //TODO weitere Funktionen auslagern, wie Überprüfung des Graphen
+    //TODO Logo entfernen und Menü hinzufügen
+    //TODO beim Speichern vom Graphen "weiße Flächen" an den Rändern entfernen
+    //TODO Zuletzt geöffnet-Liste, Graph generieren, Serienparallelreduktion, neues GUI-Layout mit größerer Zeichenfläche
     /**
      * Zeigt das Logo an
      */
