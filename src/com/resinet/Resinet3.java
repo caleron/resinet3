@@ -37,7 +37,6 @@ public class Resinet3 extends JFrame
 
     private List<JTextField> edgeProbabilityBoxes = new ArrayList<>();
     private List<JTextField> nodeProbabilityBoxes = new ArrayList<>();
-    //private Color backgroundColor = new Color(85, 143, 180);
 
     private static Resinet3 mainFrame;
 
@@ -66,7 +65,7 @@ public class Resinet3 extends JFrame
             mainFrame.pack();
             mainFrame.setSize(700, 825);
             mainFrame.setMinimumSize(new Dimension(600, 700));
-            mainFrame.setTitle("ResinetV");
+            mainFrame.setTitle("ResiNet3");
             mainFrame.setLocationRelativeTo(null);
             mainFrame.setVisible(true);
         });
@@ -117,7 +116,7 @@ public class Resinet3 extends JFrame
      */
     private void initGraphPanel() {
         JPanel graphPanel = new JPanel();
-        graphPanel.setBorder(BorderFactory.createTitledBorder("Please input your network model:"));
+        graphPanel.setBorder(BorderFactory.createTitledBorder("Please first input your network graph:"));
         GridBagConstraints gbc = makegbc(0, 1, 1, 6, 1, 0.4);
         add(graphPanel, gbc);
 
@@ -154,12 +153,16 @@ public class Resinet3 extends JFrame
         gbc = makegbc(0, 1, 4, 5, 1, 1);
 
         graphPanel.add(netPanel, gbc);
-        String notetext = "On this panel you can draw your network model after a click on the \"Draw\" button.\n" +
-                "Press the left button to draw a vertex and the right button to draw a connection-vertex.\n" +
-                "To turn an existing vertex into a connection-vertex hold the Ctrl-Key while left-clicking on the vertex.\n" +
+        String notetext = "On this panel you can draw the graph of your network after a click on the \"Draw\" button.\n" +
+                "Distinguish between two types of vertices:\n" +
+                "Press the left button of your input device (i.e. mouse) to draw a white non-terminal vertex and the " +
+                "right button to draw a black terminal vertex.\n" +
+                "To turn an already drawn vertex into a terminal vertex point to it, hold the Ctrl-Key and press the right button of your input device.\n" +
                 "Delete a vertex or an edge by holding the <shift>-key and left clicking it.\n" +
                 "To draw an edge press the left button when the mouse pointer is on a vertex and hold it. " +
                 "Then drag the mouse to another vertex and release it. \n" +
+                "\n" +
+                "When you have completed the graph of the network, you may save it as a file by pressing the Save Network button above.\n" +
                 "\nYou can also import a previously created network " +
                 "(ResiNeT or Pajek) by clicking the \"Load\" button. ";
 
@@ -1054,8 +1057,8 @@ public class Resinet3 extends JFrame
         int cNodeCount = 0;
         MyIterator np = netPanel.drawnNodes.iterator();
         while (np.hasNext()) {
-            NodePoint n = (NodePoint) np.next();
-            if (n.c_node)
+            NodePoint node = (NodePoint) np.next();
+            if (node.c_node)
                 cNodeCount = cNodeCount + 1;
         }
 
@@ -1084,16 +1087,16 @@ public class Resinet3 extends JFrame
      * @return Boolean, ob der Text eine Wahrscheinlichkeit ist
      */
     private boolean textIsNotProbability(String str) {
-        boolean b = true;
+        boolean isProbability = true;
         boolean temp = false;
         if (str.length() == 0)
-            b = false;
+            isProbability = false;
         for (int i = 0; i < str.length(); i++) {
             char c = str.charAt(i);
 
             if (i == 0 && c != '0') {
                 if (c != '1') {
-                    b = false;
+                    isProbability = false;
                     break;
                 } else {
                     temp = true;
@@ -1102,22 +1105,22 @@ public class Resinet3 extends JFrame
             }
             if (i == 1) {
                 if (c != '.') {
-                    b = false;
+                    isProbability = false;
                     break;
                 }
                 continue;
             }
             if (!Character.isDigit(c)) {
-                b = false;
+                isProbability = false;
                 break;
             } else {
                 if (temp && c != '0') {
-                    b = false;
+                    isProbability = false;
                     break;
                 }
             }
         }
-        return !b;
+        return !isProbability;
     }
 
     /**

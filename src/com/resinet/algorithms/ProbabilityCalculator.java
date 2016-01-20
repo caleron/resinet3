@@ -277,8 +277,9 @@ public class ProbabilityCalculator extends Thread {
 
         if (writeOutput) {
             BigDecimal output = result.setScale(OUTPUT_PRECISION, BigDecimal.ROUND_HALF_DOWN);
-            reportResult("The network has " + total_nodes + " Nodes, containing " + c_nodes + " c-Nodes.\n" +
-                    "There are " + combinations + " combinations.\n" + "The resilience of the network is: " + output);
+            reportResult("The network consists of " + total_nodes + " vertices in total, thereof" + c_nodes + " terminal vertices.\n" +
+                    "There are " + combinations + " combinations of " + c_nodes + " terminal vertices among all " + total_nodes + " vertices.\n"
+                    + "The resilience of the network is: " + output);
         }
 
         return result;
@@ -348,9 +349,9 @@ public class ProbabilityCalculator extends Thread {
             writer = new FileWriter(filepath);
 
             if (calculationSeriesMode == CalculationSeriesMode.Resilience) {
-                writer.write("Reliability of every edge                 Reliability of every node                 Resilience of the network");
+                writer.write("Reliability of every edge                 Reliability of every vertex               Resilience of the network");
             } else {
-                writer.write("Reliability of every edge                 Reliability of every node                 Reliability of the network");
+                writer.write("Reliability of every edge                 Reliability of every vertex               Reliability of the network");
             }
 
             writer.append(System.getProperty("line.separator"));
