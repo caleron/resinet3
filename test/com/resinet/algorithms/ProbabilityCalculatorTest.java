@@ -135,7 +135,7 @@ public class ProbabilityCalculatorTest implements Constants {
      * Testet den Einzelwahrscheinlichkeitsmodus, jedoch auch mit gleichen Zuverlässigkeiten für alle Elemente
      */
     @Test
-    public void testSingleReliability() {
+    public void testSingleReliabilityModeWithSameReliabilities() {
         CalculationParams params = new CalculationParams(CALCULATION_MODES.RELIABILITY, graph);
         params.setReliabilityMode(false);
 
@@ -164,6 +164,41 @@ public class ProbabilityCalculatorTest implements Constants {
         reliability = reliability.setScale(calculatedValuesScale, BigDecimal.ROUND_HALF_DOWN);
 
         assertEquals(calculatedReliability, reliability);
+    }
+
+    /**
+     * Testet den Einzelzuverlässigkeitsmodus mit verschiedenen Zuverlässigkeiten für alle Kanten.
+     * Knoten werden nicht berücksichtigt.
+     * Vergleichswerte stammen aus Resinet2-Applet
+     */
+    @Test
+    public void testSingleReliabilityModeOnlyEdges() {
+        CalculationParams params = new CalculationParams(CALCULATION_MODES.RELIABILITY, graph);
+        params.setReliabilityMode(false);
+
+        BigDecimal[] edgeProbabilities = new BigDecimal[5];
+        BigDecimal[] nodeProbabilities = new BigDecimal[4];
+
+        for (int i = 0; i < 4; i++) {
+            nodeProbabilities[i] = BigDecimal.ONE;
+        }
+
+        edgeProbabilities[0] = new BigDecimal(0.9);
+        edgeProbabilities[1] = new BigDecimal(0.8);
+        edgeProbabilities[2] = new BigDecimal(0.7);
+        edgeProbabilities[3] = new BigDecimal(0.6);
+        edgeProbabilities[4] = new BigDecimal(0.5);
+
+        params.setSingleReliabilityParams(edgeProbabilities, nodeProbabilities);
+
+        ProbabilityCalculator calculator = ProbabilityCalculator.create(null, params);
+
+        //Nachkommastellen reduzieren
+        BigDecimal calculatedReliability = calculator.getHeidtmannsReliability(false).setScale(otherValuesScale, BigDecimal.ROUND_HALF_DOWN);
+        assertEquals(new BigDecimal(0.865).setScale(otherValuesScale, BigDecimal.ROUND_HALF_DOWN), calculatedReliability);
+        //Vergleichswerte aus Resinet2-Applet
+        BigDecimal calculatedResilience = calculator.getResilience(false).setScale(otherValuesScale, BigDecimal.ROUND_HALF_DOWN);
+        assertEquals(new BigDecimal(0.89649993).setScale(otherValuesScale, BigDecimal.ROUND_HALF_DOWN), calculatedResilience);
     }
 
 }
