@@ -1,23 +1,41 @@
-package com.resinet;/* Resinet3.java */
+package com.resinet;
 
 import com.resinet.algorithms.Con_check;
 import com.resinet.algorithms.ProbabilityCalculator;
 import com.resinet.model.*;
-import com.resinet.util.*;
-import com.resinet.views.*;
-
-import java.awt.*;
-import java.awt.event.*;
-import java.math.BigDecimal;
-import java.lang.*;
-import java.util.*;
-import java.util.List;
+import com.resinet.util.Constants;
+import com.resinet.util.GraphSaving;
+import com.resinet.util.MyIterator;
+import com.resinet.util.MyList;
+import com.resinet.views.NetPanel;
+import com.resinet.views.SingleReliabilitiesPanel;
+import com.resinet.views.SingleReliabilityPanel;
 
 import javax.swing.*;
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.ItemEvent;
+import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.List;
 
-
+/**
+ * Diese Klasse stellt das Hauptfenster dar. Die Projektstruktur ist wie folgt aufgebaut:
+ * <p>
+ * <strong>algorithms:</strong> Alle Algorithmen, die die Hauptfunktionen des Programms betreffen
+ * <p>
+ * <strong>img:</strong> Bilder und Grafiken
+ * <p>
+ * <strong>model:</strong> Klassen, die wenig oder keine Funktionalität bieten, also nur dazu dienen, Daten zu halten
+ * <p>
+ * <strong>util:</strong> Hilfsklassen und -funktionen, die nicht die Hauptfunktion des Programms enthalten, aber diese
+ * unterstützen
+ * <p>
+ * <strong>views:</strong> GUI-Komponentenklassen
+ */
 public class Resinet3 extends JFrame
-        implements ActionListener, NetPanel.GraphChangedListener, ProbabilityCalculator.CalculationProgressListener {
+        implements ActionListener, NetPanel.GraphChangedListener, ProbabilityCalculator.CalculationProgressListener, Constants {
     public NetPanel netPanel;
 
     private JTextArea graphPanelTextArea, resultTextArea;
@@ -44,15 +62,10 @@ public class Resinet3 extends JFrame
     private boolean considerNodeSingleReliabilities = true;
     private boolean considerEdgeSingleReliabilities = true;
 
-    public enum GUI_STATES {
+    private enum GUI_STATES {
         SHOW_GRAPH_INFO,
         ENTER_GRAPH,
         CALCULATION_RUNNING
-    }
-
-    public enum CALCULATION_MODES {
-        RESILIENCE,
-        RELIABILITY,
     }
 
     private Resinet3() {
@@ -99,13 +112,12 @@ public class Resinet3 extends JFrame
 
         setGUIState(GUI_STATES.SHOW_GRAPH_INFO);
     }
-    //TODO tests schreiben
     //TODO Texte in Lokalisationsdatei auslagern
-    //TODO Konstanten in Interface schreiben, welches implementiert werden kann
     //TODO weitere Funktionen auslagern, wie Überprüfung des Graphen
     //TODO Logo entfernen und Menü hinzufügen
     //TODO beim Speichern vom Graphen "weiße Flächen" an den Rändern entfernen
     //TODO Zuletzt geöffnet-Liste, Graph generieren, Serienparallelreduktion, neues GUI-Layout mit größerer Zeichenfläche
+
     /**
      * Zeigt das Logo an
      */
@@ -598,6 +610,9 @@ public class Resinet3 extends JFrame
         edgeProbabilityBoxes.clear();
     }
 
+    /**
+     * Setzt die Werte aller Einzelwahrscheinlichkeitsfelder zurück
+     */
     private void resetProbabilityFields() {
         for (JTextField edgeProbabilityTextField : edgeProbabilityBoxes) {
             edgeProbabilityTextField.setText(null);
@@ -823,7 +838,7 @@ public class Resinet3 extends JFrame
     }
 
     /**
-     * Trägt die Berechnungsparameter in die Felder ein Voraussetzung ist, dass bereits der richtige Graph geladen
+     * Trägt die Berechnungsparameter in die Felder ein. Voraussetzung ist, dass bereits der richtige Graph geladen
      * wurde
      *
      * @param params Die Berechnungsparameter

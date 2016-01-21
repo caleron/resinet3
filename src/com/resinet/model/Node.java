@@ -32,6 +32,11 @@ public class Node implements Serializable {
     //Für die Baumsuche, wird aber niemals ausgelesen
     public boolean useless = false;
 
+    public Node(int node_no, boolean c_node) {
+        this.node_no = node_no;
+        this.c_node = c_node;
+    }
+
     public Node(int node_no) {
         this.node_no = node_no;
     }

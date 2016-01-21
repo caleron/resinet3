@@ -166,26 +166,26 @@ class Tree extends Thread {
         MySet treeCopy = (MySet) ktree.clone();
 
         MyIterator it = treeCopy.iterator();
-        String output = "Pfad";
+        //String output = "Pfad";
         while (it.hasNext()) {
             //Prüft bei jeder Kante des Pfades für den linken und den rechten Knoten jeweils, ob er schon
             //zur Menge ktree hinzugefügt wurde, und fügt den Knoten hinzu, falls er noch nicht in der Menge ist.
             Edge edge = (Edge) it.next();
-            output += " e" + edge.edge_no;
+            //output += " e" + edge.edge_no;
 
             if (!consideredNodes.contains(edge.left_node)) {
                 consideredNodes.add(edge.left_node);
                 ktree.add(edge.left_node);
-                output += " n" + edge.left_node.node_no;
+                //output += " n" + edge.left_node.node_no;
             }
 
             if (!consideredNodes.contains(edge.right_node)) {
                 consideredNodes.add(edge.right_node);
                 ktree.add(edge.right_node);
-                output += " n" + edge.right_node.node_no;
+                //output += " n" + edge.right_node.node_no;
             }
         }
-        System.out.println(output);
+        //System.out.println(output);
 
         synchronized (trs) {
             if (!trs.contains(ktree)) {

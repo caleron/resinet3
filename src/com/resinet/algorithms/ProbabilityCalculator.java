@@ -1,11 +1,15 @@
 package com.resinet.algorithms;
 
 import com.resinet.Resinet3;
-import com.resinet.model.*;
+import com.resinet.model.CalculationParams;
+import com.resinet.model.Edge;
+import com.resinet.model.Graph;
+import com.resinet.model.Node;
 import com.resinet.util.MyIterator;
 import com.resinet.util.MyList;
 import com.resinet.util.MySet;
 import com.resinet.util.Util;
+import com.sun.istack.internal.Nullable;
 
 import javax.swing.*;
 import javax.swing.filechooser.FileNameExtensionFilter;
@@ -61,7 +65,7 @@ public class ProbabilityCalculator extends Thread {
      * @param params   Die Berechnungsparameter
      * @return Das neue ProbabilityCalculator-Objekt
      */
-    public static ProbabilityCalculator create(CalculationProgressListener listener, CalculationParams params) {
+    public static ProbabilityCalculator create(@Nullable CalculationProgressListener listener, CalculationParams params) {
         return new ProbabilityCalculator(listener, params);
     }
 
@@ -115,7 +119,7 @@ public class ProbabilityCalculator extends Thread {
      * @param writeOutput Ob das Resultat als Ergebnis gemeldet werden soll
      * @return Die Zuverlässigkeit des Arbeitsgraphen
      */
-    private BigDecimal getHeidtmannsReliability(boolean writeOutput) {
+    BigDecimal getHeidtmannsReliability(boolean writeOutput) {
         long startTime = new Date().getTime();
         BigDecimal prob;
 
@@ -141,7 +145,7 @@ public class ProbabilityCalculator extends Thread {
             MyIterator it = zer.hz.iterator();
             while (it.hasNext()) {
 
-                System.out.println("Neuer Pfad");
+                //System.out.println("Neuer Pfad");
 
                 MyList al = (MyList) it.next();
                 MySet hs = (MySet) al.get(0);
@@ -158,7 +162,7 @@ public class ProbabilityCalculator extends Thread {
                     p = p.multiply(BigDecimal.ONE.subtract(getPathProbability(hs1)));
 
                 }
-                System.out.println("Wahrscheinlichkeit: " + p.toString());
+                //System.out.println("Wahrscheinlichkeit: " + p.toString());
                 prob = prob.add(p);
 
             }
@@ -183,7 +187,7 @@ public class ProbabilityCalculator extends Thread {
      * @param writeOutput True, wenn das Ergebnis als Statusupdate ausgegeben werden soll
      * @return Die Resilienz des Netzwerks
      */
-    private BigDecimal getResilience(boolean writeOutput) {
+    BigDecimal getResilience(boolean writeOutput) {
         long start = new Date().getTime();
 
         //Anzahl der Knoten
@@ -441,9 +445,9 @@ public class ProbabilityCalculator extends Thread {
      * @param path Der Pfad
      * @return Die Intaktwahrscheinlichkeit
      */
-    private BigDecimal getPathProbability(MySet path) {
+    BigDecimal getPathProbability(MySet path) {
         BigDecimal p = BigDecimal.ONE;
-        String output = "Pfad";
+        //String output = "Pfad";
 
         MyIterator it = path.iterator();
         while (it.hasNext()) {
@@ -451,14 +455,14 @@ public class ProbabilityCalculator extends Thread {
             if (obj instanceof Edge) {
                 Edge e = (Edge) obj;
                 p = p.multiply(e.prob);
-                output += " e" + e.edge_no;
+                //output += " e" + e.edge_no;
             } else {
                 Node n = ((Node) obj);
                 p = p.multiply(n.prob);
-                output += " n" + n.node_no;
+                //output += " n" + n.node_no;
             }
         }
-        System.out.println(p.toString() + " für " + output);
+        //System.out.println(p.toString() + " für " + output);
         return p;
     }
 
@@ -504,7 +508,8 @@ public class ProbabilityCalculator extends Thread {
      * @param status Das Ergebnis
      */
     private void reportResult(String status) {
-        listener.calculationFinished(status);
+        if (listener != null)
+            listener.calculationFinished(status);
     }
 
     /**
@@ -513,7 +518,8 @@ public class ProbabilityCalculator extends Thread {
      * @param stepCount Die Schrittzahl
      */
     private void reportStepCount(Integer stepCount) {
-        listener.reportCalculationStepCount(stepCount);
+        if (listener != null)
+            listener.reportCalculationStepCount(stepCount);
     }
 
     /**
@@ -522,7 +528,8 @@ public class ProbabilityCalculator extends Thread {
      * @param currentStep Der aktuelle Fortschritt (muss kleiner als stepCount in reportStepCount sein)
      */
     private void reportProgressChange(Integer currentStep) {
-        listener.calculationProgressChanged(currentStep);
+        if (listener != null)
+            listener.calculationProgressChanged(currentStep);
     }
 
     /**

@@ -8,7 +8,7 @@ public class Edge implements Serializable {
     public final int edge_no;
 
     // Knoten einer Kante
-    public Node left_node,right_node;
+    public Node left_node, right_node;
 
     public Edge q_left;
     public Edge q_right;
@@ -25,6 +25,12 @@ public class Edge implements Serializable {
 
     public BigDecimal prob;
     //Intaktwahrscheinlichkeit der Kante
+
+    public Edge(int edge_no, Node left_node, Node right_node) {
+        this.edge_no = edge_no;
+        this.left_node = left_node;
+        this.right_node = right_node;
+    }
 
     public Edge(int edge_no) {
         this.edge_no = edge_no;
