@@ -5,10 +5,7 @@ import com.resinet.model.CalculationParams;
 import com.resinet.model.Edge;
 import com.resinet.model.Graph;
 import com.resinet.model.Node;
-import com.resinet.util.MyIterator;
-import com.resinet.util.MyList;
-import com.resinet.util.MySet;
-import com.resinet.util.Util;
+import com.resinet.util.*;
 import com.sun.istack.internal.Nullable;
 
 import javax.swing.*;
@@ -19,6 +16,7 @@ import java.io.IOException;
 import java.io.Writer;
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.text.MessageFormat;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
@@ -174,7 +172,7 @@ public class ProbabilityCalculator extends Thread {
 
         if (writeOutput) {
             BigDecimal output = prob.setScale(OUTPUT_PRECISION, BigDecimal.ROUND_HALF_DOWN);
-            reportResult("The reliability of the network is: " + output);
+            reportResult(MessageFormat.format(Strings.getLocalizedString("result.reliability"), output.toString()));
         }
 
         return prob;
@@ -281,9 +279,7 @@ public class ProbabilityCalculator extends Thread {
 
         if (writeOutput) {
             BigDecimal output = result.setScale(OUTPUT_PRECISION, BigDecimal.ROUND_HALF_DOWN);
-            reportResult("The network consists of " + total_nodes + " vertices in total, thereof" + c_nodes + " terminal vertices.\n" +
-                    "There are " + combinations + " combinations of " + c_nodes + " terminal vertices among all " + total_nodes + " vertices.\n"
-                    + "The resilience of the network is: " + output);
+            reportResult(MessageFormat.format(Strings.getLocalizedString("result.resilience"), total_nodes, c_nodes, combinations, output.toString()));
         }
 
         return result;
@@ -331,9 +327,9 @@ public class ProbabilityCalculator extends Thread {
         JFileChooser chooseSaveFile = new JFileChooser();
         chooseSaveFile.setDialogType(JFileChooser.SAVE_DIALOG);
 
-        FileNameExtensionFilter resultFilter = new FileNameExtensionFilter("Textdateien", "txt");
+        FileNameExtensionFilter resultFilter = new FileNameExtensionFilter(Strings.getLocalizedString("text.files"), "txt");
         chooseSaveFile.setFileFilter(resultFilter);
-        chooseSaveFile.setDialogTitle("Save results as...");
+        chooseSaveFile.setDialogTitle(Strings.getLocalizedString("save.results.as"));
         chooseSaveFile.setSelectedFile(new File("myResults.txt"));
 
         String filepath;
@@ -342,7 +338,7 @@ public class ProbabilityCalculator extends Thread {
         if (state == JFileChooser.APPROVE_OPTION) {
             filepath = chooseSaveFile.getSelectedFile().toString();
         } else {
-            reportResult("Calculation cancelled.");
+            reportResult(Strings.getLocalizedString("calculation.cancelled"));
             return;
         }
 
@@ -428,10 +424,10 @@ public class ProbabilityCalculator extends Thread {
             }
             writer.close();
 
-            reportResult("Calculation series finished. Please check your output file for the results.");
+            reportResult(Strings.getLocalizedString("calculation.series.finished"));
         } catch (IOException e) {
             e.printStackTrace();
-            reportResult("Calculation cancelled due to an error.");
+            reportResult(Strings.getLocalizedString("calculation.cancelled.due.to.an.error"));
             return;
         }
         // Wahrscheinlichkeiten neu zuordnen.

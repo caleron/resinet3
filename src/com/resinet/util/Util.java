@@ -2,15 +2,22 @@ package com.resinet.util;/* com.resinet.util.Util.java */
 
 import java.io.*;
 import java.math.BigInteger;
-//import java.util.*;
 
 public class Util {
-    public static Object serialClone(Object o)
+    /**
+     * Führt eine tiefe Kopie mittels Serialisierung durch
+     *
+     * @param obj Das zu serialisierende Objekt
+     * @return Eine tiefe Kopie des Objekts
+     * @throws IOException
+     * @throws ClassNotFoundException
+     */
+    public static Object serialClone(Object obj)
             throws IOException, ClassNotFoundException {
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         ObjectOutputStream os = new ObjectOutputStream(out);
 
-        os.writeObject(o);
+        os.writeObject(obj);
         os.flush();
 
         ByteArrayInputStream in = new ByteArrayInputStream(out.toByteArray());
@@ -22,8 +29,14 @@ public class Util {
     }
 
 
-    public static BigInteger binomial(long n, long k) {
-//    	long start = new Date().getTime();
+    /**
+     * Errechnet den Binomialkoeffizienten
+     *
+     * @param n Zahl n
+     * @param k Zahl k
+     * @return Binomialkoeffizient
+     */
+    public static BigInteger binomial(int n, int k) {
         BigInteger binomialCoefficient = BigInteger.ONE;
 
         // Nutze die Symmetrie des Pascalschen Dreiecks um den Aufwand zu minimieren.
@@ -43,9 +56,6 @@ public class Util {
                 binomialCoefficient = binomialCoefficient.divide(BigInteger.valueOf(i));
             }
         }
-        //System.out.println(binomialCoefficient);
-//		long runningTime = new Date().getTime() - start;
-//        System.out.println("Laufzeit: " + runningTime);
         return binomialCoefficient;
     }
 }
