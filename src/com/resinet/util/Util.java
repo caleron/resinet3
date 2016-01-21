@@ -1,7 +1,10 @@
 package com.resinet.util;/* com.resinet.util.Util.java */
 
+import com.resinet.Resinet3;
+
 import java.io.*;
 import java.math.BigInteger;
+import java.util.ArrayList;
 
 public class Util {
     /**
@@ -57,5 +60,45 @@ public class Util {
             }
         }
         return binomialCoefficient;
+    }
+
+    /**
+     * Diese Methode dient, dazu, das Programm neu zu starten.
+     * <p>
+     * Funktioniert vermutlich aber nur bei JAR-Dateien.
+     * <p>
+     * Quelle: http://stackoverflow.com/questions/4159802/how-can-i-restart-a-java-application
+     */
+    public static void restartApplication() {
+        final String javaBin = System.getProperty("java.home") + File.separator + "bin" + File.separator + "java";
+
+        final File currentCodePath;
+        try {
+            currentCodePath = new File(Resinet3.class.getProtectionDomain().getCodeSource().getLocation().toURI());
+        } catch (Exception e) {
+            return;
+        }
+
+        final ArrayList<String> command = new ArrayList<>();
+        command.add(javaBin);
+
+        //wenns keine JAR-Datei ist, vorerst abbrechen, in Zukunft für exe-Release dies auch dann funktionieren lassen
+        if (currentCodePath.getName().endsWith(".jar")) {
+            //Befehl bauen: java -jar application.jar
+            command.add("-jar");
+            command.add(currentCodePath.getPath());
+        } else {
+            //Programm liegt als .class vor (während Debugging höchstwahrscheinlich)
+            command.add("-cp");
+            command.add(currentCodePath.getPath());
+            command.add("com.resinet.Resinet3");
+        }
+
+        final ProcessBuilder builder = new ProcessBuilder(command);
+        try {
+            builder.start();
+            System.exit(0);
+        } catch (IOException ignored) {
+        }
     }
 }

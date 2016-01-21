@@ -7,6 +7,7 @@ import com.resinet.util.*;
 import com.resinet.views.NetPanel;
 import com.resinet.views.SingleReliabilitiesPanel;
 import com.resinet.views.SingleReliabilityPanel;
+import com.sun.webkit.dom.HTMLMenuElementImpl;
 
 import javax.swing.*;
 import java.awt.*;
@@ -15,7 +16,7 @@ import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.math.BigDecimal;
 import java.text.MessageFormat;
-import java.util.ArrayList;
+import java.util.*;
 import java.util.List;
 
 /**
@@ -34,6 +35,9 @@ import java.util.List;
  */
 public class Resinet3 extends JFrame
         implements ActionListener, NetPanel.GraphChangedListener, ProbabilityCalculator.CalculationProgressListener, Constants {
+
+    private JMenuBar menuBar;
+
     public NetPanel netPanel;
 
     private JTextArea graphPanelTextArea, resultTextArea;
@@ -98,7 +102,7 @@ public class Resinet3 extends JFrame
         GridBagLayout mainLayout = new GridBagLayout();
         setLayout(mainLayout);
 
-        initLogo();
+        initMenu();
 
         initGraphPanel();
 
@@ -110,21 +114,72 @@ public class Resinet3 extends JFrame
 
         setGUIState(GUI_STATES.SHOW_GRAPH_INFO);
     }
-    //TODO Texte in Lokalisationsdatei auslagern
+
     //TODO weitere Funktionen auslagern, wie Überprüfung des Graphen
     //TODO Logo entfernen und Menü hinzufügen
     //TODO beim Speichern vom Graphen "weiße Flächen" an den Rändern entfernen
     //TODO Zuletzt geöffnet-Liste, Graph generieren, Serienparallelreduktion, neues GUI-Layout mit größerer Zeichenfläche
 
     /**
-     * Zeigt das Logo an
+     * Baut das Menü auf
      */
-    private void initLogo() {
-        Image logo = getToolkit().getImage(getClass().getResource("img/logo_neu.png"));
-        prepareImage(logo, this);
-        JLabel logoLabel = new JLabel(new ImageIcon(logo));
-        GridBagConstraints gbc = makegbc(0, 0, 1, 1, 0, 0);
-        add(logoLabel, gbc);
+    private void initMenu() {
+        menuBar = new JMenuBar();
+
+        //Menü "Datei" aufbauen
+        JMenu fileMenu = new JMenu(Strings.getLocalizedString("file"));
+
+        JMenuItem openItem = new JMenuItem(Strings.getLocalizedString("load.network"));
+        fileMenu.add(openItem);
+
+        JMenuItem saveItem = new JMenuItem(Strings.getLocalizedString("save.network"));
+        fileMenu.add(saveItem);
+
+        fileMenu.addSeparator();
+        JMenuItem closeItem = new JMenuItem(Strings.getLocalizedString("close"));
+        fileMenu.add(closeItem);
+
+        menuBar.add(fileMenu);
+
+        //Menu zum Graph Generieren aufbauen
+        JMenu generateGraphMenu = new JMenu(Strings.getLocalizedString("generate.graph"));
+
+        JMenuItem generateLineItem = new JMenuItem(Strings.getLocalizedString("line"));
+        generateGraphMenu.add(generateLineItem);
+
+        JMenuItem generateBridgeItem = new JMenuItem(Strings.getLocalizedString("bridge.network"));
+        generateGraphMenu.add(generateBridgeItem);
+
+        JMenuItem generateRingItem = new JMenuItem(Strings.getLocalizedString("ring"));
+        generateGraphMenu.add(generateRingItem);
+
+        JMenuItem generateTreeItem = new JMenuItem(Strings.getLocalizedString("tree"));
+        generateGraphMenu.add(generateTreeItem);
+
+        JMenuItem completeNetworkItem = new JMenuItem(Strings.getLocalizedString("complete.graph"));
+        generateGraphMenu.add(completeNetworkItem);
+
+        menuBar.add(generateGraphMenu);
+
+        //Sprachmenü aufbauen
+        JMenu languageMenu = new JMenu(Strings.getLocalizedString("language"));
+
+        Map<String, String> languages = new HashMap<>();
+        languages.put("en", "English");
+        languages.put("de", "Deutsch");
+
+        for (Map.Entry lang : languages.entrySet()) {
+            JMenuItem itm = new JCheckBoxMenuItem((String) lang.getValue());
+            itm.addActionListener((e) -> Strings.setLanguageAndRestart(this, (String) lang.getKey()));
+            if (Strings.currentLocale.getLanguage().equals(new Locale((String) lang.getKey()).getLanguage())) {
+                itm.setSelected(true);
+                itm.setEnabled(false);
+            }
+            languageMenu.add(itm);
+        }
+
+        menuBar.add(languageMenu);
+        setJMenuBar(menuBar);
     }
 
     /**
