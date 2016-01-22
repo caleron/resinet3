@@ -1,11 +1,9 @@
 package com.resinet.algorithms;
 
 import com.resinet.Resinet3;
-import com.resinet.model.CalculationParams;
-import com.resinet.model.Edge;
-import com.resinet.model.Graph;
-import com.resinet.model.Node;
-import com.resinet.util.*;
+import com.resinet.model.*;
+import com.resinet.util.Strings;
+import com.resinet.util.Util;
 import com.sun.istack.internal.Nullable;
 
 import javax.swing.*;
@@ -17,6 +15,7 @@ import java.io.Writer;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.text.MessageFormat;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
@@ -25,8 +24,8 @@ import java.util.Set;
  * Diese Klasse führt die eigentlichen Zuverlässigkeitsberechnungen auf einem eigenen Thread durch
  */
 public class ProbabilityCalculator extends Thread {
-    private CalculationProgressListener listener;
-    private CalculationParams params;
+    private final CalculationProgressListener listener;
+    private final CalculationParams params;
 
     //Die Anzahl der Nachkommastellen, die der Output haben soll
     private final Integer OUTPUT_PRECISION = 15;
@@ -103,6 +102,7 @@ public class ProbabilityCalculator extends Thread {
      */
     private Zerleg getDecomposition() {
         Zerleg zer = new Zerleg(workingGraph);
+
         zer.start();
         try {
             zer.join();
@@ -118,13 +118,12 @@ public class ProbabilityCalculator extends Thread {
      * @return Die Zuverlässigkeit des Arbeitsgraphen
      */
     BigDecimal getHeidtmannsReliability(boolean writeOutput) {
-        long startTime = new Date().getTime();
         BigDecimal prob;
 
         reassignProbabilities();
 
         if (workingGraph.edgeList.size() == 1) {
-            Edge e = (Edge) workingGraph.getEdgelist().get(0);
+            Edge e = workingGraph.getEdgelist().get(0);
 
             //Prüfe, ob die beiden Endknoten K-Knoten sind
             if ((e.left_node.c_node) && (e.right_node.c_node)) {
@@ -138,15 +137,14 @@ public class ProbabilityCalculator extends Thread {
         } else {
             Zerleg zer = getDecomposition();
 
-            System.out.println("Laufzeit Heidtmann bis Zerlegung: " + ((new Date()).getTime() - startTime));
+            //System.out.println("Laufzeit Heidtmann bis Zerlegung: " + ((new Date()).getTime() - startTime));
             prob = BigDecimal.ZERO;
-            MyIterator it = zer.hz.iterator();
-            while (it.hasNext()) {
+
+            for (ArrayList<HashSet<GraphElement>> al : zer.hz) {
 
                 //System.out.println("Neuer Pfad");
 
-                MyList al = (MyList) it.next();
-                MySet hs = (MySet) al.get(0);
+                HashSet<GraphElement> hs = al.get(0);
 
                 BigDecimal p;
                 //hs enthält hier anscheinend einen Pfad im Graphen zwischen den K-Knoten
@@ -154,7 +152,7 @@ public class ProbabilityCalculator extends Thread {
                 p = getPathProbability(hs);
                 //Die weiteren Pfade entstehen beim Disjunktmachen und Invertieren
                 for (int i = 1; i < al.size(); i++) {
-                    MySet hs1 = (MySet) al.get(i);
+                    HashSet<GraphElement> hs1 = al.get(i);
                     if (hs1.isEmpty())
                         continue;
                     p = p.multiply(BigDecimal.ONE.subtract(getPathProbability(hs1)));
@@ -164,11 +162,10 @@ public class ProbabilityCalculator extends Thread {
                 prob = prob.add(p);
 
             }
-
         }
-        long runningTime = new Date().getTime() - startTime;
-        System.out.println("Laufzeit Heidtmann: " + runningTime);
-        System.out.println("Prob. Heidtmann: " + prob);
+        //long runningTime = new Date().getTime() - startTime;
+        //System.out.println("Laufzeit Heidtmann: " + runningTime);
+        //System.out.println("Prob. Heidtmann: " + prob);
 
         if (writeOutput) {
             BigDecimal output = prob.setScale(OUTPUT_PRECISION, BigDecimal.ROUND_HALF_DOWN);
@@ -197,7 +194,7 @@ public class ProbabilityCalculator extends Thread {
         // Sicherung der K-Knotenliste
         String cNodeList = "";
         for (int i = 0; i < total_nodes; i++) {
-            Node nodeSave = (Node) workingGraph.nodeList.get(i);
+            Node nodeSave = workingGraph.nodeList.get(i);
             if (nodeSave.c_node) {
                 c_nodes++;
                 cNodeList = cNodeList + "1";
@@ -207,15 +204,15 @@ public class ProbabilityCalculator extends Thread {
         }
 
         // Berechne Anzahl der Kombinationen
-        BigInteger combinations = Util.binomial(total_nodes, c_nodes);
+        BigInteger combinationCount = Util.binomial(total_nodes, c_nodes);
 
         //Wenn keine Berechnungsserie, dann Schrittzahl mitteilen
         if (!params.calculationSeries) {
-            reportStepCount(combinations.intValue());
+            reportStepCount(combinationCount.intValue());
         }
 
         // Erzeuge leere Menge für die Knotenmengen.
-        Set<HashSet<Integer>> set1 = new HashSet<>();
+        Set<HashSet<Integer>> combinationSet = new HashSet<>();
 
         //Hier werden alle Kombinationen an Binärstrings erzeugt, die k Einsen und n-k Nullen haben
         Set<String> combinationStrings = generateCombinations(cNodeList);
@@ -230,23 +227,23 @@ public class ProbabilityCalculator extends Thread {
                     subset.add(j);
                 }
             }
-            set1.add(subset);
+            combinationSet.add(subset);
         }
 
         int counter = 0;
         BigDecimal result = BigDecimal.ZERO;
 
         // Für jede Kombination der K-Knoten
-        for (HashSet d : set1) {
+        for (HashSet<Integer> combination : combinationSet) {
             renewWorkingGraph();
 
             // Für jeden Knoten: Falls er in der aktuellen Kombination enthalten ist, setze ihn auf "K-Knoten".
             for (int i = 0; i < total_nodes; i++) {
                 // Entsprechenden Knoten holen
-                Node node1 = (Node) workingGraph.nodeList.get(i);
+                Node node1 = workingGraph.nodeList.get(i);
 
                 // Dann auf true, falls K-Knoten
-                node1.c_node = d.contains(i);
+                node1.c_node = combination.contains(i);
 
                 // Schreibe jeden Knoten neu in die Knotenliste.
                 workingGraph.nodeList.set(i, node1);
@@ -264,22 +261,21 @@ public class ProbabilityCalculator extends Thread {
             if (!params.calculationSeries) {
                 reportProgressChange(counter);
             }
-            //reportResult("Step " + counter + " of " + combinations);
+            //reportResult("Step " + counter + " of " + combinationCount);
 
             // Berechne die Zuverlässigkeit für die aktuelle Kombination und addiere sie zur bisherigen Summe.
             result = result.add(getHeidtmannsReliability(false));
-
         }
 
         // Teile die Summe der Zuverlässigkeiten durch die Anzahl der Kombinationen.
-        result = result.divide(new BigDecimal(combinations), BigDecimal.ROUND_HALF_EVEN);
+        result = result.divide(new BigDecimal(combinationCount), BigDecimal.ROUND_HALF_EVEN);
 
         long runningTime = new Date().getTime() - start;
         System.out.println("Laufzeit Resilienz: " + runningTime);
 
         if (writeOutput) {
             BigDecimal output = result.setScale(OUTPUT_PRECISION, BigDecimal.ROUND_HALF_DOWN);
-            reportResult(MessageFormat.format(Strings.getLocalizedString("result.resilience"), total_nodes, c_nodes, combinations, output.toString()));
+            reportResult(MessageFormat.format(Strings.getLocalizedString("result.resilience"), total_nodes, c_nodes, combinationCount, output.toString()));
         }
 
         return result;
@@ -441,23 +437,22 @@ public class ProbabilityCalculator extends Thread {
      * @param path Der Pfad
      * @return Die Intaktwahrscheinlichkeit
      */
-    BigDecimal getPathProbability(MySet path) {
+    private BigDecimal getPathProbability(HashSet<GraphElement> path) {
         BigDecimal p = BigDecimal.ONE;
         //String output = "Pfad";
 
-        MyIterator it = path.iterator();
-        while (it.hasNext()) {
-            Object obj = it.next();
-            if (obj instanceof Edge) {
-                Edge e = (Edge) obj;
-                p = p.multiply(e.prob);
-                //output += " e" + e.edge_no;
+        for (GraphElement el : path) {
+            p = p.multiply(el.prob);
+            /*
+            if (el instanceof Edge) {
+                Edge e = (Edge) el;
+                output += " e" + e.edge_no;
             } else {
-                Node n = ((Node) obj);
-                p = p.multiply(n.prob);
-                //output += " n" + n.node_no;
-            }
+                Node n = ((Node) el);
+                output += " n" + n.node_no;
+            }*/
         }
+
         //System.out.println(p.toString() + " für " + output);
         return p;
     }
@@ -470,11 +465,11 @@ public class ProbabilityCalculator extends Thread {
         Diese Listen sind Klone der Kantenlisten des Graphen, aber halten die selben Referenzen auf Kanten
         wie die Kantenliste des Graphen, also eine flache Kopie.
         */
-        MyList edgeList = workingGraph.getEdgelist();
+        ArrayList<Edge> edgeList = workingGraph.getEdgelist();
         int edgeCount = edgeList.size();
         //Kantenwahrscheinlichkeiten
         for (int i = 0; i < edgeCount; i++) {
-            Edge e = (Edge) edgeList.get(i);
+            Edge e = edgeList.get(i);
 
             if (params.sameReliabilityMode) {
                 e.prob = params.edgeValue;
@@ -483,12 +478,12 @@ public class ProbabilityCalculator extends Thread {
             }
         }
 
-        MyList nodeList = workingGraph.getNodelist();
+        ArrayList<Node> nodeList = workingGraph.getNodelist();
         int nodeCount = nodeList.size();
 
         //Knotenwahrscheinlichkeiten
         for (int i = 0; i < nodeCount; i++) {
-            Node e = (Node) nodeList.get(i);
+            Node e = nodeList.get(i);
 
             if (params.sameReliabilityMode) {
                 e.prob = params.nodeValue;

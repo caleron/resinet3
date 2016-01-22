@@ -3,15 +3,14 @@ package com.resinet.views;
 import java.awt.*;
 import java.awt.event.*;
 import java.awt.image.BufferedImage;
+import java.util.ArrayList;
 
 import com.resinet.model.*;
-import com.resinet.util.MyIterator;
-import com.resinet.util.MyList;
 
 import javax.swing.*;
 
 public class NetPanel extends JPanel {
-    private GraphChangedListener listener;
+    private final GraphChangedListener listener;
 
     //die Kante, die gezeichnet wird, während man die Maus gedrückt hält (beim Kanten erstellen)
     private EdgeLine draggingLine;
@@ -20,21 +19,21 @@ public class NetPanel extends JPanel {
     private boolean nodeHovered = false;
     private boolean edgeHovered = false;
 
-    public MyList drawnNodes;
-    public MyList drawnEdges;
+    public final ArrayList<NodePoint> drawnNodes;
+    public final ArrayList<EdgeLine> drawnEdges;
 
     private boolean singleReliabilityMode = false;
     public boolean nodeClickable = true;
     public boolean edgeClickable = true;
 
-    private Cursor switchCursor, deleteCursor;
+    private final Cursor switchCursor, deleteCursor;
 
 
     public NetPanel(GraphChangedListener listener) {
         this.listener = listener;
 
-        drawnEdges = new MyList();
-        drawnNodes = new MyList();
+        drawnEdges = new ArrayList<>();
+        drawnNodes = new ArrayList<>();
 
         //EventListener setzen
         addMouseListener(new MyMouseListener());
@@ -67,12 +66,11 @@ public class NetPanel extends JPanel {
         imgGraphics.setColor(Color.WHITE);
         //Hintergrund zeichnen
         imgGraphics.fillRect(0, 0, getWidth(), getHeight());
+
         //Knoten zeichnen
-        MyIterator iterator = drawnNodes.iterator();
         int count = 0;
-        while (iterator.hasNext()) {
+        for (NodePoint nodePoint : drawnNodes) {
             imgGraphics.setColor(Color.black);
-            NodePoint nodePoint = (NodePoint) iterator.next();
 
             if (nodePoint.c_node) {
                 imgGraphics.fill(nodePoint);
@@ -91,9 +89,8 @@ public class NetPanel extends JPanel {
         }
         //Kanten zeichnen
         imgGraphics.setColor(Color.black);
-        iterator = drawnEdges.iterator();
-        while (iterator.hasNext()) {
-            EdgeLine edgeLine = (EdgeLine) iterator.next();
+
+        for (EdgeLine  edgeLine : drawnEdges) {
             imgGraphics.draw(edgeLine);
             String s = String.valueOf(drawnEdges.indexOf(edgeLine));
             imgGraphics.drawString(s, (float) edgeLine.textPositionX, (float) edgeLine.textPositionY);
@@ -135,9 +132,7 @@ public class NetPanel extends JPanel {
             boolean nodeClicked = false;
 
             //Prüfen, ob der Click einen Knoten getroffen hat
-            MyIterator it = drawnNodes.iterator();
-            while (it.hasNext()) {
-                NodePoint currentNode = (NodePoint) it.next();
+            for (NodePoint currentNode : drawnNodes) {
 
                 if (currentNode.contains(clickX, clickY)) {
                     //Knoten wurde angeklickt
@@ -151,7 +146,7 @@ public class NetPanel extends JPanel {
 
                         //anliegende Kanten löschen
                         for (int i = 0; i < drawnEdges.size(); i++) {
-                            EdgeLine edl = (EdgeLine) drawnEdges.get(i);
+                            EdgeLine edl = drawnEdges.get(i);
                             if (edl.startNode == currentNode || edl.endNode == currentNode) {
                                 drawnEdges.remove(edl);
                                 listener.graphElementDeleted(false, i);
@@ -172,9 +167,7 @@ public class NetPanel extends JPanel {
             if (!nodeClicked) {
                 boolean edgeClicked = false;
                 //Wenn kein Knoten angeklickt wurde, auf Kante prüfen
-                it = drawnEdges.iterator();
-                while (it.hasNext()) {
-                    EdgeLine edgeLine = (EdgeLine) it.next();
+                for (EdgeLine edgeLine : drawnEdges) {
 
                     if (edgeLine.ptSegDist(clickX, clickY) < 5) {
                         if (mouseEvent.isShiftDown()) {
@@ -200,8 +193,7 @@ public class NetPanel extends JPanel {
 
                     NodePoint newNode = new NodePoint(x, y, c_node);
                     //Prüfen, ob der neue Knoten mit einem anderen überlappt
-                    for (int i = 0; i < drawnNodes.size(); i++) {
-                        NodePoint currentNode = (NodePoint) drawnNodes.get(i);
+                    for (NodePoint currentNode : drawnNodes) {
 
                         //Falls er überlappt, den neuen Knoten in die entsprechende Richtung verschieben
                         if (currentNode.getFrame().intersects(newNode.getFrame())) {
@@ -238,9 +230,7 @@ public class NetPanel extends JPanel {
             int y = mouseEvent.getY();
 
             //Prüfen, ob in ein Knoten gedrückt wurde, damit das Ziehen einer Kante gestartet wird
-            MyIterator it = drawnNodes.iterator();
-            while (it.hasNext()) {
-                NodePoint np = (NodePoint) it.next();
+            for (NodePoint np : drawnNodes) {
 
                 if (np.contains(x, y)) {
                     //Es wurde in den Kreis geklickt, also Kantenziehen starten
@@ -261,16 +251,12 @@ public class NetPanel extends JPanel {
             int y = mouseEvent.getY();
 
             //Prüft, ob die Maus innerhalb eines Knotens losgelassen wurde
-            MyIterator it = drawnNodes.iterator();
-            while (it.hasNext()) {
-                NodePoint currentNode = (NodePoint) it.next();
+            for (NodePoint currentNode : drawnNodes) {
 
                 if (currentNode.contains(x, y) && draggingLine.startNode != currentNode) {
 
                     //Prüfen, ob eine Kante mit genau diesen anliegenden Knoten bereits existiert
-                    MyIterator it2 = drawnEdges.iterator();
-                    while (it2.hasNext()) {
-                        EdgeLine currentEdge = (EdgeLine) it2.next();
+                    for (EdgeLine currentEdge : drawnEdges) {
 
                         //Wenn die Kante existiert, dann abbrechen
                         if (currentEdge.startNode == currentNode && currentEdge.endNode == draggingLine.startNode
@@ -321,9 +307,7 @@ public class NetPanel extends JPanel {
             /**
              * Prüfen, ob ein Knoten getroffen wird
              */
-            MyIterator it = drawnNodes.iterator();
-            while (it.hasNext()) {
-                NodePoint nodePoint = (NodePoint) it.next();
+            for (NodePoint nodePoint : drawnNodes) {
 
                 if (nodePoint.contains(x, y)) {
                     nodeHovered = true;
@@ -336,9 +320,7 @@ public class NetPanel extends JPanel {
             /**
              * Prüfen, ob der Cursor nahe einer Kante ist (nah ist hier maximal 5px Abstand)
              */
-            it = drawnEdges.iterator();
-            while (it.hasNext()) {
-                EdgeLine edgeLine = (EdgeLine) it.next();
+            for (EdgeLine edgeLine : drawnEdges) {
 
                 if (edgeLine.ptSegDist(x, y) < 5) {
                     nodeHovered = false;

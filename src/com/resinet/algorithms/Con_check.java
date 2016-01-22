@@ -3,8 +3,8 @@ package com.resinet.algorithms;/* com.resinet.algorithms.Con_check.java */
 import com.resinet.model.Edge;
 import com.resinet.model.Graph;
 import com.resinet.model.Node;
-import com.resinet.util.MyIterator;
-import com.resinet.util.MyList;
+
+import java.util.ArrayList;
 
 public class Con_check {
 
@@ -12,25 +12,22 @@ public class Con_check {
     private static void depth_search(Graph g, int i)
     // von Knoten i aus wird eine Tiefensuche durchgefuehrt.
     {
-        MyList nd;
+        ArrayList<Node> nd;
 
         nd = g.nodeList;
 
-        Node node = (Node) nd.get(i);
+        Node node = nd.get(i);
         node.marked = true;
 
         // wenn jeder Knoten von Knoten i aus erreichbar ist, ist der com.resinet.model.Graph auch zusammenhaengend
-        MyIterator it = node.node_edge.iterator();
-
-        while (it.hasNext()) {
+        for (Edge edge : node.node_edge) {
             int n;
-            Edge edge = (Edge) it.next();
 
             if (edge.left_node.node_no != i)
                 n = edge.left_node.node_no;
             else
                 n = edge.right_node.node_no;
-            Node next_node = (Node) nd.get(n);
+            Node next_node = nd.get(n);
             if (!next_node.marked)
                 depth_search(g, n);
 
@@ -38,10 +35,7 @@ public class Con_check {
     }
 
     private static void reset_mark(Graph g) {
-        MyIterator it = g.nodeList.iterator();
-
-        while (it.hasNext()) {
-            Node node = (Node) it.next();
+        for (Node node : g.nodeList) {
             node.marked = false;
         }
     }
@@ -51,7 +45,7 @@ public class Con_check {
     }
 
     public static int check(Graph g) {
-        MyList nd;
+        ArrayList<Node> nd;
         nd = g.nodeList;
 
         reset_mark(g);
@@ -59,11 +53,9 @@ public class Con_check {
         depth_search(g, 0);
         //wir fangen immer mit dem ersten Knoten 0 an
 
-        MyIterator it = nd.iterator();
-        while (it.hasNext()) {
-            Node node = (Node) it.next();
+        for (Node node : nd) {
             if (!node.marked) {
-                return (nd.indexOf(node));
+                return nd.indexOf(node);
             }
         }
         return (-1);

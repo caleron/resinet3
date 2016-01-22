@@ -12,7 +12,7 @@ import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
 import javax.swing.*;
-import javax.swing.filechooser.*;
+import javax.swing.filechooser.FileNameExtensionFilter;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
@@ -161,8 +161,8 @@ public final class GraphSaving {
                 Integer node1 = Integer.parseInt(startnode) - 1;
                 Integer node2 = Integer.parseInt(endnode) - 1;
 
-                NodePoint startNodePoint = (NodePoint) netPanel.drawnNodes.get(node1);
-                NodePoint endNodePoint = (NodePoint) netPanel.drawnNodes.get(node2);
+                NodePoint startNodePoint = netPanel.drawnNodes.get(node1);
+                NodePoint endNodePoint = netPanel.drawnNodes.get(node2);
 
                 EdgeLine edge1 = new EdgeLine(startNodePoint, endNodePoint);
 
@@ -182,8 +182,8 @@ public final class GraphSaving {
      * @param resinet3 Das Hauptfenster
      */
     private static void readResinetNetwork(File netFile, Resinet3 resinet3) {
-        MyList drawnNodes = resinet3.netPanel.drawnNodes;
-        MyList drawnEdges = resinet3.netPanel.drawnEdges;
+        ArrayList<NodePoint> drawnNodes = resinet3.netPanel.drawnNodes;
+        ArrayList<EdgeLine> drawnEdges = resinet3.netPanel.drawnEdges;
 
         try {
             DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
@@ -222,8 +222,8 @@ public final class GraphSaving {
                     //Anliegende Knoten bestimmen
                     Integer node1Number = Integer.parseInt(nodeElement.getAttribute("node1"));
                     Integer node2Number = Integer.parseInt(nodeElement.getAttribute("node2"));
-                    NodePoint node1 = (NodePoint) drawnNodes.get(node1Number);
-                    NodePoint node2 = (NodePoint) drawnNodes.get(node2Number);
+                    NodePoint node1 = drawnNodes.get(node1Number);
+                    NodePoint node2 = drawnNodes.get(node2Number);
 
                     EdgeLine el = new EdgeLine(node1, node2);
 
@@ -346,7 +346,7 @@ public final class GraphSaving {
         FileNameExtensionFilter resinetvFilter = new FileNameExtensionFilter("ResiNeTV-Networks with Reliabilities", "resinet");
         chooseSaveFile.setFileFilter(resinetvFilter);
         chooseSaveFile.addChoosableFileFilter(pajekFilter);
-        chooseSaveFile.setDialogTitle("Save as...");
+        chooseSaveFile.setDialogTitle("Save network as...");
         chooseSaveFile.setSelectedFile(new File("myNetwork.resinet"));
 
         File saveNetFile;
@@ -416,7 +416,7 @@ public final class GraphSaving {
                     writer.write(" ");
                 }
 
-                NodePoint node = (NodePoint) netPanel.drawnNodes.get(i - 1);
+                NodePoint node = netPanel.drawnNodes.get(i - 1);
                 double xCoordinate = node.x;
                 double yCoordinate = node.y;
 
@@ -456,7 +456,7 @@ public final class GraphSaving {
             //Für jede Kante eine Zeile
             for (int i = 0; i < netPanel.drawnEdges.size(); i++) {
                 writer.append(System.getProperty("line.separator"));
-                EdgeLine edge = (EdgeLine) netPanel.drawnEdges.get(i);
+                EdgeLine edge = netPanel.drawnEdges.get(i);
                 String node1 = Integer.toString(netPanel.drawnNodes.indexOf(edge.startNode) + 1);
                 String node2 = Integer.toString(netPanel.drawnNodes.indexOf(edge.endNode) + 1);
 
@@ -501,8 +501,8 @@ public final class GraphSaving {
             }
         }
 
-        MyList drawnNodes = resinet3.netPanel.drawnNodes;
-        MyList drawnEdges = resinet3.netPanel.drawnEdges;
+        ArrayList<NodePoint> drawnNodes = resinet3.netPanel.drawnNodes;
+        ArrayList<EdgeLine> drawnEdges = resinet3.netPanel.drawnEdges;
 
         try {
             DocumentBuilderFactory docFactory = DocumentBuilderFactory.newInstance();
@@ -512,9 +512,26 @@ public final class GraphSaving {
             Element rootElement = doc.createElement("graph");
             doc.appendChild(rootElement);
 
+            /**
+             * Elemente ganz links und ganz oben bestimmen, damit deren x bzw. y-Koordinate als Offset verwendet werden kann.
+             * Das heißt, dass alle Elemente um x nach links und y nach oben verschoben werden, damit der Graph nach
+             * dem Laden richtig zentriert werden kann.
+             */
+            //TODO realisieren
+            /*int offsetX = Integer.MAX_VALUE, offsetY = Integer.MAX_VALUE;
+            for (Integer i = 0; i < drawnNodes.size(); i++) {
+                if (((NodePoint) drawnNodes.get(i)).getX() < offsetX) {
+                    offsetX = (int) ((NodePoint) drawnNodes.get(i)).getX();
+                }
+
+                if (((NodePoint) drawnNodes.get(i)).getY() < offsetY) {
+                    offsetY = (int) ((NodePoint) drawnNodes.get(i)).getY();
+                }
+            }*/
+
             //Knoten schreiben
             for (Integer i = 0; i < drawnNodes.size(); i++) {
-                NodePoint graphNode = (NodePoint) drawnNodes.get(i);
+                NodePoint graphNode = drawnNodes.get(i);
 
                 Element node = doc.createElement("node");
                 node.setAttribute("node_number", i.toString());
@@ -528,7 +545,7 @@ public final class GraphSaving {
 
             //Kanten schreiben
             for (Integer i = 0; i < drawnEdges.size(); i++) {
-                EdgeLine graphEdge = (EdgeLine) drawnEdges.get(i);
+                EdgeLine graphEdge = drawnEdges.get(i);
 
                 Element edge = doc.createElement("edge");
                 edge.setAttribute("edge_number", i.toString());

@@ -10,9 +10,9 @@ import java.util.prefs.Preferences;
  * Klasse zur Lokalisation, die Strings für die UI liefert.
  */
 public class Strings {
-    static ResourceBundle bundle;
-    static Preferences preferences;
-    public static Locale currentLocale;
+    private static final ResourceBundle bundle;
+    private static final Preferences preferences;
+    public static final Locale currentLocale;
 
     /**
      * Statische Initialisierung der Sprache beim Laden des Programms

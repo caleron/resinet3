@@ -18,10 +18,10 @@ import java.awt.event.ComponentListener;
  */
 public class SingleReliabilitiesPanel extends JPanel {
 
-    private Timer resizeTimer;
+    private final Timer resizeTimer;
 
     private int currentColumns = 2;
-    private ResizeListener resizeListener;
+    private final ResizeListener resizeListener;
 
     public SingleReliabilitiesPanel() {
         setLayout(new GridLayout(0, currentColumns));

@@ -1,13 +1,11 @@
 package com.resinet.model;/* com.resinet.model.Node.java */
 
-import com.resinet.util.MyList;
-
 import java.io.Serializable;
-import java.math.BigDecimal;
+import java.util.ArrayList;
 
-public class Node implements Serializable {
+public class Node extends GraphElement implements Serializable {
     //Knotennummer
-    public int node_no;
+    public final int node_no;
 
     // Kennzeichen fuer Konnektionsknoten
     public boolean c_node = false;
@@ -15,7 +13,7 @@ public class Node implements Serializable {
     //Attribut für KTree
     public Node left, right;
     //Anliegende Kanten
-    public MyList node_edge = new MyList();
+    public final ArrayList<Edge> node_edge = new ArrayList<>();
 
     //Grad des Knotens, d.h. Anzahl anliegender Kanten
     public int degree = 0;
@@ -23,14 +21,7 @@ public class Node implements Serializable {
     //Für die Tiefensuche beim Prüfen, ob der Graph zusammenhängend ist
     public boolean marked = false;
 
-    //mark fuer K-Baum (com.resinet.model.KTree.java)
-    public boolean b_marked = false;
 
-    //Intaktwahrscheinlichkeit
-    public BigDecimal prob;
-
-    //Für die Baumsuche, wird aber niemals ausgelesen
-    public boolean useless = false;
 
     public Node(int node_no, boolean c_node) {
         this.node_no = node_no;

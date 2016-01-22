@@ -1,27 +1,28 @@
 package com.resinet.algorithms;/* Zerleg.java */
 
-
-import com.resinet.util.MyList;
-import com.resinet.util.MySet;
 import com.resinet.model.Graph;
+import com.resinet.model.GraphElement;
+
+import java.util.*;
 
 class Zerleg extends Thread {
-    private Tree ktrees;
-    private final MyList trs;
+    private final Tree ktrees;
+    private final List<HashSet<GraphElement>> trs;
 
     /**
      * Enthält alle Zerlegungen nach Heidtmann. Ein Element ist eine Liste aus Pfaden, wobei der erste Pfad der hin-Pfad
      * ist und die weiteren Pfade die Ergebnisse aus dem Disjunktmachen mit den bisherigen Pfaden sind
      */
-    public MySet hz;
+    public final HashSet<ArrayList<HashSet<GraphElement>>> hz;
 
-    private HZerleg hzer;
+    private final HZerleg hzer;
 
     public Zerleg(Graph graph) {
         ktrees = new Tree(graph);
         trs = ktrees.trs;
         hzer = new HZerleg();
-        hz = new MySet();
+        hz = new HashSet<>();
+
     }
 
     public void run() {
@@ -45,7 +46,9 @@ class Zerleg extends Thread {
             if (!ktrees.dead) {
                 synchronized (trs) {
                     try {
-                        trs.wait(1000);
+                        if (!ktrees.dead) {
+                            trs.wait(1000);
+                        }
                     } catch (InterruptedException e) {
                         System.out.println(e.toString());
                     }
@@ -53,14 +56,14 @@ class Zerleg extends Thread {
             }
             int pathCount = 0;
             for (int i = 1; i <= trs.size(); i++) {
-                MyList listK = new MyList();
-                MySet setI0 = (MySet) trs.get(i - 1);
+                ArrayList<HashSet<GraphElement>> listK = new ArrayList<>();
+                HashSet<GraphElement> setI0 = trs.get(i - 1);
                 listK.add(setI0);
-                for (int c = 1; c <= i; c++) {
-                    MySet temp = new MySet();
-                    listK.add(temp);
+                for (int j = 1; j <= i; j++) {
+                    listK.add(new HashSet<>());
                 }
                 //insgesamt i+1 Elemente, setI0 = I(0)
+
 
                 hZer(listK, i, 1);
 
@@ -78,21 +81,21 @@ class Zerleg extends Thread {
                 }
                 pathCount++;
             }
-            System.out.println("Anzahl Pfade: " + pathCount);
+            //System.out.println("Anzahl Pfade: " + pathCount);
         }
 
-        private void hZer(MyList listK, int k, int i) {
+        private void hZer(ArrayList<HashSet<GraphElement>> listK, int k, int i) {
             if (i == k) {
                 //listK.remove(k);
-                MyList al = cloneList(listK);
+                ArrayList<HashSet<GraphElement>> al = cloneList(listK);
                 hz.add(al);
             } else {
                 //setIi ist der vorherige Pfad
-                MySet setIi = (MySet) trs.get(i - 1);
+                HashSet<GraphElement> setIi = trs.get(i - 1);
                 boolean disjoint = false;
 
-                for (int c = 1; c < i; c++) {
-                    MySet setIl = (MySet) listK.get(c);
+                for (int j = 1; j < i; j++) {
+                    HashSet<GraphElement> setIl = listK.get(j);
                     if (setIl.isEmpty())
                         continue;
                     if (setIi.containsAll(setIl)) {
@@ -105,47 +108,47 @@ class Zerleg extends Thread {
                 if (disjoint) {
                     hZer(listK, k, i + 1);
                 } else {
-                    MyList listHI = cloneList(listK);
+                    ArrayList<HashSet<GraphElement>> listHI = cloneList(listK);
                     //fuer alle l=0 bis k HI(l)=I(l)
 
-                    for (int l = 1; l < i; l++) {
-                        MySet setIl = (MySet) listK.get(l);
-                        MySet setHIl = (MySet) setIl.clone();
+                    for (int j = 1; j < i; j++) {
+                        HashSet<GraphElement> setIl = listK.get(j);
+                        HashSet<GraphElement> setHIl = cloneSet(setIl);
                         setHIl.retainAll(setIi);
-                        //HI(l)=I(l)/\Ii
+                        //HI(j)=I(j)/\Ii
 
                         if (!setHIl.isEmpty()) {
-                            listHI.set(l, setHIl);
+                            listHI.set(j, setHIl);
                             hZer(listHI, k, i + 1);
                         }
-                        setHIl = (MySet) setIl.clone();
+                        setHIl = cloneSet(setIl);
                         setHIl.removeAll(setIi);
-                        listHI.set(l, setHIl);
-                        //HI(l)=I(l)-Ii
+                        listHI.set(j, setHIl);
+                        //HI(j)=I(j)-Ii
 
-                        MySet cut = (MySet) setIl.clone();
+                        HashSet<GraphElement> cut = cloneSet(setIl);
                         cut.retainAll(setIi);
-                        MySet setHI0 = (MySet) listHI.get(0);
+                        HashSet<GraphElement> setHI0 = listHI.get(0);
                         setHI0.addAll(cut);
                         listHI.set(0, setHI0);
-                        // HI(0)=HI(0)\/(I(l)/\Ii)
+                        // HI(0)=HI(0)\/(I(j)/\Ii)
                     }
 
-                    MySet joint = new MySet();
-                    for (int c = 0; c < i; c++) {
-                        MySet temp = (MySet) listK.get(c);
+                    HashSet<GraphElement> joint = new HashSet<>();
+                    for (int j = 0; j < i; j++) {
+                        HashSet<GraphElement> temp = listK.get(j);
                         joint.addAll(temp);
                     }
-                    MySet setHIi = (MySet) setIi.clone();
+                    HashSet<GraphElement> setHIi = cloneSet(setIi);
                     setHIi.removeAll(joint);
                     listHI.set(i, setHIi);
                     //HI(i) = Ii-\/I(l)
 
                     if (!setHIi.isEmpty()) {
-                        for (int l = 1; l < i; l++) {
-                            MySet setHIl = (MySet) listHI.get(l);
+                        for (int j = 1; j < i; j++) {
+                            HashSet<GraphElement> setHIl = listHI.get(j);
                             setHIl.removeAll(setHIi);
-                            listHI.set(l, setHIl);
+                            listHI.set(j, setHIl);
                         }
                         //fuer alle l=1 bis i-1 bilde HI(l)=HI(l)-HI(i)
 
@@ -158,17 +161,20 @@ class Zerleg extends Thread {
     }//end class HZerlegen
 
 
-    private MyList cloneList(MyList al) {
+    private static ArrayList<HashSet<GraphElement>> cloneList(ArrayList<HashSet<GraphElement>> al) {
         //hier handelt es sich um eine shallow copy bis zur zweiten ebene
 
-        MyList list = (MyList) al.clone();
+        ArrayList<HashSet<GraphElement>> list = (ArrayList<HashSet<GraphElement>>) al.clone();
 
         for (int i = 0; i < al.size(); i++) {
-            MySet set1 = (MySet) al.get(i);
-            MySet set2 = (MySet) set1.clone();
+            HashSet<GraphElement> set1 = al.get(i);
+            HashSet<GraphElement> set2 = cloneSet(set1);
             list.set(i, set2);
         }
         return list;
     }
 
+    private static HashSet<GraphElement> cloneSet(HashSet<GraphElement> input) {
+        return (HashSet<GraphElement>) input.clone();
+    }
 }

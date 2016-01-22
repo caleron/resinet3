@@ -1,9 +1,8 @@
 package com.resinet.model;/* Edge.java */
 
 import java.io.Serializable;
-import java.math.BigDecimal;
 
-public class Edge implements Serializable {
+public class Edge extends GraphElement implements Serializable {
 
     public final int edge_no;
 
@@ -16,15 +15,9 @@ public class Edge implements Serializable {
     public Edge left, right;
     //for com.resinet.model.KTree.java
 
-    public boolean b_marked = false;
     public boolean in_q = false;
     //Mark fuer K-Baum (com.resinet.model.KTree.java)
 
-    public boolean useless = false;
-
-
-    public BigDecimal prob;
-    //Intaktwahrscheinlichkeit der Kante
 
     public Edge(int edge_no, Node left_node, Node right_node) {
         this.edge_no = edge_no;

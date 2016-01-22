@@ -65,7 +65,7 @@ public class Util {
     /**
      * Diese Methode dient, dazu, das Programm neu zu starten.
      * <p>
-     * Funktioniert vermutlich aber nur bei JAR-Dateien.
+     * Funktioniert noch nicht bei exe-Dateien.
      * <p>
      * Quelle: http://stackoverflow.com/questions/4159802/how-can-i-restart-a-java-application
      */

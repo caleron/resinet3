@@ -3,11 +3,12 @@ package com.resinet;
 import com.resinet.algorithms.Con_check;
 import com.resinet.algorithms.ProbabilityCalculator;
 import com.resinet.model.*;
-import com.resinet.util.*;
+import com.resinet.util.Constants;
+import com.resinet.util.GraphSaving;
+import com.resinet.util.Strings;
 import com.resinet.views.NetPanel;
 import com.resinet.views.SingleReliabilitiesPanel;
 import com.resinet.views.SingleReliabilityPanel;
-import com.sun.webkit.dom.HTMLMenuElementImpl;
 
 import javax.swing.*;
 import java.awt.*;
@@ -36,8 +37,6 @@ import java.util.List;
 public class Resinet3 extends JFrame
         implements ActionListener, NetPanel.GraphChangedListener, ProbabilityCalculator.CalculationProgressListener, Constants {
 
-    private JMenuBar menuBar;
-
     public NetPanel netPanel;
 
     private JTextArea graphPanelTextArea, resultTextArea;
@@ -55,8 +54,8 @@ public class Resinet3 extends JFrame
     private JPanel sameReliabilityPanel;
     private SingleReliabilitiesPanel singleReliabilitiesPanel;
 
-    private List<JTextField> edgeProbabilityBoxes = new ArrayList<>();
-    private List<JTextField> nodeProbabilityBoxes = new ArrayList<>();
+    private final List<JTextField> edgeProbabilityBoxes = new ArrayList<>();
+    private final List<JTextField> nodeProbabilityBoxes = new ArrayList<>();
 
     private static Resinet3 mainFrame;
 
@@ -124,7 +123,7 @@ public class Resinet3 extends JFrame
      * Baut das Menü auf
      */
     private void initMenu() {
-        menuBar = new JMenuBar();
+        JMenuBar menuBar = new JMenuBar();
 
         //Menü "Datei" aufbauen
         JMenu fileMenu = new JMenu(Strings.getLocalizedString("file"));
@@ -935,8 +934,8 @@ public class Resinet3 extends JFrame
         boolean seriesValuesMissing = false;
         boolean sameReliabilityValuesMissing = false;
 
-        MyList edgesWithMissingProbability = new MyList();
-        MyList nodesWithMissingProbability = new MyList();
+        ArrayList<String> edgesWithMissingProbability = new ArrayList<>();
+        ArrayList<String> nodesWithMissingProbability = new ArrayList<>();
 
         if (sameReliabilityRadioBtn.isSelected()) {
             //Felder für die Berechnungsserien prüfen
@@ -994,20 +993,20 @@ public class Resinet3 extends JFrame
             //Dieser Block zeigt nur ein Hinweisfenster an, falls Wahrscheinlichkeiten fehlen
             //Strings für fehlende Kanten und Knoten generieren
             String missingProbabilityEdges = "";
-            if (edgesWithMissingProbability.size() != 0) {
-                MyIterator it = edgesWithMissingProbability.iterator();
-                missingProbabilityEdges = (String) it.next();
-                while (it.hasNext()) {
-                    missingProbabilityEdges += ", " + it.next();
+            for (String str : edgesWithMissingProbability) {
+                if (missingProbabilityEdges.length() == 0) {
+                    missingProbabilityEdges = str;
+                } else {
+                    missingProbabilityEdges += ", " + str;
                 }
             }
 
             String missingProbabilityNodes = "";
-            if (nodesWithMissingProbability.size() != 0) {
-                MyIterator it = nodesWithMissingProbability.iterator();
-                missingProbabilityNodes = (String) it.next();
-                while (it.hasNext()) {
-                    missingProbabilityNodes += ", " + it.next();
+            for (String str : nodesWithMissingProbability) {
+                if (missingProbabilityNodes.length() == 0) {
+                    missingProbabilityNodes = str;
+                } else {
+                    missingProbabilityNodes += ", " + str;
                 }
             }
 
@@ -1116,11 +1115,9 @@ public class Resinet3 extends JFrame
 
         //Anzahl Konnektionsknoten bestimmen
         int cNodeCount = 0;
-        MyIterator np = netPanel.drawnNodes.iterator();
-        while (np.hasNext()) {
-            NodePoint node = (NodePoint) np.next();
+        for (NodePoint node : netPanel.drawnNodes) {
             if (node.c_node)
-                cNodeCount = cNodeCount + 1;
+                cNodeCount++;
         }
 
         if (cNodeCount < 2) {
@@ -1189,29 +1186,23 @@ public class Resinet3 extends JFrame
      * @return das Graph-Objekt zum gezeichneten Graph
      */
     private Graph makeGraph() {
-        MyList nodeList = new MyList();
-        MyList edgeList = new MyList();
+        ArrayList<Node> nodeList = new ArrayList<>();
+        ArrayList<Edge> edgeList = new ArrayList<>();
 
-        MyIterator it = netPanel.drawnNodes.iterator();
         int cnt = 0;
-        while (it.hasNext()) {
-            NodePoint np = (NodePoint) it.next();
-            Node node = new Node(cnt);
-            if (np.c_node)
-                node.c_node = true;
+        for (NodePoint np : netPanel.drawnNodes) {
+            Node node = new Node(cnt, np.c_node);
             nodeList.add(node);
             cnt++;
         }
         //fertig mit dem Eintragen von Knoten
-        it = netPanel.drawnEdges.iterator();
         cnt = 0;
-        while (it.hasNext()) {
-            EdgeLine e = (EdgeLine) it.next();
+        for (EdgeLine e : netPanel.drawnEdges) {
             int m = netPanel.drawnNodes.indexOf(e.startNode);
             int n = netPanel.drawnNodes.indexOf(e.endNode);
             Edge edge = new Edge(cnt);
-            Node node1 = (Node) nodeList.get(m);
-            Node node2 = (Node) nodeList.get(n);
+            Node node1 = nodeList.get(m);
+            Node node2 = nodeList.get(n);
             edge.left_node = node1;
             edge.right_node = node2;
             edgeList.add(edge);

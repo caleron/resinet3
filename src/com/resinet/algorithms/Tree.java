@@ -1,25 +1,19 @@
 package com.resinet.algorithms;/*Tree.java*/
 
 
-import com.resinet.model.Edge;
-import com.resinet.model.Graph;
-import com.resinet.model.KTree;
-import com.resinet.model.Node;
-import com.resinet.util.MyIterator;
-import com.resinet.util.MyList;
-import com.resinet.util.MySet;
+import com.resinet.model.*;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
 
 class Tree extends Thread {
-    private Graph graph;
-    private KTree b;
-    final MyList trs;
+    private final Graph graph;
+    private final KTree b;
+    final List<HashSet<GraphElement>> trs;
     //Menge aller k-Baeume
-    private Q q;
-
-    private int ktr_i;
-    //Anzahl der K-Baeume
+    private final Q q;
 
     public boolean dead = false;
 
@@ -32,14 +26,13 @@ class Tree extends Thread {
         this.graph = graph;
         q = new Q();
         b = new KTree();
-        trs = new MyList();
+
+        trs = Collections.synchronizedList(new ArrayList<>());
         //Initialisierung
 
         Node node;
 
-        MyIterator it = this.graph.nodeList.iterator();
-        while (it.hasNext()) {
-            Node node2 = (Node) it.next();
+        for (Node node2 : this.graph.nodeList) {
             if (node2.c_node) {
                 node = node2;
                 b.add_Node(node);
@@ -48,24 +41,16 @@ class Tree extends Thread {
             }
         }
         //Ende der Initialisierung
-
-        //tree();
     }
 
     @Override
     public void run() {
         tree();
+
         dead = true;
-        //Threadwartezeit entfernt, da durch einen Kontroll-check in dem synchronized-Block der Zerlegungsthreads
-        //Deadlocks nicht mehr auftreten
-        /*try {
-            sleep(300);
-        } catch (InterruptedException ignored) {
-        }*/
         synchronized (trs) {
             trs.notifyAll();
         }
-
     }
 
 
@@ -73,9 +58,7 @@ class Tree extends Thread {
         Edge[] n = new Edge[w.degree];
         int n_i = 0;
 
-        MyIterator it = w.node_edge.iterator();
-        while (it.hasNext()) {
-            Edge edge = (Edge) it.next();
+        for (Edge edge : w.node_edge) {
             if (!edge.left_node.b_marked || !edge.right_node.b_marked) {
                 q.add(edge);
                 n[n_i] = edge;
@@ -92,12 +75,8 @@ class Tree extends Thread {
         Edge[] m = new Edge[w.degree];
         int m_i = 0;
 
-        MyIterator it = w.node_edge.iterator();
-        while (it.hasNext()) {
+        for (Edge e : w.node_edge) {
             Node n;
-            Edge e;
-
-            e = (Edge) it.next();
 
             if (e.left_node == w)
                 n = e.right_node;
@@ -148,9 +127,7 @@ class Tree extends Thread {
     private void output_ktree() {
         Edge e = b.first_br;
 
-        ktr_i++;
-
-        MySet ktree = new MySet();
+        HashSet<GraphElement> ktree = new HashSet<>();
         while (e != null) {
             if (!e.useless) {
                 ktree.add(e);
@@ -163,14 +140,12 @@ class Tree extends Thread {
         ArrayList<Node> consideredNodes = new ArrayList<>();
 
         //Eine flache Kopie des Baumes, durch die hindurchiteriert werden kann, da ktree um die Knoten erweitert wird.
-        MySet treeCopy = (MySet) ktree.clone();
+        HashSet<Edge> treeCopy = (HashSet) ktree.clone();
 
-        MyIterator it = treeCopy.iterator();
         //String output = "Pfad";
-        while (it.hasNext()) {
+        for (Edge edge : treeCopy) {
             //Prüft bei jeder Kante des Pfades für den linken und den rechten Knoten jeweils, ob er schon
             //zur Menge ktree hinzugefügt wurde, und fügt den Knoten hinzu, falls er noch nicht in der Menge ist.
-            Edge edge = (Edge) it.next();
             //output += " e" + edge.edge_no;
 
             if (!consideredNodes.contains(edge.left_node)) {
@@ -196,13 +171,10 @@ class Tree extends Thread {
     }
 
     private void tree_search(Node node, Edge edge) {
-        Edge e;
         Node n;
         boolean bl = true;
 
-        MyIterator it = node.node_edge.iterator();
-        while (it.hasNext()) {
-            e = (Edge) it.next();
+        for (Edge e : node.node_edge) {
             if (!e.b_marked)
                 continue;
             if (e == edge)

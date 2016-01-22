@@ -8,8 +8,8 @@ import java.awt.*;
  */
 public class SingleReliabilityPanel extends JPanel {
 
-    private JTextField textField;
-    private boolean isNode;
+    private final JTextField textField;
+    private final boolean isNode;
 
     /**
      * Die bevorzugte Breite

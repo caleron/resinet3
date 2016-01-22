@@ -5,25 +5,25 @@ import com.resinet.model.Edge;
 import com.resinet.model.Graph;
 import com.resinet.model.Node;
 import com.resinet.util.Constants;
-import com.resinet.util.MyList;
 import org.junit.Before;
 import org.junit.Test;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
 
 import static org.junit.Assert.assertEquals;
 
 public class ProbabilityCalculatorTest implements Constants {
-    Graph graph;
+    private Graph graph;
 
-    public static final int calculatedValuesScale = 15;
-    public static final int otherValuesScale = 6;
+    private static final int calculatedValuesScale = 15;
+    private static final int otherValuesScale = 6;
 
     @Before
     public void setUp() {
         //Brückennetzwerk erstellen
-        MyList nodeList = new MyList();
-        MyList edgeList = new MyList();
+        ArrayList<Node> nodeList = new ArrayList<>();
+        ArrayList<Edge> edgeList = new ArrayList<>();
         Node node0 = new Node(0, true);
         Node node1 = new Node(1, false);
         Node node2 = new Node(2, true);
