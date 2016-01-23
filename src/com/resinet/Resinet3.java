@@ -73,13 +73,22 @@ public class Resinet3 extends JFrame
         init();
     }
 
+    /**
+     * Methode, die zum Start des Programms aufgerufen wird
+     *
+     * @param args Argumente
+     */
     public static void main(String[] args) {
         SwingUtilities.invokeLater(() -> {
             mainFrame = new Resinet3();
-            mainFrame.pack();
+
+            //Größe und minimale Größe setzen
             mainFrame.setSize(700, 825);
             mainFrame.setMinimumSize(new Dimension(600, 700));
+
             mainFrame.setTitle(Strings.getLocalizedString("title"));
+
+            //Fenster auf dem Bildschirm zentrieren und sichtbar machen
             mainFrame.setLocationRelativeTo(null);
             mainFrame.setVisible(true);
         });
@@ -115,7 +124,6 @@ public class Resinet3 extends JFrame
     }
 
     //TODO weitere Funktionen auslagern, wie Überprüfung des Graphen
-    //TODO Logo entfernen und Menü hinzufügen
     //TODO beim Speichern vom Graphen "weiße Flächen" an den Rändern entfernen
     //TODO Zuletzt geöffnet-Liste, Graph generieren, Serienparallelreduktion, neues GUI-Layout mit größerer Zeichenfläche
 
@@ -290,9 +298,9 @@ public class Resinet3 extends JFrame
                 setComponentReliabilityMode(true);
             }
         });
+
         //Panel mit Wahrscheinlichkeitstextfeldern
-        //probabilityFieldsPanel = new JPanel();
-        probabilityFieldsScrollPane = new JScrollPane();//probabilityFieldsPanel);
+        probabilityFieldsScrollPane = new JScrollPane();
         probabilityFieldsScrollPane.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
         probabilityFieldsScrollPane.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED);
         probabilityFieldsScrollPane.getVerticalScrollBar().setUnitIncrement(10);
@@ -380,11 +388,9 @@ public class Resinet3 extends JFrame
 
         //Einzelwahrscheinlichkeiten für die Komponenten
         singleReliabilitiesPanel = new SingleReliabilitiesPanel();
-        //singleReliabilitiesPanel.setPreferredSize(probabilityFieldsScrollPane.getSize());
 
         //Mit Modus für gleiche Komponentenwahrscheinlichkeiten initialisieren
         setComponentReliabilityMode(true);
-
     }
 
     /**
@@ -685,8 +691,7 @@ public class Resinet3 extends JFrame
             return;
         }
         calculationProgressBar.setValue(currentStep);
-        //Damit lässt sich der Text auf der Progressbar ändern (für später)
-        //calculationProgressBar.setString("");
+
         setResultText(MessageFormat.format(Strings.getLocalizedString("calculation.progress"), currentStep, calculationProgressBar.getMaximum()));
     }
 
@@ -738,6 +743,8 @@ public class Resinet3 extends JFrame
         if ((!isNode && !considerEdgeSingleReliabilities) || (isNode && !considerNodeSingleReliabilities))
             return;
 
+        //Feld nur hinzufügen, falls der Einzelzuverlässigkeitsmodus aktiv ist und die Komponente berücksichtigt werden soll
+
         addFieldToProbPanel(number, isNode);
 
         refreshSingleReliabilityScrollPane();
@@ -765,7 +772,7 @@ public class Resinet3 extends JFrame
             list.get(i).setText(list.get(i + 1).getText());
         }
 
-        //Letztes Element entfernen
+        //Letztes Element aus Liste und aus GUI entfernen
         JTextField textField = list.get(list.size() - 1);
         textField.getParent().getParent().remove(textField.getParent());
         list.remove(textField);
@@ -855,9 +862,11 @@ public class Resinet3 extends JFrame
         SingleReliabilityPanel newPanel = new SingleReliabilityPanel(isNodeProb, number);
 
         if (isNodeProb) {
+            //Falls es ein Knoten ist, einfach am Ende hinzufügen
             nodeProbabilityBoxes.add(newPanel.getTextField());
             singleReliabilitiesPanel.add(newPanel);
         } else {
+            //Falls es eine Kante ist
             edgeProbabilityBoxes.add(newPanel.getTextField());
 
             //Vor dem ersten Knotenzuverlässigkeitsfeld einfügen, falls es dieses gibt
@@ -873,6 +882,7 @@ public class Resinet3 extends JFrame
                 }
                 singleReliabilitiesPanel.add(newPanel, insertPosition);
             } else {
+                //Sonst auch am Ende einfügen
                 singleReliabilitiesPanel.add(newPanel);
             }
         }

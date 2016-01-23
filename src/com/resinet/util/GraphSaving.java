@@ -44,11 +44,11 @@ public final class GraphSaving {
     public static void inputNet(Resinet3 resinet3, NetPanel netPanel) {
         //Dialog zum Datei auswählen
         JFileChooser chooseFile = new JFileChooser();
-        chooseFile.setDialogTitle("Open File");
+        chooseFile.setDialogTitle(Strings.getLocalizedString("open.file"));
 
         //Dateifilter für Resinet- und Pajek-Netzwerke einfpgen
-        FileNameExtensionFilter resinetFilter = new FileNameExtensionFilter("ResiNeTV-Networks", "resinet");
-        FileNameExtensionFilter pajekFilter = new FileNameExtensionFilter("Pajek-Networks", "txt", "net");
+        FileNameExtensionFilter resinetFilter = new FileNameExtensionFilter(Strings.getLocalizedString("resinetv.networks"), "resinet");
+        FileNameExtensionFilter pajekFilter = new FileNameExtensionFilter(Strings.getLocalizedString("pajek.networks"), "txt", "net");
         chooseFile.setFileFilter(resinetFilter);
         chooseFile.addChoosableFileFilter(pajekFilter);
 
@@ -69,7 +69,7 @@ public final class GraphSaving {
             readPajekNetwork(netFile, netPanel);
             resinet3.updateSingleReliabilityProbPanel();
         } else {
-            JOptionPane.showMessageDialog(resinet3, "Your selected File has no known extension.", "Failed", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(resinet3, Strings.getLocalizedString("selected.file.hash.unknown.extension"), Strings.getLocalizedString("failed"), JOptionPane.ERROR_MESSAGE);
         }
     }
 
@@ -185,6 +185,9 @@ public final class GraphSaving {
         ArrayList<NodePoint> drawnNodes = resinet3.netPanel.drawnNodes;
         ArrayList<EdgeLine> drawnEdges = resinet3.netPanel.drawnEdges;
 
+        Integer netPanelWidth = resinet3.netPanel.getWidth();
+        Integer netPanelHeight = resinet3.netPanel.getHeight();
+
         try {
             DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
             DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
@@ -193,8 +196,20 @@ public final class GraphSaving {
             //Normalisieren (hier wahrscheinlich unnötig, aber kann Fehler vermeiden)
             doc.getDocumentElement().normalize();
 
+            //Größe des Graphen einlesen
+            NodeList nodeList = doc.getElementsByTagName("size");
+            Node sizeNode = nodeList.item(0);
+            Element sizeNodeElement = (Element) sizeNode;
+
+            Integer graphWidth = Integer.valueOf(sizeNodeElement.getAttribute("width"));
+            Integer graphHeight = Integer.valueOf(sizeNodeElement.getAttribute("height"));
+
+            //Offsets bestimmen, damit der Graph zentriert wird
+            Integer offsetX = (netPanelWidth - graphWidth) / 2;
+            Integer offsetY = (netPanelHeight - graphHeight) / 2;
+
             //Knotern einlesen
-            NodeList nodeList = doc.getElementsByTagName("node");
+            nodeList = doc.getElementsByTagName("node");
             for (Integer i = 0; i < nodeList.getLength(); i++) {
                 Node node = nodeList.item(i);
 
@@ -202,8 +217,8 @@ public final class GraphSaving {
                     Element nodeElement = (Element) node;
                     //Nummer und Koordinaten einlesen
                     Integer position = Integer.parseInt(nodeElement.getAttribute("node_number"));
-                    int x = Integer.parseInt(nodeElement.getAttribute("x"));
-                    int y = Integer.parseInt(nodeElement.getAttribute("y"));
+                    int x = Integer.parseInt(nodeElement.getAttribute("x")) + offsetX;
+                    int y = Integer.parseInt(nodeElement.getAttribute("y")) + offsetY;
                     boolean c_node = Boolean.parseBoolean(nodeElement.getAttribute("c_node"));
 
                     NodePoint np = new NodePoint(x, y, c_node);
@@ -325,9 +340,9 @@ public final class GraphSaving {
      */
     private static void inputError(Component parentComponent) {
         //Error-Popup ausgeben
-        String str = "Your input was invalid! Please choose a valid file created by Pajek or ResiNeT.";
+        String str = Strings.getLocalizedString("invalid.selected.file");
 
-        JOptionPane.showMessageDialog(parentComponent, str, "Error!", JOptionPane.ERROR_MESSAGE);
+        JOptionPane.showMessageDialog(parentComponent, str, Strings.getLocalizedString("error"), JOptionPane.ERROR_MESSAGE);
     }
 
     /**
@@ -342,11 +357,11 @@ public final class GraphSaving {
         chooseSaveFile.setDialogType(JFileChooser.SAVE_DIALOG);
 
         //Speichern in zwei Formaten anbieten
-        FileNameExtensionFilter pajekFilter = new FileNameExtensionFilter("Pajek-Networks", "net");
-        FileNameExtensionFilter resinetvFilter = new FileNameExtensionFilter("ResiNeTV-Networks with Reliabilities", "resinet");
+        FileNameExtensionFilter pajekFilter = new FileNameExtensionFilter(Strings.getLocalizedString("pajek.networks"), "net");
+        FileNameExtensionFilter resinetvFilter = new FileNameExtensionFilter(Strings.getLocalizedString("resinetv.networks"), "resinet");
         chooseSaveFile.setFileFilter(resinetvFilter);
         chooseSaveFile.addChoosableFileFilter(pajekFilter);
-        chooseSaveFile.setDialogTitle("Save network as...");
+        chooseSaveFile.setDialogTitle(Strings.getLocalizedString("save.network.as"));
         chooseSaveFile.setSelectedFile(new File("myNetwork.resinet"));
 
         File saveNetFile;
@@ -471,10 +486,10 @@ public final class GraphSaving {
             }
             writer.close();
 
-            JOptionPane.showMessageDialog(netPanel, "Successfully saved.");
+            JOptionPane.showMessageDialog(netPanel, Strings.getLocalizedString("successfully.saved"));
         } catch (IOException e) {
             e.printStackTrace();
-            JOptionPane.showMessageDialog(netPanel, "Saving failed!", "Error", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(netPanel, Strings.getLocalizedString("saving.failed"), Strings.getLocalizedString("error"), JOptionPane.ERROR_MESSAGE);
         }
     }
 
@@ -492,9 +507,8 @@ public final class GraphSaving {
             //Fragen, ob dann nur der Graph gespeichert werden soll
 
             int dialogResult = JOptionPane.showConfirmDialog(resinet3,
-                    "Not all necessary input values are given to save the graph with reliability.\n Only save the graph? " +
-                            "Otherwise saving will be cancelled."
-                    , "Save only Graph?", JOptionPane.OK_CANCEL_OPTION);
+                    Strings.getLocalizedString("values.missing.for.saving.text")
+                    , Strings.getLocalizedString("save.only.graph"), JOptionPane.OK_CANCEL_OPTION);
 
             if (dialogResult == JOptionPane.CANCEL_OPTION) {
                 return;
@@ -517,17 +531,32 @@ public final class GraphSaving {
              * Das heißt, dass alle Elemente um x nach links und y nach oben verschoben werden, damit der Graph nach
              * dem Laden richtig zentriert werden kann.
              */
-            //TODO realisieren
-            /*int offsetX = Integer.MAX_VALUE, offsetY = Integer.MAX_VALUE;
-            for (Integer i = 0; i < drawnNodes.size(); i++) {
-                if (((NodePoint) drawnNodes.get(i)).getX() < offsetX) {
-                    offsetX = (int) ((NodePoint) drawnNodes.get(i)).getX();
-                }
+            int offsetX = Integer.MAX_VALUE, offsetY = Integer.MAX_VALUE;
+            int maxX = 0, maxY = 0;
 
-                if (((NodePoint) drawnNodes.get(i)).getY() < offsetY) {
-                    offsetY = (int) ((NodePoint) drawnNodes.get(i)).getY();
+            for (NodePoint drawnNode : drawnNodes) {
+                if (drawnNode.getX() < offsetX) {
+                    offsetX = (int) drawnNode.getX();
                 }
-            }*/
+                if (drawnNode.getMaxX() > maxX) {
+                    maxX = (int) drawnNode.getMaxX();
+                }
+                if (drawnNode.getY() < offsetY) {
+                    offsetY = (int) drawnNode.getY();
+                }
+                if (drawnNode.getMaxY() > maxY) {
+                    maxY = (int) drawnNode.getMaxY();
+                }
+            }
+            //Breite und Höhe des Graphen bestimmen
+            Integer graphWidth = maxX - offsetX;
+            Integer graphHeight = maxY - offsetY;
+
+            //Breite und Höhe schreiben
+            Element sizeNode = doc.createElement("size");
+            sizeNode.setAttribute("width", graphWidth.toString());
+            sizeNode.setAttribute("height", graphHeight.toString());
+            rootElement.appendChild(sizeNode);
 
             //Knoten schreiben
             for (Integer i = 0; i < drawnNodes.size(); i++) {
@@ -535,8 +564,8 @@ public final class GraphSaving {
 
                 Element node = doc.createElement("node");
                 node.setAttribute("node_number", i.toString());
-                node.setAttribute("x", Integer.toString((int) graphNode.x));
-                node.setAttribute("y", Integer.toString((int) graphNode.y));
+                node.setAttribute("x", Integer.toString((int) graphNode.x - offsetX));
+                node.setAttribute("y", Integer.toString((int) graphNode.y - offsetY));
                 node.setAttribute("c_node", Boolean.toString(graphNode.c_node));
 
                 rootElement.appendChild(node);
@@ -627,11 +656,11 @@ public final class GraphSaving {
             StreamResult result = new StreamResult(new File(path));
 
             transformer.transform(source, result);
-            JOptionPane.showMessageDialog(resinet3, "Successfully saved.");
+            JOptionPane.showMessageDialog(resinet3, Strings.getLocalizedString("successfully.saved"));
 
         } catch (ParserConfigurationException | TransformerException e) {
             e.printStackTrace();
-            JOptionPane.showMessageDialog(resinet3, "Saving failed!", "Error", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(resinet3, Strings.getLocalizedString("saving.failed"), Strings.getLocalizedString("error"), JOptionPane.ERROR_MESSAGE);
         }
 
     }
