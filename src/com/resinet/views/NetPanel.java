@@ -67,6 +67,15 @@ public class NetPanel extends JPanel {
         //Hintergrund zeichnen
         imgGraphics.fillRect(0, 0, getWidth(), getHeight());
 
+        //Kanten zeichnen
+        imgGraphics.setColor(Color.black);
+
+        for (EdgeLine  edgeLine : drawnEdges) {
+            imgGraphics.draw(edgeLine);
+            String s = String.valueOf(drawnEdges.indexOf(edgeLine));
+            imgGraphics.drawString(s, (float) edgeLine.textPositionX, (float) edgeLine.textPositionY);
+        }
+
         //Knoten zeichnen
         int count = 0;
         for (NodePoint nodePoint : drawnNodes) {
@@ -77,6 +86,9 @@ public class NetPanel extends JPanel {
                 //Textfarbe weiß, da jetzt Hintergrund schwarz ist
                 imgGraphics.setColor(Color.white);
             } else {
+                imgGraphics.setColor(Color.white);
+                imgGraphics.fill(nodePoint);
+                imgGraphics.setColor(Color.black);
                 imgGraphics.draw(nodePoint);
             }
             //Zahl im Knoten zeichnen
@@ -87,18 +99,13 @@ public class NetPanel extends JPanel {
                 imgGraphics.drawString(s, (float) nodePoint.getX() + 3, (float) nodePoint.getY() + 15);
             count++;
         }
-        //Kanten zeichnen
-        imgGraphics.setColor(Color.black);
-
-        for (EdgeLine  edgeLine : drawnEdges) {
-            imgGraphics.draw(edgeLine);
-            String s = String.valueOf(drawnEdges.indexOf(edgeLine));
-            imgGraphics.drawString(s, (float) edgeLine.textPositionX, (float) edgeLine.textPositionY);
-        }
 
         //Linie während des Kantenziehens zeichnen
-        if (lineDragging)
+        if (lineDragging) {
+            imgGraphics.setColor(Color.BLACK);
             imgGraphics.draw(draggingLine);
+        }
+
 
         g.drawImage(img, 0, 0, this);
     }
