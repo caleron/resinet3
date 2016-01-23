@@ -67,7 +67,8 @@ public class NetPanel extends JPanel {
         //Hintergrund zeichnen
         imgGraphics.fillRect(0, 0, getWidth(), getHeight());
 
-        //Kanten zeichnen
+        //erst Kanten zeichnen, damit danach das Stück im inneren der Knoten überschrieben werden kann
+        // und die Kanten demzufolge nur bis zu den Rändern der Knoten gehen
         imgGraphics.setColor(Color.black);
 
         for (EdgeLine  edgeLine : drawnEdges) {
@@ -86,6 +87,7 @@ public class NetPanel extends JPanel {
                 //Textfarbe weiß, da jetzt Hintergrund schwarz ist
                 imgGraphics.setColor(Color.white);
             } else {
+                //Kreis erst weiß ausfüllen, damit die Kanten dadrin überschrieben werden
                 imgGraphics.setColor(Color.white);
                 imgGraphics.fill(nodePoint);
                 imgGraphics.setColor(Color.black);
@@ -105,7 +107,6 @@ public class NetPanel extends JPanel {
             imgGraphics.setColor(Color.BLACK);
             imgGraphics.draw(draggingLine);
         }
-
 
         g.drawImage(img, 0, 0, this);
     }

@@ -124,7 +124,6 @@ public class Resinet3 extends JFrame
     }
 
     //TODO weitere Funktionen auslagern, wie Überprüfung des Graphen
-    //TODO beim Speichern vom Graphen "weiße Flächen" an den Rändern entfernen
     //TODO Zuletzt geöffnet-Liste, Graph generieren, Serienparallelreduktion, neues GUI-Layout mit größerer Zeichenfläche
 
     /**
@@ -1153,41 +1152,8 @@ public class Resinet3 extends JFrame
      * @param str der zu überprüfende String
      * @return Boolean, ob der Text eine Wahrscheinlichkeit ist
      */
-    private boolean textIsNotProbability(String str) {
-        boolean isProbability = true;
-        boolean temp = false;
-        if (str.length() == 0)
-            isProbability = false;
-        for (int i = 0; i < str.length(); i++) {
-            char c = str.charAt(i);
-
-            if (i == 0 && c != '0') {
-                if (c != '1') {
-                    isProbability = false;
-                    break;
-                } else {
-                    temp = true;
-                    continue;
-                }
-            }
-            if (i == 1) {
-                if (c != '.') {
-                    isProbability = false;
-                    break;
-                }
-                continue;
-            }
-            if (!Character.isDigit(c)) {
-                isProbability = false;
-                break;
-            } else {
-                if (temp && c != '0') {
-                    isProbability = false;
-                    break;
-                }
-            }
-        }
-        return !isProbability;
+    static boolean textIsNotProbability(String str) {
+        return !str.matches("1(\\.0+)?|0(\\.\\d+)?");
     }
 
     /**
