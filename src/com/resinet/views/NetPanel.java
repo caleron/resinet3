@@ -1,13 +1,14 @@
 package com.resinet.views;
 
+import com.resinet.model.EdgeLine;
+import com.resinet.model.NodePoint;
+import com.resinet.util.GraphUtil;
+
+import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
-
-import com.resinet.model.*;
-
-import javax.swing.*;
 
 public class NetPanel extends JPanel {
     private final GraphChangedListener listener;
@@ -26,7 +27,11 @@ public class NetPanel extends JPanel {
     public boolean nodeClickable = true;
     public boolean edgeClickable = true;
 
+    private boolean centerGraphOnNextPaint = false;
+
     private final Cursor switchCursor, deleteCursor;
+
+    private Integer lastPaintWidth = 0, lastPaintHeight = 0;
 
 
     public NetPanel(GraphChangedListener listener) {
@@ -48,6 +53,8 @@ public class NetPanel extends JPanel {
          */
         setFocusable(true);
 
+        setOpaque(true);
+
         //Eigene Cursor initialisieren
         Image switchCursorImage = getToolkit().getImage(ClassLoader.getSystemResource("com/resinet/img/cursor_state_switch.png"));
         Image deleteCursorImage = getToolkit().getImage(ClassLoader.getSystemResource("com/resinet/img/cursor_delete.png"));
@@ -58,20 +65,22 @@ public class NetPanel extends JPanel {
 
     @Override
     public void paintComponent(Graphics g) {
-        BufferedImage img = new BufferedImage(getWidth(), getHeight(), BufferedImage.TYPE_INT_RGB);
+        centerGraphIfResized();
+
+        BufferedImage img = new BufferedImage(lastPaintWidth, lastPaintHeight, BufferedImage.TYPE_INT_RGB);
         Graphics2D imgGraphics = img.createGraphics();
         //Kantenglättung aktivieren
         imgGraphics.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 
         imgGraphics.setColor(Color.WHITE);
         //Hintergrund zeichnen
-        imgGraphics.fillRect(0, 0, getWidth(), getHeight());
+        imgGraphics.fillRect(0, 0, lastPaintWidth, lastPaintHeight);
 
         //erst Kanten zeichnen, damit danach das Stück im inneren der Knoten überschrieben werden kann
         // und die Kanten demzufolge nur bis zu den Rändern der Knoten gehen
         imgGraphics.setColor(Color.black);
 
-        for (EdgeLine  edgeLine : drawnEdges) {
+        for (EdgeLine edgeLine : drawnEdges) {
             imgGraphics.draw(edgeLine);
             String s = String.valueOf(drawnEdges.indexOf(edgeLine));
             imgGraphics.drawString(s, (float) edgeLine.textPositionX, (float) edgeLine.textPositionY);
@@ -109,6 +118,51 @@ public class NetPanel extends JPanel {
         }
 
         g.drawImage(img, 0, 0, this);
+    }
+
+    private void centerGraphIfResized() {
+        //Wenn die Größe des Panels geändert wurde, Graph neu zentrieren
+        if (lastPaintWidth != getWidth() || lastPaintHeight != getHeight() || centerGraphOnNextPaint) {
+            centerGraphOnNextPaint = false;
+            lastPaintHeight = getHeight();
+            lastPaintWidth = getWidth();
+            Rectangle graphRect = GraphUtil.getGraphBounds(drawnNodes);
+
+            Integer offsetX, offsetY;
+
+            if (graphRect.getX() < 0) {
+                offsetX = Math.abs(((int) graphRect.getX()));
+            } else {
+                offsetX = (int) ((lastPaintWidth - graphRect.getWidth()) / 2 - graphRect.getX());
+            }
+            if (graphRect.getX() + offsetX < 0) {
+                offsetX = -((int) graphRect.getX());
+            }
+
+            if (graphRect.getY() < 0) {
+                offsetY = Math.abs((int) graphRect.getY());
+            } else {
+                offsetY = (int) ((lastPaintHeight - graphRect.getHeight()) / 2 - graphRect.getY());
+            }
+            if (graphRect.getY() + offsetY < 0) {
+                offsetY = -((int) graphRect.getY());
+            }
+
+
+            for (NodePoint node : drawnNodes) {
+                node.x += offsetX;
+                node.y += offsetY;
+            }
+
+            drawnEdges.forEach(EdgeLine::refresh);
+        }
+    }
+
+    /**
+     * Setzt die Flag, dass beim nächsten Zeichnen der Graph zentriert wird
+     */
+    public void centerGraphOnNextPaint() {
+        centerGraphOnNextPaint = true;
     }
 
     /**

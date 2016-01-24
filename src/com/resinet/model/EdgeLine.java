@@ -31,11 +31,6 @@ public class EdgeLine extends Line2D.Double {
      */
     public EdgeLine(NodePoint startNode, NodePoint endNode) {
         super();
-        if (endNode != null) {
-            setLine(startNode.x + 10, startNode.y + 10, endNode.x + 10, endNode.y + 10);
-        } else {
-            setLine(startNode.x + 10, startNode.y + 10, 0, 0);
-        }
         this.startNode = startNode;
         this.endNode = endNode;
         refresh();
@@ -56,7 +51,12 @@ public class EdgeLine extends Line2D.Double {
     /**
      * Setzt die Beschriftungstextposition
      */
-    private void refresh() {
+    public void refresh() {
+        if (endNode != null) {
+            setLine(startNode.x + 10, startNode.y + 10, endNode.x + 10, endNode.y + 10);
+        } else {
+            setLine(startNode.x + 10, startNode.y + 10, 0, 0);
+        }
         double relativeX = getX2() - getX1();
         double relativeY = getY2() - getY1();
         textPositionX = getX2() - relativeX / 2;

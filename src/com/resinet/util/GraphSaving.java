@@ -22,6 +22,7 @@ import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 import java.awt.*;
+import java.awt.geom.Rectangle2D;
 import java.io.*;
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -85,7 +86,10 @@ public final class GraphSaving {
         } else {
             JOptionPane.showMessageDialog(resinet3, Strings.getLocalizedString("selected.file.hash.unknown.extension"), Strings.getLocalizedString("failed"), JOptionPane.ERROR_MESSAGE);
         }
-        resinet3.netPanel.updateUI();
+        SwingUtilities.invokeLater(() -> {
+            resinet3.netPanel.centerGraphOnNextPaint();
+            resinet3.netPanel.repaint();
+        });
     }
 
     /**
@@ -208,20 +212,8 @@ public final class GraphSaving {
             //Normalisieren (hier wahrscheinlich unnötig, aber kann Fehler vermeiden)
             doc.getDocumentElement().normalize();
 
-            //Größe des Graphen einlesen
-            NodeList nodeList = doc.getElementsByTagName("size");
-            Node sizeNode = nodeList.item(0);
-            Element sizeNodeElement = (Element) sizeNode;
-
-            Integer graphWidth = Integer.valueOf(sizeNodeElement.getAttribute("width"));
-            Integer graphHeight = Integer.valueOf(sizeNodeElement.getAttribute("height"));
-
-            //Offsets bestimmen, damit der Graph zentriert wird
-            Integer offsetX = (width - graphWidth) / 2;
-            Integer offsetY = (height - graphHeight) / 2;
-
             //Knotern einlesen
-            nodeList = doc.getElementsByTagName("node");
+            NodeList nodeList = doc.getElementsByTagName("node");
             for (Integer i = 0; i < nodeList.getLength(); i++) {
                 Node node = nodeList.item(i);
 
@@ -229,8 +221,8 @@ public final class GraphSaving {
                     Element nodeElement = (Element) node;
                     //Nummer und Koordinaten einlesen
                     Integer position = Integer.parseInt(nodeElement.getAttribute("node_number"));
-                    int x = Integer.parseInt(nodeElement.getAttribute("x")) + offsetX;
-                    int y = Integer.parseInt(nodeElement.getAttribute("y")) + offsetY;
+                    int x = Integer.parseInt(nodeElement.getAttribute("x"));
+                    int y = Integer.parseInt(nodeElement.getAttribute("y"));
                     boolean c_node = Boolean.parseBoolean(nodeElement.getAttribute("c_node"));
 
                     NodePoint np = new NodePoint(x, y, c_node);
@@ -544,31 +536,12 @@ public final class GraphSaving {
              * Das heißt, dass alle Elemente um x nach links und y nach oben verschoben werden, damit der Graph nach
              * dem Laden richtig zentriert werden kann.
              */
-            int offsetX = Integer.MAX_VALUE, offsetY = Integer.MAX_VALUE;
-            int maxX = 0, maxY = 0;
-
-            for (NodePoint drawnNode : drawnNodes) {
-                if (drawnNode.getX() < offsetX) {
-                    offsetX = (int) drawnNode.getX();
-                }
-                if (drawnNode.getMaxX() > maxX) {
-                    maxX = (int) drawnNode.getMaxX();
-                }
-                if (drawnNode.getY() < offsetY) {
-                    offsetY = (int) drawnNode.getY();
-                }
-                if (drawnNode.getMaxY() > maxY) {
-                    maxY = (int) drawnNode.getMaxY();
-                }
-            }
-            //Breite und Höhe des Graphen bestimmen
-            Integer graphWidth = maxX - offsetX;
-            Integer graphHeight = maxY - offsetY;
+            Rectangle graphRect = GraphUtil.getGraphBounds(drawnNodes);
 
             //Breite und Höhe schreiben
             Element sizeNode = doc.createElement("size");
-            sizeNode.setAttribute("width", graphWidth.toString());
-            sizeNode.setAttribute("height", graphHeight.toString());
+            sizeNode.setAttribute("width", Integer.toString((int) graphRect.getWidth()));
+            sizeNode.setAttribute("height", Integer.toString((int) graphRect.getHeight()));
             rootElement.appendChild(sizeNode);
 
             //Knoten schreiben
@@ -577,8 +550,8 @@ public final class GraphSaving {
 
                 Element node = doc.createElement("node");
                 node.setAttribute("node_number", i.toString());
-                node.setAttribute("x", Integer.toString((int) graphNode.x - offsetX));
-                node.setAttribute("y", Integer.toString((int) graphNode.y - offsetY));
+                node.setAttribute("x", Integer.toString((int) (graphNode.x - graphRect.getX())));
+                node.setAttribute("y", Integer.toString((int) (graphNode.y - graphRect.getY())));
                 node.setAttribute("c_node", Boolean.toString(graphNode.c_node));
 
                 rootElement.appendChild(node);

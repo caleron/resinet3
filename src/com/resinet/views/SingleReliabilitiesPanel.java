@@ -61,6 +61,7 @@ public class SingleReliabilitiesPanel extends JPanel {
 
         @Override
         public void ancestorRemoved(AncestorEvent event) {
+            getParent().removeComponentListener(resizeListener);
         }
 
         @Override
