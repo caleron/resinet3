@@ -61,16 +61,31 @@ public final class GraphSaving {
             return;
         }
 
+        /**
+         * Dieser Workaround ist nötig, da Höhe und Breite des NetPanels 0 sind, wenn es noch nicht gezeichnet wurde.
+         * Dies passiert etwa, wenn man direkt nach dem Start den Graphen lädt.
+         * Die Dimensionen des Textfeldes sollten dann denen des NetPanels nahe genug sein.
+         */
+        int width, height;
+        if (netPanel.getHeight() > 0 && netPanel.getWidth() > 0) {
+            width = netPanel.getWidth();
+            height = netPanel.getHeight();
+        } else {
+            width = resinet3.graphPanelTextArea.getWidth();
+            height = resinet3.graphPanelTextArea.getHeight();
+        }
+
         resinet3.resetGraph();
 
         if (resinetFilter.accept(netFile)) {
-            readResinetNetwork(netFile, resinet3);
+            readResinetNetwork(netFile, resinet3, width, height);
         } else if (pajekFilter.accept(netFile)) {
-            readPajekNetwork(netFile, netPanel);
+            readPajekNetwork(netFile, netPanel, width, height);
             resinet3.updateSingleReliabilityProbPanel();
         } else {
             JOptionPane.showMessageDialog(resinet3, Strings.getLocalizedString("selected.file.hash.unknown.extension"), Strings.getLocalizedString("failed"), JOptionPane.ERROR_MESSAGE);
         }
+        resinet3.netPanel.updateUI();
     }
 
     /**
@@ -79,7 +94,7 @@ public final class GraphSaving {
      * @param netFile  Die Pajek-Netzwerk-Datei
      * @param netPanel Das NetPanel
      */
-    private static void readPajekNetwork(File netFile, NetPanel netPanel) {
+    private static void readPajekNetwork(File netFile, NetPanel netPanel, int width, int height) {
 
         //Ab hier zeilenweises Einlesen der ausgewählten Datei
         String actRow;
@@ -96,8 +111,8 @@ public final class GraphSaving {
             actRow = lineReader.readLine();
             actRow = actRow.substring(10);
             int nodesCount = Integer.parseInt(actRow);
-            int panelHeight = netPanel.getHeight() - 20;
-            int panelWidth = netPanel.getWidth() - 20;
+            int panelHeight = height - 20;
+            int panelWidth = width - 20;
 
             //Erzeuge Knoten
             for (int i = 0; i < nodesCount; i++) {
@@ -181,12 +196,9 @@ public final class GraphSaving {
      * @param netFile  Die Resinet-Netzwerk-Datei
      * @param resinet3 Das Hauptfenster
      */
-    private static void readResinetNetwork(File netFile, Resinet3 resinet3) {
+    private static void readResinetNetwork(File netFile, Resinet3 resinet3, int width, int height) {
         ArrayList<NodePoint> drawnNodes = resinet3.netPanel.drawnNodes;
         ArrayList<EdgeLine> drawnEdges = resinet3.netPanel.drawnEdges;
-
-        Integer netPanelWidth = resinet3.netPanel.getWidth();
-        Integer netPanelHeight = resinet3.netPanel.getHeight();
 
         try {
             DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
@@ -205,8 +217,8 @@ public final class GraphSaving {
             Integer graphHeight = Integer.valueOf(sizeNodeElement.getAttribute("height"));
 
             //Offsets bestimmen, damit der Graph zentriert wird
-            Integer offsetX = (netPanelWidth - graphWidth) / 2;
-            Integer offsetY = (netPanelHeight - graphHeight) / 2;
+            Integer offsetX = (width - graphWidth) / 2;
+            Integer offsetY = (height - graphHeight) / 2;
 
             //Knotern einlesen
             nodeList = doc.getElementsByTagName("node");
@@ -500,19 +512,20 @@ public final class GraphSaving {
      * @param resinet3 Das Hauptfenster
      */
     private static void writeResinetNetwork(String path, Resinet3 resinet3) {
-        CalculationParams params = resinet3.buildCalculationParams(null, true);
+        CalculationParams params = null;
+        try {
+            params = resinet3.buildCalculationParams(null, true);
+        } catch (Exception ignored) {
+        }
 
         if (params == null) {
-            //Voraussetzungen zum Berechnen sind nicht erfüllt
-            //Fragen, ob dann nur der Graph gespeichert werden soll
+            //Voraussetzungen zum Speichern sind nicht erfüllt --> Abbruch
 
-            int dialogResult = JOptionPane.showConfirmDialog(resinet3,
+            JOptionPane.showConfirmDialog(resinet3,
                     Strings.getLocalizedString("values.missing.for.saving.text")
-                    , Strings.getLocalizedString("save.only.graph"), JOptionPane.OK_CANCEL_OPTION);
+                    , Strings.getLocalizedString("error"), JOptionPane.OK_OPTION);
 
-            if (dialogResult == JOptionPane.CANCEL_OPTION) {
-                return;
-            }
+            return;
         }
 
         ArrayList<NodePoint> drawnNodes = resinet3.netPanel.drawnNodes;
@@ -584,68 +597,65 @@ public final class GraphSaving {
                 rootElement.appendChild(edge);
             }
 
-            //Wahrscheinlichkeiten nur ausfüllen, wenn alle Felder zur Berechnung ausgefüllt wurden
-            if (params != null) {
-                //Wahrscheinlichkeiten schreiben
-                Element reliabilityMode = doc.createElement("reliabilityMode");
-                reliabilityMode.setAttribute("same_reliability", Boolean.toString(params.sameReliabilityMode));
-                rootElement.appendChild(reliabilityMode);
+            //Wahrscheinlichkeiten schreiben
+            Element reliabilityMode = doc.createElement("reliabilityMode");
+            reliabilityMode.setAttribute("same_reliability", Boolean.toString(params.sameReliabilityMode));
+            rootElement.appendChild(reliabilityMode);
 
-                if (params.sameReliabilityMode) {
-                    //Startwahrscheinlichkeiten speichern
-                    Element nodeStartValue = doc.createElement("seriesParam");
-                    nodeStartValue.setAttribute("type", "nodeStart");
-                    nodeStartValue.setAttribute("value", params.nodeValue.toString());
-                    rootElement.appendChild(nodeStartValue);
+            if (params.sameReliabilityMode) {
+                //Startwahrscheinlichkeiten speichern
+                Element nodeStartValue = doc.createElement("seriesParam");
+                nodeStartValue.setAttribute("type", "nodeStart");
+                nodeStartValue.setAttribute("value", params.nodeValue.toString());
+                rootElement.appendChild(nodeStartValue);
 
-                    Element edgeStartValue = doc.createElement("seriesParam");
-                    edgeStartValue.setAttribute("type", "edgeStart");
-                    edgeStartValue.setAttribute("value", params.edgeValue.toString());
-                    rootElement.appendChild(edgeStartValue);
+                Element edgeStartValue = doc.createElement("seriesParam");
+                edgeStartValue.setAttribute("type", "edgeStart");
+                edgeStartValue.setAttribute("value", params.edgeValue.toString());
+                rootElement.appendChild(edgeStartValue);
 
-                    if (params.calculationSeries) {
-                        //Serienberechnungsparameter speichern
-                        Element nodeEndValue = doc.createElement("seriesParam");
-                        nodeEndValue.setAttribute("type", "nodeEnd");
-                        nodeEndValue.setAttribute("value", params.nodeEndValue.toString());
-                        rootElement.appendChild(nodeEndValue);
+                if (params.calculationSeries) {
+                    //Serienberechnungsparameter speichern
+                    Element nodeEndValue = doc.createElement("seriesParam");
+                    nodeEndValue.setAttribute("type", "nodeEnd");
+                    nodeEndValue.setAttribute("value", params.nodeEndValue.toString());
+                    rootElement.appendChild(nodeEndValue);
 
-                        Element nodeStepSizeValue = doc.createElement("seriesParam");
-                        nodeStepSizeValue.setAttribute("type", "nodeStepSize");
-                        nodeStepSizeValue.setAttribute("value", params.nodeStepSize.toString());
-                        rootElement.appendChild(nodeStepSizeValue);
+                    Element nodeStepSizeValue = doc.createElement("seriesParam");
+                    nodeStepSizeValue.setAttribute("type", "nodeStepSize");
+                    nodeStepSizeValue.setAttribute("value", params.nodeStepSize.toString());
+                    rootElement.appendChild(nodeStepSizeValue);
 
 
-                        Element edgeEndValue = doc.createElement("seriesParam");
-                        edgeEndValue.setAttribute("type", "edgeEnd");
-                        edgeEndValue.setAttribute("value", params.edgeEndValue.toString());
-                        rootElement.appendChild(edgeEndValue);
+                    Element edgeEndValue = doc.createElement("seriesParam");
+                    edgeEndValue.setAttribute("type", "edgeEnd");
+                    edgeEndValue.setAttribute("value", params.edgeEndValue.toString());
+                    rootElement.appendChild(edgeEndValue);
 
-                        Element edgeStepSizeValue = doc.createElement("seriesParam");
-                        edgeStepSizeValue.setAttribute("type", "edgeStepSize");
-                        edgeStepSizeValue.setAttribute("value", params.edgeStepSize.toString());
-                        rootElement.appendChild(edgeStepSizeValue);
-                    }
-                } else {
-                    //Einzelwahrscheinlichkeitsmodus
+                    Element edgeStepSizeValue = doc.createElement("seriesParam");
+                    edgeStepSizeValue.setAttribute("type", "edgeStepSize");
+                    edgeStepSizeValue.setAttribute("value", params.edgeStepSize.toString());
+                    rootElement.appendChild(edgeStepSizeValue);
+                }
+            } else {
+                //Einzelwahrscheinlichkeitsmodus
 
-                    //Knotenwahrscheinlichkeiten
-                    for (Integer i = 0; i < params.nodeProbabilities.length; i++) {
-                        Element singleReliability = doc.createElement("singleReliability");
-                        singleReliability.setAttribute("type", "node");
-                        singleReliability.setAttribute("number", i.toString());
-                        singleReliability.setAttribute("reliability", params.nodeProbabilities[i].toString());
-                        rootElement.appendChild(singleReliability);
-                    }
+                //Knotenwahrscheinlichkeiten
+                for (Integer i = 0; i < params.nodeProbabilities.length; i++) {
+                    Element singleReliability = doc.createElement("singleReliability");
+                    singleReliability.setAttribute("type", "node");
+                    singleReliability.setAttribute("number", i.toString());
+                    singleReliability.setAttribute("reliability", params.nodeProbabilities[i].toString());
+                    rootElement.appendChild(singleReliability);
+                }
 
-                    //Kantenwahrscheinlichkeiten
-                    for (Integer i = 0; i < params.edgeProbabilities.length; i++) {
-                        Element singleReliability = doc.createElement("singleReliability");
-                        singleReliability.setAttribute("type", "edge");
-                        singleReliability.setAttribute("number", i.toString());
-                        singleReliability.setAttribute("reliability", params.edgeProbabilities[i].toString());
-                        rootElement.appendChild(singleReliability);
-                    }
+                //Kantenwahrscheinlichkeiten
+                for (Integer i = 0; i < params.edgeProbabilities.length; i++) {
+                    Element singleReliability = doc.createElement("singleReliability");
+                    singleReliability.setAttribute("type", "edge");
+                    singleReliability.setAttribute("number", i.toString());
+                    singleReliability.setAttribute("reliability", params.edgeProbabilities[i].toString());
+                    rootElement.appendChild(singleReliability);
                 }
             }
 

@@ -44,14 +44,18 @@ public class Strings {
      * Setzt die Sprache und startet das Programm neu. Zeigt vorher einen Dialog an, dass dadurch alle Eingaben gelöscht
      * sind
      *
-     * @param language Die neue Sprache als Kürzel, etwa "de", "en", ...
+     * @param parentComponent Eine andere Komponente als ParentComponent für den Dialog
+     * @param language        Die neue Sprache als Kürzel, etwa "de", "en", ...
+     * @return True, wenn neugestartet wird, sonst false
      */
-    public static void setLanguageAndRestart(Component parentComponent, String language) {
+    public static boolean setLanguageAndRestart(Component parentComponent, String language) {
         int result = JOptionPane.showConfirmDialog(parentComponent, Strings.getLocalizedString("restart.for.language.dialog"),
                 Strings.getLocalizedString("warning"), JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE);
         if (result == JOptionPane.YES_OPTION) {
             preferences.put("language", language);
             Util.restartApplication();
+            return true;
         }
+        return false;
     }
 }

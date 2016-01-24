@@ -57,7 +57,7 @@ public class NetPanel extends JPanel {
     }
 
     @Override
-    public void paint(Graphics g) {
+    public void paintComponent(Graphics g) {
         BufferedImage img = new BufferedImage(getWidth(), getHeight(), BufferedImage.TYPE_INT_RGB);
         Graphics2D imgGraphics = img.createGraphics();
         //Kantenglättung aktivieren
@@ -109,14 +109,6 @@ public class NetPanel extends JPanel {
         }
 
         g.drawImage(img, 0, 0, this);
-    }
-
-    /**
-     * ueberschreiben der Methode update, um den Bildschirm nicht zu löschen
-     */
-    @Override
-    public void update(Graphics g) {
-        paint(g);
     }
 
     /**

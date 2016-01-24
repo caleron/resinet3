@@ -39,7 +39,8 @@ public class Resinet3 extends JFrame
 
     public NetPanel netPanel;
 
-    private JTextArea graphPanelTextArea, resultTextArea;
+    public JTextArea graphPanelTextArea;
+    private JTextArea resultTextArea;
     private JTextField edgeEndProbabilityBox, edgeProbabilityStepSizeBox, nodeEndProbabilityBox, nodeProbabilityStepSizeBox,
             sameReliabilityEdgeProbBox, sameReliabilityNodeProbBox;
     private JButton drawBtn, resetGraphBtn, resetProbabilitiesBtn,
@@ -176,7 +177,11 @@ public class Resinet3 extends JFrame
 
         for (Map.Entry lang : languages.entrySet()) {
             JMenuItem itm = new JCheckBoxMenuItem((String) lang.getValue());
-            itm.addActionListener((e) -> Strings.setLanguageAndRestart(this, (String) lang.getKey()));
+            itm.addActionListener((e) -> {
+                if (!Strings.setLanguageAndRestart(this, (String) lang.getKey())) {
+                    itm.setSelected(false);
+                }
+            });
             if (Strings.currentLocale.getLanguage().equals(new Locale((String) lang.getKey()).getLanguage())) {
                 itm.setSelected(true);
                 itm.setEnabled(false);
@@ -225,7 +230,7 @@ public class Resinet3 extends JFrame
 
         netPanel = new NetPanel(this);
         netPanel.setBackground(Color.white);
-        netPanel.setSize(625, 315);
+        //netPanel.setSize(625, 315);
 
         gbc = makegbc(0, 1, 4, 5, 1, 1);
 
@@ -937,7 +942,7 @@ public class Resinet3 extends JFrame
      *
      * @return True, wenn alle Felder Wahrscheinlichkeiten zwischen 0 und 1 enthalten
      */
-    private boolean probabilitiesValid(boolean suppressWarning) {
+    private boolean probabilitiesValid() {
         int edgeCount = edgeProbabilityBoxes.size();
         int nodeCount = nodeProbabilityBoxes.size();
         boolean seriesValuesMissing = false;
@@ -994,10 +999,6 @@ public class Resinet3 extends JFrame
         if (edgesWithMissingProbability.size() != 0 || nodesWithMissingProbability.size() != 0
                 || seriesValuesMissing || sameReliabilityValuesMissing) {
 
-            if (suppressWarning) {
-                //Wenn keine Warnungen ausgegeben werden soll, einfach abbrechen
-                return false;
-            }
 
             //Dieser Block zeigt nur ein Hinweisfenster an, falls Wahrscheinlichkeiten fehlen
             //Strings für fehlende Kanten und Knoten generieren
@@ -1043,16 +1044,18 @@ public class Resinet3 extends JFrame
     /**
      * Prüft alle Wahrscheinlichkeitsfelder und speicher die Werte in die entsprechenden Variablen
      *
+     * @param mode                 Der Berechnungsmodus
+     * @param disableValueChecking True, falls die Überprüfung der Eingabefelder übersprungen werden soll
      * @return Das Objekt oder null, wenn nicht alle Voraussetzungen erfüllt sind
      */
-    public CalculationParams buildCalculationParams(CALCULATION_MODES mode, boolean suppressWarning) {
+    public CalculationParams buildCalculationParams(CALCULATION_MODES mode, boolean disableValueChecking) {
         Graph graph = makeGraph();
         if (!graphIsValid(graph))
             return null;
 
         CalculationParams params = new CalculationParams(mode, graph);
 
-        if (!probabilitiesValid(suppressWarning)) {
+        if (!disableValueChecking && !probabilitiesValid()) {
             //Abbrechen, falls nicht alle Wahrscheinlichkeiten zulässig sind
             return null;
         }
