@@ -2,6 +2,7 @@ package com.resinet.util;/* com.resinet.util.Util.java */
 
 import com.resinet.Resinet3;
 
+import javax.swing.*;
 import java.io.*;
 import java.math.BigInteger;
 import java.util.ArrayList;
@@ -75,8 +76,6 @@ public class Util {
     /**
      * Diese Methode dient, dazu, das Programm neu zu starten.
      * <p>
-     * Funktioniert noch nicht bei exe-Dateien.
-     * <p>
      * Quelle: http://stackoverflow.com/questions/4159802/how-can-i-restart-a-java-application
      */
     public static void restartApplication() {
@@ -90,15 +89,19 @@ public class Util {
         }
 
         final ArrayList<String> command = new ArrayList<>();
-        command.add(javaBin);
 
         //wenns keine JAR-Datei ist, vorerst abbrechen, in Zukunft für exe-Release dies auch dann funktionieren lassen
         if (currentCodePath.getName().endsWith(".jar")) {
             //Befehl bauen: java -jar application.jar
+            command.add(javaBin);
             command.add("-jar");
             command.add(currentCodePath.getPath());
+        }else if (currentCodePath.getName().endsWith(".exe")) {
+            //codepath ist dann der Pfad der exe
+            command.add(currentCodePath.toString());
         } else {
             //Programm liegt als .class vor (während Debugging höchstwahrscheinlich)
+            command.add(javaBin);
             command.add("-cp");
             command.add(currentCodePath.getPath());
             command.add("com.resinet.Resinet3");
