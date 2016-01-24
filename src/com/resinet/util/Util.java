@@ -63,6 +63,16 @@ public class Util {
     }
 
     /**
+     * Prüft, ob der gegebene String eine (Gleitkomma)Zahl zwischen 0 und 1 ist
+     *
+     * @param str der zu überprüfende String
+     * @return Boolean, ob der Text eine Wahrscheinlichkeit ist
+     */
+    public static boolean textIsNotProbability(String str) {
+        return !str.matches("1(\\.0+)?|0(\\.\\d+)?");
+    }
+
+    /**
      * Diese Methode dient, dazu, das Programm neu zu starten.
      * <p>
      * Funktioniert noch nicht bei exe-Dateien.

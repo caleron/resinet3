@@ -1,11 +1,9 @@
 package com.resinet;
 
-import com.resinet.algorithms.Con_check;
 import com.resinet.algorithms.ProbabilityCalculator;
-import com.resinet.model.*;
-import com.resinet.util.Constants;
-import com.resinet.util.GraphSaving;
-import com.resinet.util.Strings;
+import com.resinet.model.CalculationParams;
+import com.resinet.model.Graph;
+import com.resinet.util.*;
 import com.resinet.views.NetPanel;
 import com.resinet.views.SingleReliabilitiesPanel;
 import com.resinet.views.SingleReliabilityPanel;
@@ -124,7 +122,6 @@ public class Resinet3 extends JFrame
         setGUIState(GUI_STATES.SHOW_GRAPH_INFO);
     }
 
-    //TODO weitere Funktionen auslagern, wie Überprüfung des Graphen
     //TODO Zuletzt geöffnet-Liste, Graph generieren, Serienparallelreduktion, neues GUI-Layout mit größerer Zeichenfläche
 
     /**
@@ -963,7 +960,7 @@ public class Resinet3 extends JFrame
             for (JTextField field : checkingList) {
                 String value = field.getText();
 
-                if (value.length() != 0 && textIsNotProbability(value)) {
+                if (value.length() != 0 && Util.textIsNotProbability(value)) {
                     seriesValuesMissing = true;
                     break;
                 } else {
@@ -976,7 +973,7 @@ public class Resinet3 extends JFrame
             //Felder für die Wahrscheinlichkeit für alle Kanten/Knoten prüfen
             String edgeValue = sameReliabilityEdgeProbBox.getText(),
                     nodeValue = sameReliabilityNodeProbBox.getText();
-            if (textIsNotProbability(edgeValue) || textIsNotProbability(nodeValue)) {
+            if (Util.textIsNotProbability(edgeValue) || Util.textIsNotProbability(nodeValue)) {
                 sameReliabilityValuesMissing = true;
             }
         } else {
@@ -984,13 +981,13 @@ public class Resinet3 extends JFrame
             //Prüft alle Felder durch, ob da Wahrscheinlichkeiten drin stehen
             for (int i = 0; i < edgeCount; i++) {
                 String s = edgeProbabilityBoxes.get(i).getText();
-                if (textIsNotProbability(s))
+                if (Util.textIsNotProbability(s))
                     edgesWithMissingProbability.add(String.valueOf(i));
             }
 
             for (int i = 0; i < nodeCount; i++) {
                 String s = nodeProbabilityBoxes.get(i).getText();
-                if (textIsNotProbability(s))
+                if (Util.textIsNotProbability(s))
                     nodesWithMissingProbability.add(String.valueOf(i));
             }
         }
@@ -1049,8 +1046,8 @@ public class Resinet3 extends JFrame
      * @return Das Objekt oder null, wenn nicht alle Voraussetzungen erfüllt sind
      */
     public CalculationParams buildCalculationParams(CALCULATION_MODES mode, boolean disableValueChecking) {
-        Graph graph = makeGraph();
-        if (!graphIsValid(graph))
+        Graph graph = GraphUtil.makeGraph(netPanel);
+        if (!GraphUtil.graphIsValid(this, graph))
             return null;
 
         CalculationParams params = new CalculationParams(mode, graph);
@@ -1110,86 +1107,6 @@ public class Resinet3 extends JFrame
             params.setSingleReliabilityParams(edgeProbabilities, nodeProbabilities);
         }
         return params;
-    }
-
-    /**
-     * Prüft, ob der Graph alle notwendigen Bedingungen erfüllt
-     *
-     * @return Ob der Graph zulässig ist
-     */
-    private boolean graphIsValid(Graph graph) {
-        if (netPanel.drawnEdges.size() == 0) {
-            //Dieser Block zeigt ein Hinweisfenster an, wenn keine Knoten vorhanden sind und bricht die Methode ab
-            String str = Strings.getLocalizedString("error.no.edges");
-            JOptionPane.showMessageDialog(mainFrame, str, Strings.getLocalizedString("warning"), JOptionPane.ERROR_MESSAGE);
-            return false;
-        }
-
-        //Anzahl Konnektionsknoten bestimmen
-        int cNodeCount = 0;
-        for (NodePoint node : netPanel.drawnNodes) {
-            if (node.c_node)
-                cNodeCount++;
-        }
-
-        if (cNodeCount < 2) {
-            //Der Code in diesem Block zeigt nur ein Hinweisfenster an und bricht die Funktion ab
-            String str = Strings.getLocalizedString("error.c_vertices.not.enough");
-
-            JOptionPane.showMessageDialog(mainFrame, str, Strings.getLocalizedString("warning"), JOptionPane.ERROR_MESSAGE);
-            return false;
-        }
-
-        //Prüfen ob das Netz zusammenhängt
-        if (!Con_check.isConnected(graph)) {
-            JOptionPane.showMessageDialog(mainFrame, Strings.getLocalizedString("your.graph.is.not.connected"),
-                    Strings.getLocalizedString("error"), JOptionPane.ERROR_MESSAGE);
-            return false;
-        }
-        return true;
-    }
-
-    /**
-     * Prüft, ob der gegebene String eine (Gleitkomma)Zahl zwischen 0 und 1 ist
-     *
-     * @param str der zu überprüfende String
-     * @return Boolean, ob der Text eine Wahrscheinlichkeit ist
-     */
-    static boolean textIsNotProbability(String str) {
-        return !str.matches("1(\\.0+)?|0(\\.\\d+)?");
-    }
-
-    /**
-     * Erstellt aus den Knoten und Kanten des gezeichneten Graphen ein Graph-Objekt
-     *
-     * @return das Graph-Objekt zum gezeichneten Graph
-     */
-    private Graph makeGraph() {
-        ArrayList<Node> nodeList = new ArrayList<>();
-        ArrayList<Edge> edgeList = new ArrayList<>();
-
-        int cnt = 0;
-        for (NodePoint np : netPanel.drawnNodes) {
-            Node node = new Node(cnt, np.c_node);
-            nodeList.add(node);
-            cnt++;
-        }
-        //fertig mit dem Eintragen von Knoten
-        cnt = 0;
-        for (EdgeLine e : netPanel.drawnEdges) {
-            int m = netPanel.drawnNodes.indexOf(e.startNode);
-            int n = netPanel.drawnNodes.indexOf(e.endNode);
-            Edge edge = new Edge(cnt);
-            Node node1 = nodeList.get(m);
-            Node node2 = nodeList.get(n);
-            edge.left_node = node1;
-            edge.right_node = node2;
-            edgeList.add(edge);
-            node1.add_Edge(edge);
-            node2.add_Edge(edge);
-            cnt++;
-        }
-        return new Graph(nodeList, edgeList);
     }
 
     /**
