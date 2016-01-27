@@ -10,22 +10,24 @@ import java.util.List;
 
 class Tree extends Thread {
     private final Graph graph;
-    private final KTree b;
+    private final KTree kTree;
     final List<HashSet<GraphElement>> trs;
     //Menge aller k-Baeume
     private final Q q;
 
     public boolean dead = false;
 
-    /*
-    Während des Pfadefindens wird der Graph hierbei verändert, d.h. es werden Kanten entfernt und hinzugefügt
+    /**
+     * Diese Klasse findet K-Bäume zu dem gegebenem Graphen als eigener Thread. Während des Pfadefindens wird der Graph
+     * hierbei verändert, d.h. es werden Kanten entfernt und hinzugefügt. Aus diesem Grunde sollte der Graph vor jeder
+     * Berechnung frisch kopiert werden.
+     *
+     * @param graph Der Graph, in dem K-Bäume gesucht werden sollen
      */
-
     public Tree(Graph graph) {
-        //graph = (com.resinet.model.Graph)Sc.serialClone(graph);
         this.graph = graph;
         q = new Q();
-        b = new KTree();
+        kTree = new KTree();
 
         trs = Collections.synchronizedList(new ArrayList<>());
         //Initialisierung
@@ -35,7 +37,7 @@ class Tree extends Thread {
         for (Node node2 : this.graph.nodeList) {
             if (node2.c_node) {
                 node = node2;
-                b.add_Node(node);
+                kTree.add_Node(node);
                 outside_add(node);
                 break;
             }
@@ -55,77 +57,70 @@ class Tree extends Thread {
 
 
     private Edge[] outside_add(Node w) {
-        Edge[] n = new Edge[w.degree];
-        int n_i = 0;
+        Edge[] edges = new Edge[w.degree];
+        int addCount = 0;
 
         for (Edge edge : w.node_edge) {
             if (!edge.left_node.b_marked || !edge.right_node.b_marked) {
                 q.add(edge);
-                n[n_i] = edge;
-                n_i++;
+                edges[addCount] = edge;
+                addCount++;
             }
         }
-        if (n_i == 0)
-            return (null);
+        if (addCount == 0)
+            return null;
         else
-            return (n);
+            return edges;
     }
 
     private Edge[] inside_delete(Node w) {
-        Edge[] m = new Edge[w.degree];
-        int m_i = 0;
+        Edge[] edges = new Edge[w.degree];
+        int addCount = 0;
 
-        for (Edge e : w.node_edge) {
-            Node n;
+        for (Edge edge : w.node_edge) {
+            Node node;
 
-            if (e.left_node == w)
-                n = e.right_node;
+            if (edge.left_node == w)
+                node = edge.right_node;
             else
-                n = e.left_node;
+                node = edge.left_node;
 
-            if (e.in_q && n.b_marked) {
-                q.delete(e);
-                m[m_i] = e;
-                m_i++;
+            if (edge.in_q && node.b_marked) {
+                q.delete(edge);
+                edges[addCount] = edge;
+                addCount++;
             }
         }
-        if (m_i == 0)
-            return (null);
+        if (addCount == 0)
+            return null;
         else
-            return (m);
+            return edges;
     }
 
-    private void outside_delete(Edge[] n) {
-        int i;
-        int l;
-
-        if (n == null)
+    private void outside_delete(Edge[] edges) {
+        if (edges == null)
             return;
 
-        l = n.length;
-
-        for (i = 0; i < l; i++) {
-            if (n[i] == null)
+        for (Edge edge : edges) {
+            if (edge == null)
                 break;
-            q.delete(n[i]);
+            q.delete(edge);
         }
     }
 
-    private void inside_add(Edge[] m) {
-        int i;
-
-        if (m == null)
+    private void inside_add(Edge[] edges) {
+        if (edges == null)
             return;
 
-        for (i = m.length - 1; i >= 0; i--) {
-            if (m[i] == null)
+        for (int i = edges.length - 1; i >= 0; i--) {
+            if (edges[i] == null)
                 continue;
-            q.insert(m[i]);
+            q.insert(edges[i]);
         }
     }
 
     private void output_ktree() {
-        Edge e = b.first_br;
+        Edge e = kTree.first_br;
 
         HashSet<GraphElement> ktree = new HashSet<>();
         while (e != null) {
@@ -171,7 +166,7 @@ class Tree extends Thread {
     }
 
     private void tree_search(Node node, Edge edge) {
-        Node n;
+        Node nextNode;
         boolean bl = true;
 
         for (Edge e : node.node_edge) {
@@ -181,16 +176,16 @@ class Tree extends Thread {
                 continue;
 
             if (e.left_node == node)
-                n = e.right_node;
+                nextNode = e.right_node;
             else
-                n = e.left_node;
-            tree_search(n, e);
+                nextNode = e.left_node;
+            tree_search(nextNode, e);
 
             bl = bl && e.useless;
         }
         if (bl && !node.c_node) {
             edge.useless = true;
-            b.no_use++;
+            kTree.no_use++;
             node.useless = true;
         }
     }
@@ -199,20 +194,20 @@ class Tree extends Thread {
     private void tree() {
         Edge e;
         Node w;
-        Edge[] n, m, q1;
+        Edge[] addedEdges, deletedEdges, edgeList;
 
-        q1 = new Edge[q.count];
-        int q1_i = 0;
+        edgeList = new Edge[q.count];
+        int edgeListCounter = 0;
 
         if (q.count == 0) {
-            Edge eg = b.last_br;
+            Edge eg = kTree.last_br;
             while (eg != null) {
                 eg.useless = false;
                 eg = eg.left;
             }
-            b.no_use = 0;
+            kTree.no_use = 0;
             //initialisierung fuer tree_search
-            tree_search(b.first_nd, null);
+            tree_search(kTree.first_nd, null);
             output_ktree();
             //if N(G,B)=0 then output spannender Baum B
         } else {
@@ -229,34 +224,34 @@ class Tree extends Thread {
                     w = e.right_node;
                 //w := Endknoten von e der nicht in B ist
 
-                b.add_Edge(e);
-                b.add_Node(w);
+                kTree.add_Edge(e);
+                kTree.add_Node(w);
                 //B := B+{e}
 
-                n = outside_add(w);
+                addedEdges = outside_add(w);
                 //fuege N ={e<-E: I(e)={w,v},v nicht in B} bei Q hinten an
 
-                m = inside_delete(w);
+                deletedEdges = inside_delete(w);
                 //entferne M = {e<-E: I(e)={u,w}, u in B} aus Q;
 
                 tree();
 
-                inside_add(m);
-                //fuege m wieder Q bei
+                inside_add(deletedEdges);
+                //fuege deletedEdges wieder Q bei
 
-                outside_delete(n);
+                outside_delete(addedEdges);
                 //entferne N aus Q
 
-                b.delete_Node(w);
-                b.delete_Edge(e);
+                kTree.delete_Node(w);
+                kTree.delete_Edge(e);
 
                 //entfern e aus B;
 
                 graph.delete_Edge(e);
                 //entfern e aus G
 
-                q1[q1_i] = e;
-                q1_i++;
+                edgeList[edgeListCounter] = e;
+                edgeListCounter++;
                 //fuege e der Liste Q1 hinten an
 
 
@@ -264,12 +259,12 @@ class Tree extends Thread {
            bricht die While-Schleife ab. */
             }
 
-            while (q1_i > 0) {
-                Edge e1;
-                e1 = q1[q1_i - 1];
-                q.add(e1);
-                graph.add_Edge(e1);
-                q1_i--;
+            while (edgeListCounter > 0) {
+                Edge edge;
+                edge = edgeList[edgeListCounter - 1];
+                q.add(edge);
+                graph.add_Edge(edge);
+                edgeListCounter--;
             }
         }
     }
@@ -330,7 +325,7 @@ class Tree extends Thread {
 Da es sich hier um ein k-von-n Problem handelt, wobei k<=n, wird der
 Algorithmus von Kohlas leicht modifiziert.
 
-Line 231: Jedesmal, nachdem eine neue Kante e in den aktuellen Baum b hinzu-
+Line 231: Jedesmal, nachdem eine neue Kante e in den aktuellen Baum kTree hinzu-
 gefuegt wurde, wird gepr�ft, ob die letzte Kante, d.h. e.left, eine s.graph. Endkante
 und der dazugehoerige Knoten ein NICHT-Konnectionsknoten ist. Falls ja, wird 
 weiter geprueft, ob der Knoten bereits erreicht wurde (w.reached == true). Falls
@@ -342,11 +337,11 @@ Endknoten ist, wird �berprueft, ob alle Knoten bzw. Kanten UNTER w "use-
 less" sind, d.h. Nicht-k-Knoten. Wenn der Knoten EINMAL useless 
 ist, wird der Knoten beim Loeschen als "reached"-Knoten gekenn-
 zeichnet und erst bei erneutem Hinzufuegen die Attribute "reached" 
-wieder auf "false" gesetzt . Beim Hinzufuegen eines Knotens in den Baum b wird
+wieder auf "false" gesetzt . Beim Hinzufuegen eines Knotens in den Baum kTree wird
 geprueft, ob das Attribut "reached" bereits "true" ist und der Knoten kein
-Endknoten ist. Der Vorgang wird sonst trotzdem fortsetzt und das Attribut b.val 
+Endknoten ist. Der Vorgang wird sonst trotzdem fortsetzt und das Attribut kTree.val
 auf "false" gesetzt.
-Beim Output eines Baums wird der Wert von b.val geprueft. Falls er "false"
+Beim Output eines Baums wird der Wert von kTree.val geprueft. Falls er "false"
 ist, wird der Baum nicht ausgegeben.
 
 Die Idee: Wenn ein Knoten "useless" ist, kann man ihn auch als Nicht-K- und
@@ -357,7 +352,7 @@ Alle erreichten Knoten sind Nicht-K-Knoten.
 Erreichen ("reached"):
 Da eine "useless" Kante geloescht werden muss, sollte eine solche Kante
 in einer Schleife nur einmal gezaehlt werden. Die Baeume sollten nicht
-ausgegeben (b.val = true) werden, nachdem die "useless"-Kante des Graphen geloescht
+ausgegeben (kTree.val = true) werden, nachdem die "useless"-Kante des Graphen geloescht
 wurde, wenn der (ebenfalls "useless") Knoten ueber eine andere Kante NOCHMAL er-
 reicht wird. Sonst kommt es zu doppelten Eintraegen in der Menge der K-Baeume.
 
