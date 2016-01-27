@@ -2,7 +2,6 @@ package com.resinet.util;/* com.resinet.util.Util.java */
 
 import com.resinet.Resinet3;
 
-import javax.swing.*;
 import java.io.*;
 import java.math.BigInteger;
 import java.util.ArrayList;
@@ -19,13 +18,13 @@ public class Util {
     public static Object serialClone(Object obj)
             throws IOException, ClassNotFoundException {
         ByteArrayOutputStream out = new ByteArrayOutputStream();
-        ObjectOutputStream os = new ObjectOutputStream(out);
+        ObjectOutput os = new ObjectOutputStream(out);
 
         os.writeObject(obj);
         os.flush();
 
         ByteArrayInputStream in = new ByteArrayInputStream(out.toByteArray());
-        ObjectInputStream is = new ObjectInputStream(in);
+        ObjectInput is = new ObjectInputStream(in);
         Object ret = is.readObject();
         is.close();
         os.close();

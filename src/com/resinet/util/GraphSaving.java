@@ -16,13 +16,10 @@ import javax.swing.filechooser.FileNameExtensionFilter;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.transform.Transformer;
-import javax.xml.transform.TransformerException;
-import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.*;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 import java.awt.*;
-import java.awt.geom.Rectangle2D;
 import java.io.*;
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -79,7 +76,7 @@ public final class GraphSaving {
         resinet3.resetGraph();
 
         if (resinetFilter.accept(netFile)) {
-            readResinetNetwork(netFile, resinet3, width, height);
+            readResinetNetwork(netFile, resinet3);
         } else if (pajekFilter.accept(netFile)) {
             readPajekNetwork(netFile, netPanel, width, height);
             resinet3.updateSingleReliabilityProbPanel();
@@ -158,7 +155,7 @@ public final class GraphSaving {
 
                 //Hole Startknoten
                 while (actRow.charAt(position) != ' ') {
-                    startnode = startnode + actRow.charAt(position);
+                    startnode += actRow.charAt(position);
                     position++;
                 }
 
@@ -172,7 +169,7 @@ public final class GraphSaving {
 
                 //Hole Endknoten
                 while (actRow.charAt(position) != ' ') {
-                    endnode = endnode + actRow.charAt(position);
+                    endnode += actRow.charAt(position);
                     position++;
                 }
 
@@ -196,11 +193,10 @@ public final class GraphSaving {
 
     /**
      * Liest ein Resinet-Netzwerk ein und überträgt alle Daten in die GUI
-     *
-     * @param netFile  Die Resinet-Netzwerk-Datei
+     *  @param netFile  Die Resinet-Netzwerk-Datei
      * @param resinet3 Das Hauptfenster
      */
-    private static void readResinetNetwork(File netFile, Resinet3 resinet3, int width, int height) {
+    private static void readResinetNetwork(File netFile, Resinet3 resinet3) {
         ArrayList<NodePoint> drawnNodes = resinet3.netPanel.drawnNodes;
         ArrayList<EdgeLine> drawnEdges = resinet3.netPanel.drawnEdges;
 
@@ -458,11 +454,11 @@ public final class GraphSaving {
 
                 // Stellen auffüllen, z.b. 0.25 => 0.2500
                 while (xCoordinateString.length() < 6) {
-                    xCoordinateString = xCoordinateString + "0";
+                    xCoordinateString += "0";
                 }
 
                 while (yCoordinateString.length() < 6) {
-                    yCoordinateString = yCoordinateString + "0";
+                    yCoordinateString += "0";
                 }
 
                 //Schreibe Koordinaten in die Datei
@@ -513,9 +509,9 @@ public final class GraphSaving {
         if (params == null) {
             //Voraussetzungen zum Speichern sind nicht erfüllt --> Abbruch
 
-            JOptionPane.showConfirmDialog(resinet3,
+            JOptionPane.showMessageDialog(resinet3,
                     Strings.getLocalizedString("values.missing.for.saving.text")
-                    , Strings.getLocalizedString("error"), JOptionPane.OK_OPTION);
+                    , Strings.getLocalizedString("error"), JOptionPane.ERROR_MESSAGE);
 
             return;
         }
@@ -635,8 +631,8 @@ public final class GraphSaving {
             //In XML-Datei schreiben
             TransformerFactory transformerFactory = TransformerFactory.newInstance();
             Transformer transformer = transformerFactory.newTransformer();
-            DOMSource source = new DOMSource(doc);
-            StreamResult result = new StreamResult(new File(path));
+            Source source = new DOMSource(doc);
+            Result result = new StreamResult(new File(path));
 
             transformer.transform(source, result);
             JOptionPane.showMessageDialog(resinet3, Strings.getLocalizedString("successfully.saved"));

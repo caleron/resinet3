@@ -28,7 +28,7 @@ public class ProbabilityCalculator extends Thread {
     private final CalculationParams params;
 
     //Die Anzahl der Nachkommastellen, die der Output haben soll
-    private final Integer OUTPUT_PRECISION = 15;
+    private static final Integer OUTPUT_PRECISION = 15;
 
     private Graph workingGraph;
 
@@ -197,9 +197,9 @@ public class ProbabilityCalculator extends Thread {
             Node nodeSave = workingGraph.nodeList.get(i);
             if (nodeSave.c_node) {
                 c_nodes++;
-                cNodeList = cNodeList + "1";
+                cNodeList += "1";
             } else {
-                cNodeList = cNodeList + "0";
+                cNodeList += "0";
             }
         }
 
@@ -288,7 +288,7 @@ public class ProbabilityCalculator extends Thread {
      * @param inputString Bisherige Kombinationen?
      * @return Alle möglichen Kombinationen
      */
-    private Set<String> generateCombinations(String inputString) {
+    private static Set<String> generateCombinations(String inputString) {
         Set<String> combinationsSet = new HashSet<>();
         if (inputString.length() == 0)
             return combinationsSet;
@@ -306,7 +306,7 @@ public class ProbabilityCalculator extends Thread {
                 }
             }
         } else {
-            combinationsSet.add(c + "");
+            combinationsSet.add(String.valueOf(c));
         }
         return combinationsSet;
     }
@@ -397,20 +397,20 @@ public class ProbabilityCalculator extends Thread {
 
                     //Nullen hinzufügen, damit alle Ausgangswahrscheinlichkeiten die selbe Länge haben
                     while (reliabilityString.length() < params.edgeStepSize.toString().length()) {
-                        reliabilityString = reliabilityString + "0";
+                        reliabilityString += "0";
                     }
 
                     while (reliabilityString.length() < 42) {
-                        reliabilityString = reliabilityString + " ";
+                        reliabilityString += " ";
                     }
 
                     reliabilityString += currentNodeProb.toString();
                     while (reliabilityString.length() < 42 + params.nodeStepSize.toString().length()) {
-                        reliabilityString = reliabilityString + "0";
+                        reliabilityString += "0";
                     }
 
                     while (reliabilityString.length() < 84) {
-                        reliabilityString = reliabilityString + " ";
+                        reliabilityString += " ";
                     }
 
                     prob = prob.setScale(OUTPUT_PRECISION, BigDecimal.ROUND_HALF_DOWN);
@@ -437,23 +437,13 @@ public class ProbabilityCalculator extends Thread {
      * @param path Der Pfad
      * @return Die Intaktwahrscheinlichkeit
      */
-    private BigDecimal getPathProbability(HashSet<GraphElement> path) {
+    private static BigDecimal getPathProbability(HashSet<GraphElement> path) {
         BigDecimal p = BigDecimal.ONE;
-        //String output = "Pfad";
 
         for (GraphElement el : path) {
             p = p.multiply(el.prob);
-            /*
-            if (el instanceof Edge) {
-                Edge e = (Edge) el;
-                output += " e" + e.edge_no;
-            } else {
-                Node n = ((Node) el);
-                output += " n" + n.node_no;
-            }*/
         }
 
-        //System.out.println(p.toString() + " für " + output);
         return p;
     }
 

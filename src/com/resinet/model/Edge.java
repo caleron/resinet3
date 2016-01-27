@@ -4,7 +4,7 @@ import java.io.Serializable;
 
 public class Edge extends GraphElement implements Serializable {
 
-    public final int edge_no;
+    private final int edge_no;
 
     // Knoten einer Kante
     public Node left_node, right_node;

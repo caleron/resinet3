@@ -8,20 +8,8 @@ import java.awt.geom.Line2D;
 public class EdgeLine extends Line2D.Double {
 
     public double textPositionX, textPositionY;
-    public NodePoint startNode, endNode;
-
-    /**
-     * Erzeugt eine Kante
-     *
-     * @param startX Startkoordinate X
-     * @param startY Startkoordinate Y
-     * @param endX   Endkoordinate X
-     * @param endY   Endkoordinate Y
-     */
-    public EdgeLine(int startX, int startY, int endX, int endY) {
-        super(startX, startY, endX, endY);
-        refresh();
-    }
+    public final NodePoint startNode;
+    public NodePoint endNode;
 
     /**
      * Erzeugt eine Kante

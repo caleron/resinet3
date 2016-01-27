@@ -132,7 +132,7 @@ class Tree extends Thread {
 
         //An dieser Stelle wurde der Algorithmus erweitert.
         //Diese Liste enthält alle bisher hinzugefügten Knoten
-        ArrayList<Node> consideredNodes = new ArrayList<>();
+        List<Node> consideredNodes = new ArrayList<>();
 
         //Eine flache Kopie des Baumes, durch die hindurchiteriert werden kann, da ktree um die Knoten erweitert wird.
         HashSet<Edge> treeCopy = (HashSet) ktree.clone();

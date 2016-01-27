@@ -1,7 +1,8 @@
-package com.resinet.model;/* com.resinet.model.Node.java */
+package com.resinet.model;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.List;
 
 public class Node extends GraphElement implements Serializable {
     //Knotennummer
@@ -13,7 +14,7 @@ public class Node extends GraphElement implements Serializable {
     //Attribut für KTree
     public Node left, right;
     //Anliegende Kanten
-    public final ArrayList<Edge> node_edge = new ArrayList<>();
+    public final List<Edge> node_edge = new ArrayList<>();
 
     //Grad des Knotens, d.h. Anzahl anliegender Kanten
     public int degree = 0;
@@ -26,10 +27,6 @@ public class Node extends GraphElement implements Serializable {
     public Node(int node_no, boolean c_node) {
         this.node_no = node_no;
         this.c_node = c_node;
-    }
-
-    public Node(int node_no) {
-        this.node_no = node_no;
     }
 
     public void add_Edge(Edge edge) {

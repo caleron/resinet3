@@ -106,7 +106,7 @@ public class Resinet3 extends JFrame
             e.printStackTrace();
         }
 
-        GridBagLayout mainLayout = new GridBagLayout();
+        LayoutManager mainLayout = new GridBagLayout();
         setLayout(mainLayout);
 
         initMenu();
@@ -199,7 +199,7 @@ public class Resinet3 extends JFrame
         GridBagConstraints gbc = makegbc(0, 1, 1, 6, 1, 0.4);
         add(graphPanel, gbc);
 
-        GridBagLayout graphPanelLayout = new GridBagLayout();
+        LayoutManager graphPanelLayout = new GridBagLayout();
         graphPanel.setLayout(graphPanelLayout);
 
         drawBtn = new JButton(Strings.getLocalizedString("draw.network"));
@@ -451,7 +451,7 @@ public class Resinet3 extends JFrame
      * @param weighty Gewichtung auf Y-Achse (für Verteilung des freien Platzes
      * @return GridBagConstraints
      */
-    private GridBagConstraints makegbc(int x, int y, int width, int height, double weightx, double weighty) {
+    private static GridBagConstraints makegbc(int x, int y, int width, int height, double weightx, double weighty) {
         return makegbc(x, y, width, height, weightx, weighty, GridBagConstraints.BOTH);
     }
 
@@ -467,7 +467,7 @@ public class Resinet3 extends JFrame
      * @param fill    GridBagConstraints-Konstante für Füllung des freien Raumes in der Zelle
      * @return GridBagConstraints
      */
-    private GridBagConstraints makegbc(int x, int y, int width, int height, double weightx, double weighty, int fill) {
+    private static GridBagConstraints makegbc(int x, int y, int width, int height, double weightx, double weighty, int fill) {
         return makegbc(x, y, width, height, weightx, weighty, fill, 1);
     }
 
@@ -484,7 +484,7 @@ public class Resinet3 extends JFrame
      * @param leftInset Abstand links
      * @return GridBagConstraints
      */
-    private GridBagConstraints makegbc(int x, int y, int width, int height, double weightx, double weighty, int fill, int leftInset) {
+    private static GridBagConstraints makegbc(int x, int y, int width, int height, double weightx, double weighty, int fill, int leftInset) {
         return makegbc(x, y, width, height, weightx, weighty, fill, leftInset, GridBagConstraints.CENTER);
     }
 
@@ -502,7 +502,7 @@ public class Resinet3 extends JFrame
      * @param anchor    Ausrichtung
      * @return GridBagConstraints
      */
-    private GridBagConstraints makegbc(int x, int y, int width, int height, double weightx, double weighty, int fill, int leftInset, int anchor) {
+    private static GridBagConstraints makegbc(int x, int y, int width, int height, double weightx, double weighty, int fill, int leftInset, int anchor) {
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.gridx = x;
         gbc.gridy = y;
@@ -563,7 +563,7 @@ public class Resinet3 extends JFrame
      * @param el      Der Container
      * @param enabled Enabled-Status der Subkomponenten
      */
-    private void setChildrenEnabled(Container el, boolean enabled) {
+    private static void setChildrenEnabled(Container el, boolean enabled) {
         for (Component component : el.getComponents()) {
             component.setEnabled(enabled);
             if (component instanceof Container) {
@@ -945,13 +945,13 @@ public class Resinet3 extends JFrame
         boolean seriesValuesMissing = false;
         boolean sameReliabilityValuesMissing = false;
 
-        ArrayList<String> edgesWithMissingProbability = new ArrayList<>();
-        ArrayList<String> nodesWithMissingProbability = new ArrayList<>();
+        List<String> edgesWithMissingProbability = new ArrayList<>();
+        List<String> nodesWithMissingProbability = new ArrayList<>();
 
         if (sameReliabilityRadioBtn.isSelected()) {
             //Felder für die Berechnungsserien prüfen
             boolean seriesFieldFilled = false;
-            ArrayList<JTextField> checkingList = new ArrayList<>();
+            List<JTextField> checkingList = new ArrayList<>();
             checkingList.add(edgeEndProbabilityBox);
             checkingList.add(nodeEndProbabilityBox);
             checkingList.add(edgeProbabilityStepSizeBox);
