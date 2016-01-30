@@ -63,6 +63,12 @@ public class NetPanel extends JPanel {
         deleteCursor = getToolkit().createCustomCursor(deleteCursorImage, new Point(0, 0), "Delete Element");
     }
 
+    /*
+    TODO Linie fett zeichnen, wenn man mit der Maus drüber ist
+    Dazu Graphics in Graphics2D casten und dann mit setStroke die Linienart festlegen
+    Graphics2D g2 = (Graphics2D) g;
+    g2.setStroke(new BasicStroke(10));
+     */
     @Override
     public void paintComponent(Graphics g) {
         centerGraphIfResized();

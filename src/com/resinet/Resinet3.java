@@ -168,11 +168,7 @@ public class Resinet3 extends JFrame
         //Sprachmenü aufbauen
         JMenu languageMenu = new JMenu(Strings.getLocalizedString("language"));
 
-        Map<String, String> languages = new HashMap<>();
-        languages.put("en", "English");
-        languages.put("de", "Deutsch");
-
-        for (Map.Entry lang : languages.entrySet()) {
+        for (Map.Entry lang : Strings.languages.entrySet()) {
             JMenuItem itm = new JCheckBoxMenuItem((String) lang.getValue());
             itm.addActionListener((e) -> {
                 if (!Strings.setLanguageAndRestart(this, (String) lang.getKey())) {

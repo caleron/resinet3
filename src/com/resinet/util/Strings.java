@@ -2,7 +2,9 @@ package com.resinet.util;
 
 import javax.swing.*;
 import java.awt.*;
+import java.util.HashMap;
 import java.util.Locale;
+import java.util.Map;
 import java.util.ResourceBundle;
 import java.util.prefs.Preferences;
 
@@ -12,12 +14,18 @@ import java.util.prefs.Preferences;
 public class Strings {
     private static final ResourceBundle bundle;
     private static final Preferences preferences;
+    public static final Map<String, String> languages;
     public static final Locale currentLocale;
 
     /**
      * Statische Initialisierung der Sprache beim Laden des Programms
      */
     static {
+        //Verfügbare Sprachen initialisieren
+        languages = new HashMap<>();
+        languages.put("en", "English");
+        languages.put("de", "Deutsch");
+
         //Standard-Sprache setzen (funktioniert auch ohne)
         Locale.setDefault(new Locale("en"));
 
