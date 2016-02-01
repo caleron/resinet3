@@ -9,4 +9,10 @@ public interface Constants {
         RESILIENCE,
         RELIABILITY,
     }
+
+    enum GUI_STATES {
+        ENTER_GRAPH,
+        CALCULATION_RUNNING
+    }
+
 }

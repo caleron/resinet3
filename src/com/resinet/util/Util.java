@@ -2,6 +2,7 @@ package com.resinet.util;/* com.resinet.util.Util.java */
 
 import com.resinet.Resinet3;
 
+import java.awt.*;
 import java.io.*;
 import java.math.BigInteger;
 import java.util.ArrayList;
@@ -73,6 +74,21 @@ public class Util {
     }
 
     /**
+     * Setzt den Enabled-Status für alle Subkomponenten
+     *
+     * @param el      Der Container
+     * @param enabled Enabled-Status der Subkomponenten
+     */
+    public static void setChildrenEnabled(Container el, boolean enabled) {
+        for (Component component : el.getComponents()) {
+            component.setEnabled(enabled);
+            if (component instanceof Container) {
+                setChildrenEnabled((Container) component, enabled);
+            }
+        }
+    }
+
+    /**
      * Diese Methode dient, dazu, das Programm neu zu starten.
      * <p>
      * Quelle: http://stackoverflow.com/questions/4159802/how-can-i-restart-a-java-application
@@ -103,7 +119,7 @@ public class Util {
             command.add(javaBin);
             command.add("-cp");
             command.add(currentCodePath.getPath());
-            command.add("com.resinet.Resinet3");
+            command.add(Resinet3.class.getName());
         }
 
         final ProcessBuilder builder = new ProcessBuilder(command);
