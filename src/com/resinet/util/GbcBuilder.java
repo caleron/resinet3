@@ -16,7 +16,6 @@ public class GbcBuilder extends GridBagConstraints {
      * @param height  beanspruchte Zeilenanzahl im Grid (gridheight)
      * @param weightx Gewichtung auf X-Achse (für Verteilung des freien Platzes)
      * @param weighty Gewichtung auf Y-Achse (für Verteilung des freien Platzes
-     * @return GbcBuilder
      */
     public GbcBuilder(int x, int y, int width, int height, double weightx, double weighty) {
         gridx = x;

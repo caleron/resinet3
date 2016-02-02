@@ -15,4 +15,9 @@ public interface Constants {
         CALCULATION_RUNNING
     }
 
+    enum RELIABILITY_MODES {
+        SINGLE,
+        SAME
+    }
+
 }

@@ -1,10 +1,8 @@
 package com.resinet.util;
 
-import com.resinet.Resinet3;
 import com.resinet.model.CalculationParams;
 import com.resinet.model.EdgeLine;
 import com.resinet.model.NodePoint;
-import com.resinet.views.NetPanel;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -36,10 +34,12 @@ public final class GraphSaving {
     /**
      * Methode zum Einlesen von Netzen aus Textdateien im Pajek-Format.
      *
-     * @param resinet3 Das Hauptfenster
-     * @param netPanel Das NetPanel
+     * @param dialogParentComponent Eine GUI-Komponente, damit Dialoge angezeigt werden können
+     * @param graphWidth            Graphbreite
+     * @param graphHeight           Graphhöhe
+     * @return CalculationParams-Objekt mit den eingelesenen Daten, oder null
      */
-    public static void inputNet(Resinet3 resinet3, NetPanel netPanel) {
+    public static CalculationParams inputNet(Component dialogParentComponent, int graphWidth, int graphHeight) {
         //Dialog zum Datei auswählen
         JFileChooser chooseFile = new JFileChooser();
         chooseFile.setDialogTitle(Strings.getLocalizedString("open.file"));
@@ -56,46 +56,34 @@ public final class GraphSaving {
         if (state == JFileChooser.APPROVE_OPTION) {
             netFile = chooseFile.getSelectedFile();
         } else {
-            return;
+            return null;
         }
 
-        /**
-         * Dieser Workaround ist nötig, da Höhe und Breite des NetPanels 0 sind, wenn es noch nicht gezeichnet wurde.
-         * Dies passiert etwa, wenn man direkt nach dem Start den Graphen lädt.
-         * Die Dimensionen des Textfeldes sollten dann denen des NetPanels nahe genug sein.
-         */
-        int width, height;
-        if (netPanel.getHeight() > 0 && netPanel.getWidth() > 0) {
-            width = netPanel.getWidth();
-            height = netPanel.getHeight();
-        } else {
-            width = resinet3.graphPanelTextArea.getWidth();
-            height = resinet3.graphPanelTextArea.getHeight();
-        }
-
-        resinet3.resetGraph();
+        //TODO resinet3.resetGraph();
 
         if (resinetFilter.accept(netFile)) {
-            readResinetNetwork(netFile, resinet3);
+            return readResinetNetwork(netFile, dialogParentComponent);
         } else if (pajekFilter.accept(netFile)) {
-            readPajekNetwork(netFile, netPanel, width, height);
-            resinet3.updateSingleReliabilityProbPanel();
+            return readPajekNetwork(netFile, dialogParentComponent, graphWidth, graphHeight);
+            //resinet3.updateSingleReliabilityProbPanel();
         } else {
-            JOptionPane.showMessageDialog(resinet3, Strings.getLocalizedString("selected.file.hash.unknown.extension"), Strings.getLocalizedString("failed"), JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(dialogParentComponent, Strings.getLocalizedString("selected.file.hash.unknown.extension"), Strings.getLocalizedString("failed"), JOptionPane.ERROR_MESSAGE);
         }
         SwingUtilities.invokeLater(() -> {
-            resinet3.netPanel.centerGraphOnNextPaint();
-            resinet3.netPanel.repaint();
+            //resinet3.netPanel.centerGraphOnNextPaint();
+            //resinet3.netPanel.repaint();
         });
+        return null;
     }
 
     /**
      * Liest ein Netzwerk im Pajek-Format ein und lässt es im NetPanel darstellen
      *
-     * @param netFile  Die Pajek-Netzwerk-Datei
-     * @param netPanel Das NetPanel
+     * @param netFile Die Pajek-Netzwerk-Datei
      */
-    private static void readPajekNetwork(File netFile, NetPanel netPanel, int width, int height) {
+    private static CalculationParams readPajekNetwork(File netFile, Component parentComponent, int width, int height) {
+        ArrayList<NodePoint> nodeList = new ArrayList<>();
+        ArrayList<EdgeLine> edgeList = new ArrayList<>();
 
         //Ab hier zeilenweises Einlesen der ausgewählten Datei
         String actRow;
@@ -105,7 +93,7 @@ public final class GraphSaving {
             lineReader = new LineNumberReader(new FileReader(netFile));
         } catch (FileNotFoundException e) {
             e.printStackTrace();
-            return;
+            return null;
         }
 
         try {
@@ -128,7 +116,7 @@ public final class GraphSaving {
                 Double yCoordinate = Double.parseDouble(actRow.substring(position + 10, position + 16));
 
                 NodePoint node1 = new NodePoint(xCoordinate * panelWidth, yCoordinate * panelHeight, false);
-                netPanel.drawnNodes.add(node1);
+                nodeList.add(node1);
             }
 
             //Zeile überspringen: *Arcs oder *Edges
@@ -141,7 +129,7 @@ public final class GraphSaving {
                 //Achtung, Bei Leerzeile wird abgebrochen!
                 if (actRow == null || actRow.length() == 0) {
                     System.out.println("Leerzeile in der Quelldatei. Lesevorgang abgebrochen.");
-                    return;
+                    return null;
                 }
 
                 //Startknoten
@@ -177,28 +165,31 @@ public final class GraphSaving {
                 Integer node1 = Integer.parseInt(startnode) - 1;
                 Integer node2 = Integer.parseInt(endnode) - 1;
 
-                NodePoint startNodePoint = netPanel.drawnNodes.get(node1);
-                NodePoint endNodePoint = netPanel.drawnNodes.get(node2);
+                NodePoint startNodePoint = nodeList.get(node1);
+                NodePoint endNodePoint = nodeList.get(node2);
 
                 EdgeLine edge1 = new EdgeLine(startNodePoint, endNodePoint);
 
-                netPanel.drawnEdges.add(edge1);
+                edgeList.add(edge1);
             }
-
+            CalculationParams result = new CalculationParams();
+            result.setGraphLists(nodeList, edgeList);
+            return result;
         } catch (Exception e) {
             e.printStackTrace();
-            inputError(netPanel);
+            inputError(parentComponent);
         }
+        return null;
     }
 
     /**
      * Liest ein Resinet-Netzwerk ein und überträgt alle Daten in die GUI
-     *  @param netFile  Die Resinet-Netzwerk-Datei
-     * @param resinet3 Das Hauptfenster
+     *
+     * @param netFile Die Resinet-Netzwerk-Datei
      */
-    private static void readResinetNetwork(File netFile, Resinet3 resinet3) {
-        ArrayList<NodePoint> drawnNodes = resinet3.netPanel.drawnNodes;
-        ArrayList<EdgeLine> drawnEdges = resinet3.netPanel.drawnEdges;
+    private static CalculationParams readResinetNetwork(File netFile, Component parentComponent) {
+        ArrayList<NodePoint> drawnNodes = new ArrayList<>();
+        ArrayList<EdgeLine> drawnEdges = new ArrayList<>();
 
         try {
             DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
@@ -249,7 +240,7 @@ public final class GraphSaving {
             }
 
             //Zuverlässigkeiten einlesen
-            CalculationParams calculationParams = new CalculationParams(null, null);
+            CalculationParams calculationParams = new CalculationParams();
             //Modus einlesen
             nodeList = doc.getElementsByTagName("reliabilityMode");
             Node reliabilityModeNode = nodeList.item(0);
@@ -323,14 +314,16 @@ public final class GraphSaving {
                         nodeProbabilities.toArray(new BigDecimal[nodeProbabilities.size()]));
 
             }
-
-            //Oberfläche von Resinet updaten lassen
-            resinet3.updateSingleReliabilityProbPanel();
-            resinet3.loadCalculationParams(calculationParams);
+            calculationParams.setGraphLists(drawnNodes, drawnEdges);
+            return calculationParams;
+            //TODO Oberfläche von Resinet updaten lassen
+            //resinet3.updateSingleReliabilityProbPanel();
+            //resinet3.loadCalculationParams(calculationParams);
         } catch (ParserConfigurationException | SAXException | IOException e) {
             e.printStackTrace();
-            inputError(resinet3);
+            inputError(parentComponent);
         }
+        return null;
     }
 
     /**
@@ -348,10 +341,10 @@ public final class GraphSaving {
     /**
      * Zeigt einen JFileChooser-Dialog an und speichert das aktuelle Netzwerk im gewünschten Format.
      *
-     * @param resinet3 Das Hauptfenster
-     * @param netPanel Das NetPanel als Graph-Quelle
+     * @param params          Die zu speichernden Daten
+     * @param parentComponent Eine GUI-Komponente für Fehlerdialoge
      */
-    public static void exportNet(Resinet3 resinet3, NetPanel netPanel) {
+    public static void exportNet(CalculationParams params, Component parentComponent, int graphWidth, int graphHeight) {
         //Dialog zum Datei auswählen
         JFileChooser chooseSaveFile = new JFileChooser();
         chooseSaveFile.setDialogType(JFileChooser.SAVE_DIALOG);
@@ -373,9 +366,9 @@ public final class GraphSaving {
             saveNetFile = new File(path);
 
             if (pajekFilter.accept(saveNetFile)) {
-                writePajekNetwork(path, netPanel);
+                writePajekNetwork(path, params, parentComponent, graphWidth, graphHeight);
             } else if (resinetvFilter.accept(saveNetFile)) {
-                writeResinetNetwork(path, resinet3);
+                writeResinetNetwork(path, params, parentComponent);
             } else {
                 //Dateierweiterung fehlt wohl
                 //Ausgewählten Filter finden
@@ -383,9 +376,9 @@ public final class GraphSaving {
 
                 //entsprechende Dateierweiterung an den Pfad anfügen und dann so speichern
                 if (selectedFilter.equals(pajekFilter)) {
-                    writePajekNetwork(path + ".net", netPanel);
+                    writePajekNetwork(path + ".net", params, parentComponent, graphWidth, graphHeight);
                 } else if (selectedFilter.equals(resinetvFilter)) {
-                    writeResinetNetwork(path + ".resinet", resinet3);
+                    writeResinetNetwork(path + ".resinet", params, parentComponent);
                 }
             }
         }
@@ -394,22 +387,24 @@ public final class GraphSaving {
     /**
      * Schreibt das Netzwerk in ein Pajek-kompatibles Dateiformat
      *
-     * @param path     Der Zielpfad
-     * @param netPanel Das NetPanel als Datenquelle
+     * @param path Der Zielpfad
      */
-    private static void writePajekNetwork(String path, NetPanel netPanel) {
+    private static void writePajekNetwork(String path, CalculationParams params, Component parentComponent, int graphWidth, int graphHeight) {
+        ArrayList<NodePoint> nodeList = params.graphNodes;
+        ArrayList<EdgeLine> edgeList = params.graphEdges;
+
         //Ab hier in die Datei schreiben
         Writer writer;
 
         try {
             writer = new FileWriter(path);
-            writer.write("*Vertices " + netPanel.drawnNodes.size());
+            writer.write("*Vertices " + nodeList.size());
 
 
-            int nodesDigitsCount = String.valueOf(netPanel.drawnNodes.size()).length();
+            int nodesDigitsCount = String.valueOf(nodeList.size()).length();
 
             //Für jeden Knoten eine Zeile schreiben
-            for (int i = 1; i < netPanel.drawnNodes.size() + 1; i++) {
+            for (int i = 1; i < nodeList.size() + 1; i++) {
                 writer.append(System.getProperty("line.separator"));
 
                 int digitsCurrentNode = String.valueOf(i).length();
@@ -431,7 +426,7 @@ public final class GraphSaving {
                     writer.write(" ");
                 }
 
-                NodePoint node = netPanel.drawnNodes.get(i - 1);
+                NodePoint node = nodeList.get(i - 1);
                 double xCoordinate = node.x;
                 double yCoordinate = node.y;
 
@@ -442,8 +437,8 @@ public final class GraphSaving {
                     yCoordinate = 5;
                 }
 
-                xCoordinate = xCoordinate / (double) (netPanel.getWidth());
-                yCoordinate = yCoordinate / (double) (netPanel.getHeight());
+                xCoordinate = xCoordinate / (double) (graphWidth);
+                yCoordinate = yCoordinate / (double) (graphHeight);
 
                 // Auf 4 Nachkommastellen runden
                 xCoordinate = Math.round(xCoordinate * 10000.0) / 10000.0;
@@ -469,55 +464,49 @@ public final class GraphSaving {
             writer.write("*Edges");
 
             //Für jede Kante eine Zeile
-            for (int i = 0; i < netPanel.drawnEdges.size(); i++) {
+            for (int i = 0; i < edgeList.size(); i++) {
                 writer.append(System.getProperty("line.separator"));
-                EdgeLine edge = netPanel.drawnEdges.get(i);
-                String node1 = Integer.toString(netPanel.drawnNodes.indexOf(edge.startNode) + 1);
-                String node2 = Integer.toString(netPanel.drawnNodes.indexOf(edge.endNode) + 1);
+                EdgeLine edge = edgeList.get(i);
+                String node1 = Integer.toString(nodeList.indexOf(edge.startNode) + 1);
+                String node2 = Integer.toString(nodeList.indexOf(edge.endNode) + 1);
 
-                while (node1.length() < Integer.toString(netPanel.drawnNodes.size()).length() + 1) {
+                while (node1.length() < Integer.toString(nodeList.size()).length() + 1) {
                     node1 = " " + node1;
                 }
 
-                while (node2.length() < Integer.toString(netPanel.drawnNodes.size()).length() + 1) {
+                while (node2.length() < Integer.toString(nodeList.size()).length() + 1) {
                     node2 = " " + node2;
                 }
                 writer.write(node1 + " " + node2 + " 1");
             }
             writer.close();
 
-            JOptionPane.showMessageDialog(netPanel, Strings.getLocalizedString("successfully.saved"));
+            JOptionPane.showMessageDialog(parentComponent, Strings.getLocalizedString("successfully.saved"));
         } catch (IOException e) {
             e.printStackTrace();
-            JOptionPane.showMessageDialog(netPanel, Strings.getLocalizedString("saving.failed"), Strings.getLocalizedString("error"), JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(parentComponent, Strings.getLocalizedString("saving.failed"), Strings.getLocalizedString("error"), JOptionPane.ERROR_MESSAGE);
         }
     }
 
     /**
      * Speichert den Graphen und alle Parameter in einem eigenen XML-Format
      *
-     * @param path     Der Zieldateipfad
-     * @param resinet3 Das Hauptfenster
+     * @param path Der Zieldateipfad
      */
-    private static void writeResinetNetwork(String path, Resinet3 resinet3) {
-        CalculationParams params = null;
-        try {
-            params = resinet3.buildCalculationParams(null, true);
-        } catch (Exception ignored) {
-        }
+    private static void writeResinetNetwork(String path, CalculationParams params, Component parentComponent) {
 
         if (params == null) {
             //Voraussetzungen zum Speichern sind nicht erfüllt --> Abbruch
 
-            JOptionPane.showMessageDialog(resinet3,
+            JOptionPane.showMessageDialog(parentComponent,
                     Strings.getLocalizedString("values.missing.for.saving.text")
                     , Strings.getLocalizedString("error"), JOptionPane.ERROR_MESSAGE);
 
             return;
         }
 
-        ArrayList<NodePoint> drawnNodes = resinet3.netPanel.drawnNodes;
-        ArrayList<EdgeLine> drawnEdges = resinet3.netPanel.drawnEdges;
+        ArrayList<NodePoint> drawnNodes = params.graphNodes;
+        ArrayList<EdgeLine> drawnEdges = params.graphEdges;
 
         try {
             DocumentBuilderFactory docFactory = DocumentBuilderFactory.newInstance();
@@ -560,8 +549,8 @@ public final class GraphSaving {
 
                 Element edge = doc.createElement("edge");
                 edge.setAttribute("edge_number", i.toString());
-                edge.setAttribute("node1", Integer.toString(resinet3.netPanel.drawnNodes.indexOf(graphEdge.startNode)));
-                edge.setAttribute("node2", Integer.toString(resinet3.netPanel.drawnNodes.indexOf(graphEdge.endNode)));
+                edge.setAttribute("node1", Integer.toString(drawnNodes.indexOf(graphEdge.startNode)));
+                edge.setAttribute("node2", Integer.toString(drawnNodes.indexOf(graphEdge.endNode)));
 
                 rootElement.appendChild(edge);
             }
@@ -635,11 +624,12 @@ public final class GraphSaving {
             Result result = new StreamResult(new File(path));
 
             transformer.transform(source, result);
-            JOptionPane.showMessageDialog(resinet3, Strings.getLocalizedString("successfully.saved"));
+            JOptionPane.showMessageDialog(parentComponent, Strings.getLocalizedString("successfully.saved"));
 
         } catch (ParserConfigurationException | TransformerException e) {
             e.printStackTrace();
-            JOptionPane.showMessageDialog(resinet3, Strings.getLocalizedString("saving.failed"), Strings.getLocalizedString("error"), JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(parentComponent, Strings.getLocalizedString("saving.failed"),
+                    Strings.getLocalizedString("error"), JOptionPane.ERROR_MESSAGE);
         }
 
     }

@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class Node extends GraphElement implements Serializable {
+    private static final long serialVersionUID = 7960307183209192115L;
     //Knotennummer
     public final int node_no;
 

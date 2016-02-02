@@ -49,6 +49,9 @@ public class ResinetMockup implements Constants {
     private JMenuItem openMenuItem;
     private JMenuItem saveMenuItem;
     private JMenuItem closeMenuItem;
+    private JCheckBox stepValuesCheckBox;
+    private JCheckBox considerNodesBox;
+    private JCheckBox considerEdgesBox;
 
     public ResinetMockup(MainframeController controller) {
         this.controller = controller;
@@ -66,7 +69,7 @@ public class ResinetMockup implements Constants {
         initSideBar();
         initStatusBar();
 
-        setGuiState(GUI_STATES.ENTER_GRAPH);
+        setGuiState(GUI_STATES.ENTER_GRAPH, false);
     }
 
 
@@ -78,12 +81,13 @@ public class ResinetMockup implements Constants {
             controller.setMainFrame(resinetMockup);
 
             JFrame mainFrame = new JFrame("Mockup");
+            mainFrame.addWindowListener(controller);
 
             mainFrame.setContentPane(resinetMockup.getContentPane());
             mainFrame.setJMenuBar(resinetMockup.getMenuBar());
 
             //Beim Klicken auf X das Programm beenden
-            mainFrame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
+            mainFrame.setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
 
             //Minimale Größe setzen
             mainFrame.setMinimumSize(new Dimension(1000, 700));
@@ -107,11 +111,13 @@ public class ResinetMockup implements Constants {
         JMenu helpMenu = new JMenu(Strings.getLocalizedString("help"));
 
         tutorialMenuItem = new JMenuItem(Strings.getLocalizedString("start.tutorial"));
+        tutorialMenuItem.addActionListener(controller);
         helpMenu.add(tutorialMenuItem);
 
         helpMenu.addSeparator();
 
         aboutMenuItem = new JMenuItem(Strings.getLocalizedString("about.resinet"));
+        aboutMenuItem.addActionListener(controller);
         helpMenu.add(aboutMenuItem);
 
         menuBar.add(helpMenu);
@@ -166,6 +172,7 @@ public class ResinetMockup implements Constants {
         JMenu fileMenu = new JMenu(Strings.getLocalizedString("file"));
 
         resetMenuItem = new JMenuItem(Strings.getLocalizedString("reset.network"));
+        resetMenuItem.addActionListener(controller);
         //Tastenkombination Strg+R
         resetMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_R, KeyEvent.CTRL_MASK));
         fileMenu.add(resetMenuItem);
@@ -173,11 +180,13 @@ public class ResinetMockup implements Constants {
         fileMenu.addSeparator();
 
         openMenuItem = new JMenuItem(Strings.getLocalizedString("load.network"));
+        openMenuItem.addActionListener(controller);
         //Tastenkombination Strg+O
         openMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_O, KeyEvent.CTRL_MASK));
         fileMenu.add(openMenuItem);
 
         saveMenuItem = new JMenuItem(Strings.getLocalizedString("save.network"));
+        saveMenuItem.addActionListener(controller);
         //Tastenkombination Strg+S
         saveMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_S, KeyEvent.CTRL_MASK));
         fileMenu.add(saveMenuItem);
@@ -185,6 +194,9 @@ public class ResinetMockup implements Constants {
         fileMenu.addSeparator();
 
         closeMenuItem = new JMenuItem(Strings.getLocalizedString("close"));
+        closeMenuItem.addActionListener(controller);
+        //Alt+F4 abfangen
+        closeMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_F4, KeyEvent.ALT_MASK));
         fileMenu.add(closeMenuItem);
 
         menuBar.add(fileMenu);
@@ -237,32 +249,37 @@ public class ResinetMockup implements Constants {
         sameReliabilityPanel.add(sameReliabilityNodeProbBox, GbcBuilder.build(1, 1, 1, 1, 1, 0).bottom(10));
 
         //Checkbox für Berechnungsserie
-        JCheckBox stepValuesHeader = new JCheckBox(Strings.getLocalizedString("perform.calculation.series"));
-        sameReliabilityPanel.add(stepValuesHeader, GbcBuilder.build(0, 2, 2, 1, 1, 0).bottom(10).left());
+        stepValuesCheckBox = new JCheckBox(Strings.getLocalizedString("perform.calculation.series"));
+        stepValuesCheckBox.addItemListener(controller);
+        sameReliabilityPanel.add(stepValuesCheckBox, GbcBuilder.build(0, 2, 2, 1, 1, 0).bottom(10).left());
 
         //Eingabefelder für Berechnungsserie
         JLabel edgeProbEndValueLbl = new JLabel(Strings.getLocalizedString("edge.end.value"), SwingConstants.RIGHT);
         sameReliabilityPanel.add(edgeProbEndValueLbl, GbcBuilder.build(0, 3, 1, 1, 1, 0).bottom(10).left());
 
         edgeEndProbabilityBox = new ProbabilitySpinner();
+        edgeEndProbabilityBox.setEnabled(false);
         sameReliabilityPanel.add(edgeEndProbabilityBox, GbcBuilder.build(1, 3, 1, 1, 1, 0).bottom(10));
 
         JLabel edgeStepSizeLbl = new JLabel(Strings.getLocalizedString("edge.step.size"), SwingConstants.RIGHT);
         sameReliabilityPanel.add(edgeStepSizeLbl, GbcBuilder.build(0, 4, 1, 1, 1, 0).bottom(10).left());
 
         edgeProbabilityStepSizeBox = new ProbabilitySpinner();
+        edgeProbabilityStepSizeBox.setEnabled(false);
         sameReliabilityPanel.add(edgeProbabilityStepSizeBox, GbcBuilder.build(1, 4, 1, 1, 1, 0).bottom(10));
 
         JLabel nodeEndValueLbl = new JLabel(Strings.getLocalizedString("vertex.end.value"), SwingConstants.RIGHT);
         sameReliabilityPanel.add(nodeEndValueLbl, GbcBuilder.build(0, 5, 1, 1, 1, 0).bottom(10).left());
 
         nodeEndProbabilityBox = new ProbabilitySpinner();
+        nodeEndProbabilityBox.setEnabled(false);
         sameReliabilityPanel.add(nodeEndProbabilityBox, GbcBuilder.build(1, 5, 1, 1, 1, 0).bottom(10));
 
         JLabel nodeStepSizeLbl = new JLabel(Strings.getLocalizedString("vertex.step.size"), SwingConstants.RIGHT);
         sameReliabilityPanel.add(nodeStepSizeLbl, GbcBuilder.build(0, 6, 1, 1, 1, 0).bottom(10).left());
 
         nodeProbabilityStepSizeBox = new ProbabilitySpinner();
+        nodeProbabilityStepSizeBox.setEnabled(false);
         sameReliabilityPanel.add(nodeProbabilityStepSizeBox, GbcBuilder.build(1, 6, 1, 1, 1, 0).bottom(10));
     }
 
@@ -272,11 +289,13 @@ public class ResinetMockup implements Constants {
 
         JPanel considerComponentsPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
 
-        JCheckBox considerNodesBox = new JCheckBox(Strings.getLocalizedString("consider.vertex.reliabilities"));
+        considerNodesBox = new JCheckBox(Strings.getLocalizedString("consider.vertex.reliabilities"));
+        considerNodesBox.addItemListener(controller);
         considerComponentsPanel.add(considerNodesBox);
         considerNodesBox.setSelected(true);
 
-        JCheckBox considerEdgesBox = new JCheckBox(Strings.getLocalizedString("consider.edge.reliabilities"));
+        considerEdgesBox = new JCheckBox(Strings.getLocalizedString("consider.edge.reliabilities"));
+        considerEdgesBox.addItemListener(controller);
         considerComponentsPanel.add(considerEdgesBox);
         considerEdgesBox.setSelected(true);
 
@@ -298,9 +317,11 @@ public class ResinetMockup implements Constants {
         calculatePanel.setLayout(new GridBagLayout());
 
         calcReliabilityBtn = new JButton(Strings.getLocalizedString("calculate.reliability"));
+        calcReliabilityBtn.addActionListener(controller);
         calculatePanel.add(calcReliabilityBtn, GbcBuilder.build(0, 0, 1, 1, 1, 0).fillBoth());
 
         calcResilienceBtn = new JButton(Strings.getLocalizedString("calculate.resilience"));
+        calcResilienceBtn.addActionListener(controller);
         calculatePanel.add(calcResilienceBtn, GbcBuilder.build(0, 1, 1, 1, 1, 0).fillBoth());
 
         calculationProgressBar = new JProgressBar();
@@ -334,17 +355,42 @@ public class ResinetMockup implements Constants {
      *
      * @param state Der gewünschte Status
      */
-    public void setGuiState(GUI_STATES state) {
-        if (guiState == state)
+    public void setGuiState(GUI_STATES state, boolean force) {
+        if (guiState == state && !force)
             return;
 
         guiState = state;
 
-        calcReliabilityBtn.setEnabled(state == GUI_STATES.ENTER_GRAPH);
-        calcResilienceBtn.setEnabled(state == GUI_STATES.ENTER_GRAPH);
+        calcReliabilityBtn.setEnabled(state != GUI_STATES.CALCULATION_RUNNING);
+        calcResilienceBtn.setEnabled(state != GUI_STATES.CALCULATION_RUNNING);
 
-        reliabilitiesTabbedPane.setEnabled(state == GUI_STATES.ENTER_GRAPH);
-        Util.setChildrenEnabled(reliabilitiesTabbedPane, state == GUI_STATES.ENTER_GRAPH);
+        reliabilitiesTabbedPane.setEnabled(state != GUI_STATES.CALCULATION_RUNNING);
+
+        boolean reliabilityBoxesEnabled = (state != GUI_STATES.CALCULATION_RUNNING);
+        Util.setChildrenEnabled(reliabilitiesTabbedPane, reliabilityBoxesEnabled);
+
+        if (reliabilityBoxesEnabled && !stepValuesCheckBox.isSelected()) {
+            edgeProbabilityStepSizeBox.setEnabled(false);
+            nodeProbabilityStepSizeBox.setEnabled(false);
+            edgeEndProbabilityBox.setEnabled(false);
+            nodeEndProbabilityBox.setEnabled(false);
+        }
+    }
+
+    public RELIABILITY_MODES getReliabilityMode() {
+        if (reliabilitiesTabbedPane.getSelectedIndex() == 0) {
+            return RELIABILITY_MODES.SINGLE;
+        } else {
+            return RELIABILITY_MODES.SAME;
+        }
+    }
+
+    public void setResultText(String text) {
+        outputField.setText(text);
+    }
+
+    public void setStatusBarText(String text) {
+        statusBarLabel.setText(text);
     }
 
     public JPanel getContentPane() {
@@ -353,6 +399,18 @@ public class ResinetMockup implements Constants {
 
     public JMenuBar getMenuBar() {
         return menuBar;
+    }
+
+    public JCheckBox getStepValuesCheckBox() {
+        return stepValuesCheckBox;
+    }
+
+    public JCheckBox getConsiderNodesBox() {
+        return considerNodesBox;
+    }
+
+    public JCheckBox getConsiderEdgesBox() {
+        return considerEdgesBox;
     }
 
     public JSpinner getEdgeEndProbabilityBox() {

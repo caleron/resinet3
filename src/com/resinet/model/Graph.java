@@ -9,6 +9,7 @@ import java.util.ArrayList;
 
 public class Graph implements Serializable {
 
+    private static final long serialVersionUID = -7423579476281719826L;
     public ArrayList<Node> nodeList;
     public ArrayList<Edge> edgeList;
 

@@ -4,6 +4,7 @@ import java.io.Serializable;
 
 public class Edge extends GraphElement implements Serializable {
 
+    private static final long serialVersionUID = 2149306518837874937L;
     private final int edge_no;
 
     // Knoten einer Kante

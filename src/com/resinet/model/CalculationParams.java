@@ -1,8 +1,10 @@
 package com.resinet.model;
 
 import com.resinet.Resinet3;
+import com.resinet.util.Constants;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
 
 /**
  * Dies ist eine Wrapper-Klasse für die Berechnungsparameter
@@ -21,6 +23,18 @@ public class CalculationParams {
 
     //Für Berechnung mit einzelnen Wahrscheinlichkeiten
     public BigDecimal[] edgeProbabilities, nodeProbabilities;
+
+    public ArrayList<NodePoint> graphNodes;
+    public ArrayList<EdgeLine> graphEdges;
+
+    /**
+     * Parameterloser Konstruktor zur Benutzung als Datenwrapper.
+     */
+    public CalculationParams() {
+        //dummywerte
+        graph = null;
+        calculationMode = null;
+    }
 
     /**
      * Erzeugt ein Objekt für die Berechnungsparameter
@@ -89,4 +103,14 @@ public class CalculationParams {
         calculationSeries = true;
     }
 
+    /**
+     * Setzt die Knoten- und Kantenliste für das Netpanel.
+     *
+     * @param nodes Die Knotenliste
+     * @param edges Die Kantenliste
+     */
+    public void setGraphLists(ArrayList<NodePoint> nodes, ArrayList<EdgeLine> edges) {
+        graphNodes = nodes;
+        graphEdges = edges;
+    }
 }
