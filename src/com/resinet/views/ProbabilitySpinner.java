@@ -5,6 +5,7 @@ import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
+import java.math.BigDecimal;
 import java.text.DecimalFormat;
 
 /**
@@ -29,14 +30,21 @@ public class ProbabilitySpinner extends JSpinner {
         JFormattedTextField textField = editor.getTextField();
         editor.getTextField().setColumns(COLUMNS);
 
-        //Anzahl Nachkommastellen auf 15 festlegen
+        //Anzahl Nachkommastellen auf 50 festlegen
         DecimalFormat format = editor.getFormat();
-        format.setMaximumFractionDigits(15);
-        format.setMinimumFractionDigits(1);
+        format.setMaximumFractionDigits(50);
+        format.setMinimumFractionDigits(0);
 
         textField.addFocusListener(new MyFocusAdapter(textField));
 
         textField.addKeyListener(new MyKeyAdapter(textField));
+    }
+
+    public BigDecimal getBigDecimalValue() {
+        JSpinner.NumberEditor editor = ((JSpinner.NumberEditor) getEditor());
+        JFormattedTextField textField = editor.getTextField();
+
+        return new BigDecimal(textField.getText());
     }
 
     /**
@@ -75,4 +83,5 @@ public class ProbabilitySpinner extends JSpinner {
                 e.setKeyChar('.');
         }
     }
+
 }

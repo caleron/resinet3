@@ -26,12 +26,12 @@ public class ResinetMockup implements Constants {
 
     private NetPanel netPanel;
 
-    private JSpinner edgeEndProbabilityBox;
-    private JSpinner edgeProbabilityStepSizeBox;
-    private JSpinner nodeEndProbabilityBox;
-    private JSpinner nodeProbabilityStepSizeBox;
-    private JSpinner sameReliabilityEdgeProbBox;
-    private JSpinner sameReliabilityNodeProbBox;
+    private ProbabilitySpinner edgeEndProbabilityBox;
+    private ProbabilitySpinner edgeProbabilityStepSizeBox;
+    private ProbabilitySpinner nodeEndProbabilityBox;
+    private ProbabilitySpinner nodeProbabilityStepSizeBox;
+    private ProbabilitySpinner sameReliabilityEdgeProbBox;
+    private ProbabilitySpinner sameReliabilityNodeProbBox;
 
     private JButton calcReliabilityBtn, calcResilienceBtn;
     private JProgressBar calculationProgressBar;
@@ -49,7 +49,7 @@ public class ResinetMockup implements Constants {
     private JMenuItem openMenuItem;
     private JMenuItem saveMenuItem;
     private JMenuItem closeMenuItem;
-    private JCheckBox stepValuesCheckBox;
+    private JCheckBox calculationSeriesCheckBox;
     private JCheckBox considerNodesBox;
     private JCheckBox considerEdgesBox;
 
@@ -249,9 +249,9 @@ public class ResinetMockup implements Constants {
         sameReliabilityPanel.add(sameReliabilityNodeProbBox, GbcBuilder.build(1, 1, 1, 1, 1, 0).bottom(10));
 
         //Checkbox für Berechnungsserie
-        stepValuesCheckBox = new JCheckBox(Strings.getLocalizedString("perform.calculation.series"));
-        stepValuesCheckBox.addItemListener(controller);
-        sameReliabilityPanel.add(stepValuesCheckBox, GbcBuilder.build(0, 2, 2, 1, 1, 0).bottom(10).left());
+        calculationSeriesCheckBox = new JCheckBox(Strings.getLocalizedString("perform.calculation.series"));
+        calculationSeriesCheckBox.addItemListener(controller);
+        sameReliabilityPanel.add(calculationSeriesCheckBox, GbcBuilder.build(0, 2, 2, 1, 1, 0).bottom(10).left());
 
         //Eingabefelder für Berechnungsserie
         JLabel edgeProbEndValueLbl = new JLabel(Strings.getLocalizedString("edge.end.value"), SwingConstants.RIGHT);
@@ -355,6 +355,17 @@ public class ResinetMockup implements Constants {
      *
      * @param state Der gewünschte Status
      */
+    public void setGuiState(GUI_STATES state) {
+        setGuiState(state, false);
+    }
+
+    /**
+     * Setzt den aktuellen Status der Benutzeroberfläche, aktiviert und deaktiviert also Bedienelemente nach Bedarf
+     *
+     * @param state Der gewünschte Status
+     * @param force Überspringt die Prüfung, ob der neue Status gleich dem alten Status ist und erzwingt somit die
+     *              Neuzuweisung der Aktivierung
+     */
     public void setGuiState(GUI_STATES state, boolean force) {
         if (guiState == state && !force)
             return;
@@ -369,7 +380,7 @@ public class ResinetMockup implements Constants {
         boolean reliabilityBoxesEnabled = (state != GUI_STATES.CALCULATION_RUNNING);
         Util.setChildrenEnabled(reliabilitiesTabbedPane, reliabilityBoxesEnabled);
 
-        if (reliabilityBoxesEnabled && !stepValuesCheckBox.isSelected()) {
+        if (reliabilityBoxesEnabled && !calculationSeriesCheckBox.isSelected()) {
             edgeProbabilityStepSizeBox.setEnabled(false);
             nodeProbabilityStepSizeBox.setEnabled(false);
             edgeEndProbabilityBox.setEnabled(false);
@@ -382,6 +393,14 @@ public class ResinetMockup implements Constants {
             return RELIABILITY_MODES.SINGLE;
         } else {
             return RELIABILITY_MODES.SAME;
+        }
+    }
+
+    public void setReliabilityMode(RELIABILITY_MODES mode) {
+        if (mode == RELIABILITY_MODES.SAME) {
+            reliabilitiesTabbedPane.setSelectedIndex(1);
+        } else {
+            reliabilitiesTabbedPane.setSelectedIndex(0);
         }
     }
 
@@ -401,8 +420,8 @@ public class ResinetMockup implements Constants {
         return menuBar;
     }
 
-    public JCheckBox getStepValuesCheckBox() {
-        return stepValuesCheckBox;
+    public JCheckBox getCalculationSeriesCheckBox() {
+        return calculationSeriesCheckBox;
     }
 
     public JCheckBox getConsiderNodesBox() {
@@ -413,27 +432,27 @@ public class ResinetMockup implements Constants {
         return considerEdgesBox;
     }
 
-    public JSpinner getEdgeEndProbabilityBox() {
+    public ProbabilitySpinner getEdgeEndProbabilityBox() {
         return edgeEndProbabilityBox;
     }
 
-    public JSpinner getEdgeProbabilityStepSizeBox() {
+    public ProbabilitySpinner getEdgeProbabilityStepSizeBox() {
         return edgeProbabilityStepSizeBox;
     }
 
-    public JSpinner getNodeEndProbabilityBox() {
+    public ProbabilitySpinner getNodeEndProbabilityBox() {
         return nodeEndProbabilityBox;
     }
 
-    public JSpinner getNodeProbabilityStepSizeBox() {
+    public ProbabilitySpinner getNodeProbabilityStepSizeBox() {
         return nodeProbabilityStepSizeBox;
     }
 
-    public JSpinner getSameReliabilityEdgeProbBox() {
+    public ProbabilitySpinner getSameReliabilityEdgeProbBox() {
         return sameReliabilityEdgeProbBox;
     }
 
-    public JSpinner getSameReliabilityNodeProbBox() {
+    public ProbabilitySpinner getSameReliabilityNodeProbBox() {
         return sameReliabilityNodeProbBox;
     }
 
