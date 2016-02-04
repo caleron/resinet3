@@ -3,10 +3,7 @@ package com.resinet;
 import com.resinet.algorithms.ProbabilityCalculator;
 import com.resinet.model.CalculationParams;
 import com.resinet.model.Graph;
-import com.resinet.util.Constants;
-import com.resinet.util.GraphSaving;
-import com.resinet.util.GraphUtil;
-import com.resinet.util.Strings;
+import com.resinet.util.*;
 import com.resinet.views.NetPanel;
 import com.resinet.views.ProbabilitySpinner;
 import com.resinet.views.SingleReliabilityPanel;
@@ -22,8 +19,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 @SuppressWarnings("Duplicates")
-public class MainframeController extends WindowAdapter implements ActionListener, NetPanel.GraphChangedListener,
-        ProbabilityCalculator.CalculationProgressListener, Constants, ItemListener, ChangeListener {
+public class MainframeController extends WindowAdapter implements ActionListener, GraphChangedListener,
+        CalculationProgressListener, Constants, ItemListener, ChangeListener {
     ResinetMockup mainFrame;
 
     private final List<ProbabilitySpinner> edgeProbabilityBoxes = new ArrayList<>();

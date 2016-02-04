@@ -2,6 +2,7 @@ package com.resinet.views;
 
 import com.resinet.model.EdgeLine;
 import com.resinet.model.NodePoint;
+import com.resinet.util.GraphChangedListener;
 import com.resinet.util.GraphUtil;
 
 import javax.swing.*;
@@ -125,6 +126,12 @@ public class NetPanel extends JPanel {
         g.drawImage(img, 0, 0, this);
     }
 
+    /**
+     * Zeichnet ein Graphelement. Das Element wird hervorgehoben, wenn die Maus sich darüber findet
+     *
+     * @param imgGraphics die Zielgraphik
+     * @param element     Das zu zeichnende Element
+     */
     private void drawShape(Graphics2D imgGraphics, Shape element) {
         if (element.equals(hoveredElement)) {
             imgGraphics.setStroke(new BasicStroke(2));
@@ -135,6 +142,10 @@ public class NetPanel extends JPanel {
         }
     }
 
+    /**
+     * Zentriert den Graphen, wenn die Größe des NetPanels geändert wurde oder wenn eine Flag dafür gesetzt wurde, etwa
+     * nach dem Laden eines Graphen aus einer Datei.
+     */
     private void centerGraphIfResized() {
         //Wenn die Größe des Panels geändert wurde, Graph neu zentrieren
         if (lastPaintWidth != getWidth() || lastPaintHeight != getHeight() || centerGraphOnNextPaint) {
@@ -442,35 +453,5 @@ public class NetPanel extends JPanel {
         }
     }
 
-    /*Ermittle kleinste und größte Positionswerte der Knoten.
-
-    int smallest_x_pos = 2000;
-    int highest_x_pos = 0;
-    int smallest_y_pos = 2000;
-    int highest_y_pos = 0;
-    np = netPanel.drawnNodes.iterator();
-    while (np.hasNext()) {
-        NodePoint n = (NodePoint) np.next();
-        if (n.x < smallest_x_pos)
-            smallest_x_pos = n.x;
-        if (n.x > highest_x_pos)
-            highest_x_pos = n.x;
-        if (n.y < smallest_y_pos)
-            smallest_y_pos = n.y;
-        if (n.y > highest_y_pos)
-            highest_y_pos = n.y;
-    }
-
-    graph_width = highest_x_pos - smallest_x_pos + 25;
-    graph_height = highest_y_pos - smallest_y_pos + 25;*/
-
-
-    public interface GraphChangedListener {
-        void graphElementAdded(boolean isNode, int number);
-
-        void graphElementDeleted(boolean isNode, int number);
-
-        void graphElementClicked(boolean isNode, int number);
-    }
 
 }

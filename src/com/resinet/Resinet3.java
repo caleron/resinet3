@@ -33,7 +33,7 @@ import java.util.List;
  * <strong>views:</strong> GUI-Komponentenklassen
  */
 public class Resinet3 extends JFrame
-        implements ActionListener, NetPanel.GraphChangedListener, ProbabilityCalculator.CalculationProgressListener, Constants {
+        implements ActionListener, GraphChangedListener, CalculationProgressListener, Constants {
 
     public NetPanel netPanel;
 

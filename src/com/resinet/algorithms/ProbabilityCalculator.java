@@ -2,6 +2,8 @@ package com.resinet.algorithms;
 
 import com.resinet.Resinet3;
 import com.resinet.model.*;
+import com.resinet.util.CalculationProgressListener;
+import com.resinet.util.Constants;
 import com.resinet.util.Strings;
 import com.resinet.util.Util;
 import com.sun.istack.internal.Nullable;
@@ -23,7 +25,7 @@ import java.util.Set;
 /**
  * Diese Klasse führt die eigentlichen Zuverlässigkeitsberechnungen auf einem eigenen Thread durch
  */
-public class ProbabilityCalculator extends Thread {
+public class ProbabilityCalculator extends Thread implements Constants {
     private final CalculationProgressListener listener;
     private final CalculationParams params;
 
@@ -41,14 +43,14 @@ public class ProbabilityCalculator extends Thread {
         if (params.calculationMode == Resinet3.CALCULATION_MODES.RELIABILITY) {
             //Zuverlässigkeit berechnen
             if (params.calculationSeries) {
-                calculationSeries(CalculationSeriesMode.Reliability);
+                calculationSeries(CALCULATION_MODES.RELIABILITY);
             } else {
                 getHeidtmannsReliability(true);
             }
         } else {
             //Resilienz berechnen
             if (params.calculationSeries) {
-                calculationSeries(CalculationSeriesMode.Resilience);
+                calculationSeries(CALCULATION_MODES.RESILIENCE);
             } else {
                 getResilience(true);
             }
@@ -317,7 +319,7 @@ public class ProbabilityCalculator extends Thread {
      *
      * @param calculationSeriesMode Der Berechnungsmodus (Zuverlässigkeit oder Resilienz)
      */
-    private void calculationSeries(CalculationSeriesMode calculationSeriesMode) {
+    private void calculationSeries(CALCULATION_MODES calculationSeriesMode) {
 
         //Dialog zum Datei auswählen
         JFileChooser chooseSaveFile = new JFileChooser();
@@ -344,7 +346,7 @@ public class ProbabilityCalculator extends Thread {
         try {
             writer = new FileWriter(filepath);
 
-            if (calculationSeriesMode == CalculationSeriesMode.Resilience) {
+            if (calculationSeriesMode == CALCULATION_MODES.RESILIENCE) {
                 writer.write("Reliability of every edge                 Reliability of every vertex               Resilience of the network");
             } else {
                 writer.write("Reliability of every edge                 Reliability of every vertex               Reliability of the network");
@@ -380,7 +382,7 @@ public class ProbabilityCalculator extends Thread {
                     params.edgeValue = currentEdgeProb;
 
                     BigDecimal prob;
-                    if (calculationSeriesMode == CalculationSeriesMode.Resilience) {
+                    if (calculationSeriesMode == CALCULATION_MODES.RESILIENCE) {
                         //Resilienz
                         prob = getResilience(false);
                     } else {
@@ -513,22 +515,4 @@ public class ProbabilityCalculator extends Thread {
             listener.calculationProgressChanged(currentStep);
     }
 
-    /**
-     * Definiert die nötigen Methoden eines Listeners
-     */
-    public interface CalculationProgressListener {
-        void calculationProgressChanged(Integer currentStep);
-
-        void calculationFinished(String status);
-
-        void reportCalculationStepCount(Integer stepCount);
-    }
-
-    /**
-     * Die Berechnungsmodi der Serienberechnung
-     */
-    private enum CalculationSeriesMode {
-        Resilience,
-        Reliability
-    }
 }
