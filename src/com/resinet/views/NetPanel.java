@@ -23,7 +23,6 @@ public class NetPanel extends JPanel {
     public final ArrayList<NodePoint> drawnNodes;
     public final ArrayList<EdgeLine> drawnEdges;
 
-    private boolean singleReliabilityMode = false;
     public boolean nodeClickable = true;
     public boolean edgeClickable = true;
 
@@ -217,10 +216,11 @@ public class NetPanel extends JPanel {
                         //Knoten zum K-Knoten machen oder umgekehrt
                         currentNode.c_node = !currentNode.c_node;
 
-                    } else if (singleReliabilityMode && nodeClickable) {
-                        //Nur wenn Einzelwahrscheinlichkeiten angegeben werden können, Dialog anzeigen
-                        showInputNodeProbDialog(drawnNodes.indexOf(currentNode));
+                    } else if (nodeClickable) {
+                        //Event auslösen
+                        listener.graphElementClicked(true, drawnNodes.indexOf(currentNode));
                     }
+                    break;
                 }
             }
 
@@ -235,8 +235,9 @@ public class NetPanel extends JPanel {
                             drawnEdges.remove(edgeLine);
                             listener.graphElementDeleted(false, edgeIndex);
 
-                        } else if (singleReliabilityMode && edgeClickable) {
-                            showInputEdgeProbDialog(drawnEdges.indexOf(edgeLine));
+                        } else if (edgeClickable) {
+                            //Event auslösen
+                            listener.graphElementClicked(false, drawnEdges.indexOf(edgeLine));
                         }
                         edgeClicked = true;
                         break;
@@ -424,39 +425,12 @@ public class NetPanel extends JPanel {
             setCursor(deleteCursor);
         } else if (controlDown && nodeHovered) {
             setCursor(switchCursor);
-        } else if (singleReliabilityMode && ((nodeHovered && nodeClickable) || (edgeHovered && edgeClickable))) {
+        } else if (((nodeHovered && nodeClickable) || (edgeHovered && edgeClickable))) {
             setCursor(new Cursor(Cursor.HAND_CURSOR));
         } else {
             setCursor(new Cursor(Cursor.CROSSHAIR_CURSOR));
         }
     }
-
-    /**
-     * Zeigt einen Dialog an, um die Intaktwahrscheinlichkeit einer Kante zu setzen
-     *
-     * @param edgeNumber Die Kantennummer
-     */
-    private void showInputEdgeProbDialog(int edgeNumber) {
-        String str = "Input reliability of Edge " + edgeNumber;
-        String res = JOptionPane.showInputDialog(this, str);
-        if (res != null && res.length() > 0) {
-            listener.setElementReliability(false, edgeNumber, res);
-        }
-    }
-
-    /**
-     * Zeigt einen Dialog an, um die Intaktwahrscheinlichkeit eines Knotens zu setzen
-     *
-     * @param nodeNumber Die Knotennummer
-     */
-    private void showInputNodeProbDialog(int nodeNumber) {
-        String str = "Input reliability of Node " + nodeNumber;
-        String res = JOptionPane.showInputDialog(this, str);
-        if (res != null && res.length() > 0) {
-            listener.setElementReliability(true, nodeNumber, res);
-        }
-    }
-
 
     /*Ermittle kleinste und größte Positionswerte der Knoten.
 
@@ -480,22 +454,13 @@ public class NetPanel extends JPanel {
     graph_width = highest_x_pos - smallest_x_pos + 25;
     graph_height = highest_y_pos - smallest_y_pos + 25;*/
 
-    /**
-     * Setzt den Komponentenwahrscheinlichkeitsmodus fest
-     *
-     * @param sameReliabilityMode Ob gleiche Intaktwahrscheinlichkeiten für alle Kanten/Knoten gelten
-     */
-    public void setReliabilityMode(boolean sameReliabilityMode) {
-        singleReliabilityMode = !sameReliabilityMode;
-    }
-
 
     public interface GraphChangedListener {
         void graphElementAdded(boolean isNode, int number);
 
         void graphElementDeleted(boolean isNode, int number);
 
-        void setElementReliability(boolean isNode, int number, String value);
+        void graphElementClicked(boolean isNode, int number);
     }
 
 }

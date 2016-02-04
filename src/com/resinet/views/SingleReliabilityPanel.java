@@ -8,7 +8,7 @@ import java.awt.*;
  */
 public class SingleReliabilityPanel extends JPanel {
 
-    private final JTextField textField;
+    private final ProbabilitySpinner spinner;
     private final boolean isNode;
 
     /**
@@ -35,22 +35,21 @@ public class SingleReliabilityPanel extends JPanel {
         text = type + number;
 
         JLabel label = new JLabel(text, SwingConstants.RIGHT);
-        textField = new JTextField(10);
-        textField.setBackground(Color.white);
+        spinner = new ProbabilitySpinner(9);
 
         setLayout(new FlowLayout(FlowLayout.RIGHT));
         setPreferredSize(new Dimension(PREF_WIDTH, PREF_HEIGHT));
 
         //setDoubleBuffered(true);
         add(label);
-        add(textField);
+        add(spinner);
     }
 
     public boolean isNode() {
         return isNode;
     }
 
-    public JTextField getTextField() {
-        return textField;
+    public ProbabilitySpinner getSpinner() {
+        return spinner;
     }
 }

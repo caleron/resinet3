@@ -9,9 +9,12 @@ import com.resinet.util.GraphUtil;
 import com.resinet.util.Strings;
 import com.resinet.views.NetPanel;
 import com.resinet.views.ProbabilitySpinner;
+import com.resinet.views.SingleReliabilityPanel;
 import com.sun.istack.internal.Nullable;
 
 import javax.swing.*;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import java.awt.event.*;
 import java.math.BigDecimal;
 import java.text.MessageFormat;
@@ -20,7 +23,7 @@ import java.util.List;
 
 @SuppressWarnings("Duplicates")
 public class MainframeController extends WindowAdapter implements ActionListener, NetPanel.GraphChangedListener,
-        ProbabilityCalculator.CalculationProgressListener, Constants, ItemListener {
+        ProbabilityCalculator.CalculationProgressListener, Constants, ItemListener, ChangeListener {
     ResinetMockup mainFrame;
 
     private final List<ProbabilitySpinner> edgeProbabilityBoxes = new ArrayList<>();
@@ -64,26 +67,74 @@ public class MainframeController extends WindowAdapter implements ActionListener
         AbstractButton checkbox = (AbstractButton) e.getSource();
         if (checkbox == mainFrame.getCalculationSeriesCheckBox()) {
             mainFrame.setGuiState(GUI_STATES.ENTER_GRAPH, true);
-        } else if (checkbox == mainFrame.getConsiderEdgesBox()) {
-
-        } else if (checkbox == mainFrame.getConsiderNodesBox()) {
-
+        } else if (checkbox == mainFrame.getConsiderEdgesBox() || checkbox == mainFrame.getConsiderNodesBox()) {
+            updateSingleReliabilityProbPanel();
         }
     }
 
     @Override
     public void graphElementAdded(boolean isNode, int number) {
+        if (mainFrame.getReliabilityMode() == RELIABILITY_MODES.SAME)
+            return;
 
+        if ((!isNode && !mainFrame.getConsiderEdgesBox().isSelected()) || (isNode && !mainFrame.getConsiderNodesBox().isSelected()))
+            return;
+
+        //Feld nur hinzufügen, falls der Einzelzuverlässigkeitsmodus aktiv ist und die Komponente berücksichtigt werden soll
+
+        addFieldToProbPanel(number, isNode);
+
+        refreshSingleReliabilityScrollPane();
     }
+
 
     @Override
     public void graphElementDeleted(boolean isNode, int number) {
+        if (mainFrame.getReliabilityMode() == RELIABILITY_MODES.SAME)
+            return;
 
+        List<ProbabilitySpinner> list;
+        if (isNode) {
+            list = nodeProbabilityBoxes;
+        } else {
+            list = edgeProbabilityBoxes;
+        }
+
+        //Alle Wahrscheinlichkeiten ein Feld vorrücken lassen
+        for (int i = number; i < list.size() - 1; i++) {
+            list.get(i).setValue(list.get(i + 1).getValue());
+        }
+
+        //Letztes Element aus Liste und aus GUI entfernen
+        ProbabilitySpinner spinner = list.get(list.size() - 1);
+        spinner.getParent().getParent().remove(spinner.getParent());
+        list.remove(spinner);
+
+        refreshSingleReliabilityScrollPane();
     }
 
     @Override
-    public void setElementReliability(boolean isNode, int number, String value) {
-
+    public void graphElementClicked(boolean isNode, int number) {
+        new Thread(() -> {
+            try {
+                Thread.sleep(100);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            if (mainFrame.getReliabilityMode() == RELIABILITY_MODES.SAME) {
+                if (isNode) {
+                    mainFrame.getSameReliabilityNodeProbBox().requestFocusInWindow();
+                } else {
+                    mainFrame.getSameReliabilityNodeProbBox().requestFocusInWindow();
+                }
+            } else {
+                if (isNode) {
+                    nodeProbabilityBoxes.get(number).requestFocusInWindow();
+                } else {
+                    edgeProbabilityBoxes.get(number).requestFocusInWindow();
+                }
+            }
+        }).start();
     }
 
     @Override
@@ -126,20 +177,30 @@ public class MainframeController extends WindowAdapter implements ActionListener
     }
 
     /**
+     * Wird beim Tabwechsel ausgelöst
+     *
+     * @param e das ChangeEvent
+     */
+    @Override
+    public void stateChanged(ChangeEvent e) {
+        updateSingleReliabilityProbPanel();
+    }
+
+    /**
      * Zeigt einen Dialog an, damit das Fenster nur nach Bestätigung geschlossen wird.
      *
      * @param e Das Event
      */
     @Override
     public void windowClosing(@Nullable WindowEvent e) {
-        int result = JOptionPane.showConfirmDialog(mainFrame.getContentPane(),
+        /*int result = JOptionPane.showConfirmDialog(mainFrame.getContentPane(),
                 "Do you really wanna close ResiNet?\nAll unsaved data will be lost.", "Confirm",
                 JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE);
 
         //Programm beenden, wenn Ja angeklickt
-        if (result == JOptionPane.YES_OPTION) {
-            System.exit(0);
-        }
+        if (result == JOptionPane.YES_OPTION) {*/
+        System.exit(0);
+        //}
     }
 
     public void resetGraph() {
@@ -170,7 +231,7 @@ public class MainframeController extends WindowAdapter implements ActionListener
         netPanel.drawnEdges.addAll(params.graphEdges);
         netPanel.drawnNodes.addAll(params.graphNodes);
 
-        //TODO einzelwahrscheinlichkeitspanel aktualisieren
+        updateSingleReliabilityProbPanel();
 
         if (params.sameReliabilityMode) {
             mainFrame.setReliabilityMode(RELIABILITY_MODES.SAME);
@@ -196,10 +257,93 @@ public class MainframeController extends WindowAdapter implements ActionListener
                 nodeProbabilityBoxes.get(i).setValue(params.nodeProbabilities[i]);
             }
         }
-
+        netPanel.centerGraphOnNextPaint();
         //verzögert Repaint auslösen
         SwingUtilities.invokeLater(netPanel::repaint);
-        //TODO daten laden
+    }
+
+    /**
+     * Aktualisiert das Wahrscheinlichkeitspanel
+     */
+    public void updateSingleReliabilityProbPanel() {
+        if (mainFrame == null || mainFrame.getReliabilityMode() == RELIABILITY_MODES.SAME)
+            return;
+
+        boolean considerNodes = mainFrame.getConsiderNodesBox().isSelected();
+        boolean considerEdges = mainFrame.getConsiderEdgesBox().isSelected();
+
+        //Knoten/Kantenzahl auf 0 setzen, wenn sie nicht berücksichtigt werden sollen
+        int edgeCount = considerEdges ? mainFrame.getNetPanel().drawnEdges.size() : 0;
+        int edgeBoxCount = edgeProbabilityBoxes.size();
+        int nodeCount = considerNodes ? mainFrame.getNetPanel().drawnNodes.size() : 0;
+        int nodeBoxCount = nodeProbabilityBoxes.size();
+
+        //Fehlende Kantenwahrscheinlichkeitsfelder hinzufügen
+        for (int i = edgeBoxCount; i < edgeCount; i++) {
+            addFieldToProbPanel(i, false);
+        }
+        //Fehlende Knotenwahrscheinlichkeitsfelder hinzufügen
+        for (int i = nodeBoxCount; i < nodeCount; i++) {
+            addFieldToProbPanel(i, true);
+        }
+
+        //Überflüssige Kantenwahrscheinlichkeitsfelder entfernen
+        for (int i = edgeBoxCount; i > edgeCount; i--) {
+            ProbabilitySpinner textField = edgeProbabilityBoxes.get(edgeProbabilityBoxes.size() - 1);
+            textField.getParent().getParent().remove(textField.getParent());
+            edgeProbabilityBoxes.remove(textField);
+        }
+
+        //Überflüssige Knotenwahrscheinlichkeitsfelder entfernen
+        for (int i = nodeBoxCount; i > nodeCount; i--) {
+            ProbabilitySpinner textField = nodeProbabilityBoxes.get(nodeProbabilityBoxes.size() - 1);
+            textField.getParent().getParent().remove(textField.getParent());
+            nodeProbabilityBoxes.remove(textField);
+        }
+
+        refreshSingleReliabilityScrollPane();
+    }
+
+    private void refreshSingleReliabilityScrollPane() {
+        mainFrame.getSingleReliabilitiesScrollPane().revalidate();
+        mainFrame.getSingleReliabilitiesScrollPane().repaint();
+    }
+
+    /**
+     * Fügt dem Wahrscheinlichkeitspanel ein Panel für die Wahrscheinlichkeit einer Komponente hinzu
+     *
+     * @param number     Nummer des Felds
+     * @param isNodeProb True, wenn das Feld für einen Knoten ist, false bei Kante
+     */
+    private void addFieldToProbPanel(int number, boolean isNodeProb) {
+        SingleReliabilityPanel newPanel = new SingleReliabilityPanel(isNodeProb, number);
+        JPanel singleReliabilitiesPanel = mainFrame.getSingleReliabilitiesContainer();
+
+        if (isNodeProb) {
+            //Falls es ein Knoten ist, einfach am Ende hinzufügen
+            nodeProbabilityBoxes.add(newPanel.getSpinner());
+            singleReliabilitiesPanel.add(newPanel);
+        } else {
+            //Falls es eine Kante ist
+            edgeProbabilityBoxes.add(newPanel.getSpinner());
+
+            //Vor dem ersten Knotenzuverlässigkeitsfeld einfügen, falls es dieses gibt
+            if (nodeProbabilityBoxes.size() > 0) {
+                int insertPosition = 0;
+
+                for (int i = 0; i < singleReliabilitiesPanel.getComponents().length; i++) {
+                    SingleReliabilityPanel panel = (SingleReliabilityPanel) singleReliabilitiesPanel.getComponent(i);
+                    if (panel.isNode()) {
+                        insertPosition = i;
+                        break;
+                    }
+                }
+                singleReliabilitiesPanel.add(newPanel, insertPosition);
+            } else {
+                //Sonst auch am Ende einfügen
+                singleReliabilitiesPanel.add(newPanel);
+            }
+        }
     }
 
     private void saveData() {
@@ -308,5 +452,5 @@ public class MainframeController extends WindowAdapter implements ActionListener
         //Starte die Berechnung
         calculator.start();
     }
-//TODO statt beim klick auf ein Graphelement im Einzelzuverlässigkeitsmodus ein Fenster anzuzeigen, das entsprechende Feld fokussieren
+
 }

@@ -582,7 +582,7 @@ public class Resinet3 extends JFrame
             probabilityFieldsScrollPane.getViewport().setView(singleReliabilitiesPanel);
             updateSingleReliabilityProbPanel();
         }
-        netPanel.setReliabilityMode(sameReliability);
+        //netPanel.setReliabilityMode(sameReliability);
     }
 
     /**
@@ -777,6 +777,11 @@ public class Resinet3 extends JFrame
         refreshSingleReliabilityScrollPane();
     }
 
+    @Override
+    public void graphElementClicked(boolean isNode, int number) {
+
+    }
+
     /**
      * Setzt die Zuverlässigkeit einer Netzwerkkomponente
      *
@@ -860,11 +865,11 @@ public class Resinet3 extends JFrame
 
         if (isNodeProb) {
             //Falls es ein Knoten ist, einfach am Ende hinzufügen
-            nodeProbabilityBoxes.add(newPanel.getTextField());
+            //nodeProbabilityBoxes.add(newPanel.getSpinner());
             singleReliabilitiesPanel.add(newPanel);
         } else {
             //Falls es eine Kante ist
-            edgeProbabilityBoxes.add(newPanel.getTextField());
+            //edgeProbabilityBoxes.add(newPanel.getSpinner());
 
             //Vor dem ersten Knotenzuverlässigkeitsfeld einfügen, falls es dieses gibt
             if (nodeProbabilityBoxes.size() > 0) {

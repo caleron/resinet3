@@ -52,6 +52,7 @@ public class ResinetMockup implements Constants {
     private JCheckBox calculationSeriesCheckBox;
     private JCheckBox considerNodesBox;
     private JCheckBox considerEdgesBox;
+    private JScrollPane singleReliabilitiesScrollPane;
 
     public ResinetMockup(MainframeController controller) {
         this.controller = controller;
@@ -221,7 +222,7 @@ public class ResinetMockup implements Constants {
 
     private void initProbabilitiesPanel() {
         reliabilitiesTabbedPane = new JTabbedPane(JTabbedPane.TOP);
-
+        reliabilitiesTabbedPane.addChangeListener(controller);
         initSingleReliabilitiesTab();
 
         initSameReliabilityTab();
@@ -299,8 +300,9 @@ public class ResinetMockup implements Constants {
         considerComponentsPanel.add(considerEdgesBox);
         considerEdgesBox.setSelected(true);
 
-        singleReliabilitiesContainer = new JPanel(new GridLayout(0, 4));
-        JScrollPane singleReliabilitiesScrollPane = new JScrollPane(singleReliabilitiesContainer);
+        singleReliabilitiesContainer = new JPanel(new GridLayout(0, 2));
+        singleReliabilitiesContainer.setBorder(new EmptyBorder(0, 0, 0, 15));
+        singleReliabilitiesScrollPane = new JScrollPane(singleReliabilitiesContainer);
         singleReliabilitiesScrollPane.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
         singleReliabilitiesScrollPane.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED);
         singleReliabilitiesScrollPane.getVerticalScrollBar().setUnitIncrement(10);
@@ -430,6 +432,10 @@ public class ResinetMockup implements Constants {
 
     public JCheckBox getConsiderEdgesBox() {
         return considerEdgesBox;
+    }
+
+    public JScrollPane getSingleReliabilitiesScrollPane() {
+        return singleReliabilitiesScrollPane;
     }
 
     public ProbabilitySpinner getEdgeEndProbabilityBox() {

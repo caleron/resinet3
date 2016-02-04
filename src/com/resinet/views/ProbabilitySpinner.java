@@ -20,15 +20,25 @@ public class ProbabilitySpinner extends JSpinner {
     private static final int COLUMNS = 15;
 
     /**
-     * Erstellt einen neuen JSpinner für Wahrscheinlichkeiten
+     * Erstellt einen neuen JSpinner für Wahrscheinlichkeiten mit der Spaltenanzahl 15
      */
     public ProbabilitySpinner() {
+        this(COLUMNS);
+    }
+
+    /**
+     * Erstellt einen neuen JSpinner für Wahrscheinlichkeiten
+     *
+     * @param inputColumns Spaltenanzahl des Eingabefeldes
+     */
+    public ProbabilitySpinner(int inputColumns) {
+
         super();
         setModel(new SpinnerNumberModel(1, 0, 1, 0.01));
 
         JSpinner.NumberEditor editor = ((JSpinner.NumberEditor) getEditor());
         JFormattedTextField textField = editor.getTextField();
-        editor.getTextField().setColumns(COLUMNS);
+        editor.getTextField().setColumns(inputColumns);
 
         //Anzahl Nachkommastellen auf 50 festlegen
         DecimalFormat format = editor.getFormat();
@@ -40,6 +50,11 @@ public class ProbabilitySpinner extends JSpinner {
         textField.addKeyListener(new MyKeyAdapter(textField));
     }
 
+    /**
+     * Gibt den angezeigten Wert als BigDecimal zurück
+     *
+     * @return Wert als BigDecimal
+     */
     public BigDecimal getBigDecimalValue() {
         JSpinner.NumberEditor editor = ((JSpinner.NumberEditor) getEditor());
         JFormattedTextField textField = editor.getTextField();
