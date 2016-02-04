@@ -17,8 +17,7 @@ public class NetPanel extends JPanel {
     private EdgeLine draggingLine;
     private boolean lineDragging = false;
 
-    private boolean nodeHovered = false;
-    private boolean edgeHovered = false;
+    private Shape hoveredElement;
 
     public final ArrayList<NodePoint> drawnNodes;
     public final ArrayList<EdgeLine> drawnEdges;
@@ -32,6 +31,7 @@ public class NetPanel extends JPanel {
 
     private Integer lastPaintWidth = 0, lastPaintHeight = 0;
 
+    private static final int HOVER_DISTANCE = 7;
 
     public NetPanel(GraphChangedListener listener) {
         this.listener = listener;
@@ -62,12 +62,6 @@ public class NetPanel extends JPanel {
         deleteCursor = getToolkit().createCustomCursor(deleteCursorImage, new Point(0, 0), "Delete Element");
     }
 
-    /*
-    TODO Linie fett zeichnen, wenn man mit der Maus drüber ist
-    Dazu Graphics in Graphics2D casten und dann mit setStroke die Linienart festlegen
-    Graphics2D g2 = (Graphics2D) g;
-    g2.setStroke(new BasicStroke(10));
-     */
     @Override
     public void paintComponent(Graphics g) {
         centerGraphIfResized();
@@ -86,7 +80,8 @@ public class NetPanel extends JPanel {
         imgGraphics.setColor(Color.black);
 
         for (EdgeLine edgeLine : drawnEdges) {
-            imgGraphics.draw(edgeLine);
+            drawShape(imgGraphics, edgeLine);
+
             String s = String.valueOf(drawnEdges.indexOf(edgeLine));
             imgGraphics.drawString(s, (float) edgeLine.textPositionX, (float) edgeLine.textPositionY);
         }
@@ -97,7 +92,11 @@ public class NetPanel extends JPanel {
             imgGraphics.setColor(Color.black);
 
             if (nodePoint.c_node) {
-                imgGraphics.fill(nodePoint);
+                if (nodePoint.equals(hoveredElement)) {
+                    imgGraphics.fill(nodePoint.grow());
+                } else {
+                    imgGraphics.fill(nodePoint);
+                }
                 //Textfarbe weiß, da jetzt Hintergrund schwarz ist
                 imgGraphics.setColor(Color.white);
             } else {
@@ -105,7 +104,8 @@ public class NetPanel extends JPanel {
                 imgGraphics.setColor(Color.white);
                 imgGraphics.fill(nodePoint);
                 imgGraphics.setColor(Color.black);
-                imgGraphics.draw(nodePoint);
+
+                drawShape(imgGraphics, nodePoint);
             }
             //Zahl im Knoten zeichnen
             String s = String.valueOf(count);
@@ -123,6 +123,16 @@ public class NetPanel extends JPanel {
         }
 
         g.drawImage(img, 0, 0, this);
+    }
+
+    private void drawShape(Graphics2D imgGraphics, Shape element) {
+        if (element.equals(hoveredElement)) {
+            imgGraphics.setStroke(new BasicStroke(2));
+            imgGraphics.draw(element);
+            imgGraphics.setStroke(new BasicStroke(1));
+        } else {
+            imgGraphics.draw(element);
+        }
     }
 
     private void centerGraphIfResized() {
@@ -229,7 +239,7 @@ public class NetPanel extends JPanel {
                 //Wenn kein Knoten angeklickt wurde, auf Kante prüfen
                 for (EdgeLine edgeLine : drawnEdges) {
 
-                    if (edgeLine.ptSegDist(clickX, clickY) < 5) {
+                    if (edgeLine.ptSegDist(clickX, clickY) < HOVER_DISTANCE) {
                         if (mouseEvent.isShiftDown()) {
                             int edgeIndex = drawnEdges.indexOf(edgeLine);
                             drawnEdges.remove(edgeLine);
@@ -371,8 +381,8 @@ public class NetPanel extends JPanel {
             for (NodePoint nodePoint : drawnNodes) {
 
                 if (nodePoint.contains(x, y)) {
-                    nodeHovered = true;
-                    edgeHovered = false;
+                    hoveredElement = nodePoint;
+                    repaint();
                     setCursorHover(mouseEvent.isShiftDown(), mouseEvent.isControlDown());
                     return;
                 }
@@ -383,17 +393,17 @@ public class NetPanel extends JPanel {
              */
             for (EdgeLine edgeLine : drawnEdges) {
 
-                if (edgeLine.ptSegDist(x, y) < 5) {
-                    nodeHovered = false;
-                    edgeHovered = true;
+                if (edgeLine.ptSegDist(x, y) < HOVER_DISTANCE) {
+                    hoveredElement = edgeLine;
+                    repaint();
                     setCursorHover(mouseEvent.isShiftDown(), mouseEvent.isControlDown());
                     return;
                 }
             }
-            if (nodeHovered || edgeHovered) {
+            if (hoveredElement != null) {
                 //Cursor zurücksetzen, falls er auf keinem Element mehr ist
-                nodeHovered = false;
-                edgeHovered = false;
+                hoveredElement = null;
+                repaint();
                 setCursorHover(mouseEvent.isShiftDown(), mouseEvent.isControlDown());
             }
         }
@@ -421,11 +431,11 @@ public class NetPanel extends JPanel {
      * @param controlDown Ob Strg gedrückt ist
      */
     private void setCursorHover(boolean shiftDown, boolean controlDown) {
-        if (shiftDown && (nodeHovered || edgeHovered)) {
+        if (shiftDown && hoveredElement != null) {
             setCursor(deleteCursor);
-        } else if (controlDown && nodeHovered) {
+        } else if (controlDown && hoveredElement instanceof NodePoint) {
             setCursor(switchCursor);
-        } else if (((nodeHovered && nodeClickable) || (edgeHovered && edgeClickable))) {
+        } else if (((hoveredElement instanceof NodePoint && nodeClickable) || (hoveredElement instanceof EdgeLine && edgeClickable))) {
             setCursor(new Cursor(Cursor.HAND_CURSOR));
         } else {
             setCursor(new Cursor(Cursor.CROSSHAIR_CURSOR));

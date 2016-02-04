@@ -13,4 +13,11 @@ public class NodePoint extends Ellipse2D.Double {
     private NodePoint(double x, double y) {
         super(x, y, 20, 20);
     }
+
+    public NodePoint grow() {
+        NodePoint np = new NodePoint(x - 1, y - 1);
+        np.width += 2;
+        np.height += 2;
+        return np;
+    }
 }
