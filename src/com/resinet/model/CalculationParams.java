@@ -13,6 +13,7 @@ public class CalculationParams {
     public final Graph graph;
     public boolean sameReliabilityMode = false;
     public boolean calculationSeries = false;
+    public boolean probabilitiesLoaded = false;
     public final Resinet3.CALCULATION_MODES calculationMode;
 
     //für die Serienberechnung
@@ -56,6 +57,7 @@ public class CalculationParams {
     public void setSingleReliabilityParams(BigDecimal[] edgeProbabilities, BigDecimal[] nodeProbabilities) {
         this.edgeProbabilities = edgeProbabilities;
         this.nodeProbabilities = nodeProbabilities;
+        probabilitiesLoaded = true;
     }
 
     /**
@@ -76,6 +78,7 @@ public class CalculationParams {
     public void setSameReliabilityParams(BigDecimal edgeValue, BigDecimal nodeValue) {
         this.edgeValue = edgeValue;
         this.nodeValue = nodeValue;
+        probabilitiesLoaded = true;
     }
 
     /**
@@ -101,6 +104,7 @@ public class CalculationParams {
         this.nodeStepSize = nodeStepSize;
 
         calculationSeries = true;
+        probabilitiesLoaded = true;
     }
 
     /**

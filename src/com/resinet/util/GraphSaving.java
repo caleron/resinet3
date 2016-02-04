@@ -281,6 +281,7 @@ public final class GraphSaving {
                         }
                     }
                 }
+                calculationParams.probabilitiesLoaded = true;
                 //Falls Berechnungsserienparameter vorliegen, müssen alle abgespeichert worden sein,
                 //also reicht es hier, einen Parameter zu prüfen
                 if (calculationParams.edgeEndValue != null) {

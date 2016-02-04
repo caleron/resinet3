@@ -229,29 +229,32 @@ public class MainframeController extends WindowAdapter implements ActionListener
         netPanel.drawnNodes.addAll(params.graphNodes);
 
         updateSingleReliabilityProbPanel();
+        if (params.probabilitiesLoaded) {
+            //Nur wenn Wahrscheinlichkeiten eingespeichert wurden, diese auch laden
 
-        if (params.sameReliabilityMode) {
-            mainFrame.setReliabilityMode(RELIABILITY_MODES.SAME);
+            if (params.sameReliabilityMode) {
+                mainFrame.setReliabilityMode(RELIABILITY_MODES.SAME);
 
-            mainFrame.getSameReliabilityNodeProbBox().setValue(params.nodeValue);
-            mainFrame.getSameReliabilityEdgeProbBox().setValue(params.edgeValue);
-            if (params.calculationSeries) {
-                mainFrame.getNodeEndProbabilityBox().setValue(params.nodeEndValue);
-                mainFrame.getNodeProbabilityStepSizeBox().setValue(params.nodeStepSize);
+                mainFrame.getSameReliabilityNodeProbBox().setValue(params.nodeValue);
+                mainFrame.getSameReliabilityEdgeProbBox().setValue(params.edgeValue);
+                if (params.calculationSeries) {
+                    mainFrame.getNodeEndProbabilityBox().setValue(params.nodeEndValue);
+                    mainFrame.getNodeProbabilityStepSizeBox().setValue(params.nodeStepSize);
 
-                mainFrame.getEdgeEndProbabilityBox().setValue(params.edgeEndValue);
-                mainFrame.getEdgeProbabilityStepSizeBox().setValue(params.edgeStepSize);
-            }
-        } else {
-            mainFrame.setReliabilityMode(RELIABILITY_MODES.SINGLE);
+                    mainFrame.getEdgeEndProbabilityBox().setValue(params.edgeEndValue);
+                    mainFrame.getEdgeProbabilityStepSizeBox().setValue(params.edgeStepSize);
+                }
+            } else {
+                mainFrame.setReliabilityMode(RELIABILITY_MODES.SINGLE);
 
-            //Einzelwahrscheinlichkeiten in die Felder eintragen
-            for (int i = 0; i < edgeProbabilityBoxes.size(); i++) {
-                edgeProbabilityBoxes.get(i).setValue(params.edgeProbabilities[i]);
-            }
+                //Einzelwahrscheinlichkeiten in die Felder eintragen
+                for (int i = 0; i < edgeProbabilityBoxes.size(); i++) {
+                    edgeProbabilityBoxes.get(i).setValue(params.edgeProbabilities[i]);
+                }
 
-            for (int i = 0; i < nodeProbabilityBoxes.size(); i++) {
-                nodeProbabilityBoxes.get(i).setValue(params.nodeProbabilities[i]);
+                for (int i = 0; i < nodeProbabilityBoxes.size(); i++) {
+                    nodeProbabilityBoxes.get(i).setValue(params.nodeProbabilities[i]);
+                }
             }
         }
         netPanel.centerGraphOnNextPaint();

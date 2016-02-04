@@ -378,8 +378,7 @@ public class ProbabilityCalculator extends Thread implements Constants {
                     counter++;
 
                     //Neue/aktuelle Wahrscheinlichkeiten zuweisen
-                    params.nodeValue = currentNodeProb;
-                    params.edgeValue = currentEdgeProb;
+                    params.setSameReliabilityParams(currentEdgeProb, currentNodeProb);
 
                     BigDecimal prob;
                     if (calculationSeriesMode == CALCULATION_MODES.RESILIENCE) {
