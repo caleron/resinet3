@@ -112,26 +112,19 @@ public class MainframeController extends WindowAdapter implements ActionListener
 
     @Override
     public void graphElementClicked(boolean isNode, int number) {
-        new Thread(() -> {
-            try {
-                Thread.sleep(100);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-            if (mainFrame.getReliabilityMode() == RELIABILITY_MODES.SAME) {
-                if (isNode) {
-                    mainFrame.getSameReliabilityNodeProbBox().requestFocusInWindow();
-                } else {
-                    mainFrame.getSameReliabilityNodeProbBox().requestFocusInWindow();
-                }
+        if (mainFrame.getReliabilityMode() == RELIABILITY_MODES.SAME) {
+            if (isNode) {
+                mainFrame.getSameReliabilityNodeProbBox().requestFocusInWindow();
             } else {
-                if (isNode) {
-                    nodeProbabilityBoxes.get(number).requestFocusInWindow();
-                } else {
-                    edgeProbabilityBoxes.get(number).requestFocusInWindow();
-                }
+                mainFrame.getSameReliabilityEdgeProbBox().requestFocusInWindow();
             }
-        }).start();
+        } else {
+            if (isNode) {
+                nodeProbabilityBoxes.get(number).requestFocusInWindow();
+            } else {
+                edgeProbabilityBoxes.get(number).requestFocusInWindow();
+            }
+        }
     }
 
     @Override

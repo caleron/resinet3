@@ -99,4 +99,10 @@ public class ProbabilitySpinner extends JSpinner {
         }
     }
 
+    @Override
+    public boolean requestFocusInWindow() {
+        JSpinner.NumberEditor editor = ((JSpinner.NumberEditor) getEditor());
+        JFormattedTextField textField = editor.getTextField();
+        return textField.requestFocusInWindow();
+    }
 }
