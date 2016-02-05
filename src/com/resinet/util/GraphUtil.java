@@ -20,6 +20,9 @@ public class GraphUtil {
      * @return Ein Rechteck, das den Graphen umschließt
      */
     public static Rectangle getGraphBounds(ArrayList<NodePoint> nodes) {
+        if (nodes.isEmpty()) {
+            return new Rectangle(0, 0, 0, 0);
+        }
 
         int minX = Integer.MAX_VALUE, minY = Integer.MAX_VALUE, maxX = 0, maxY = 0;
         for (NodePoint drawnNode : nodes) {

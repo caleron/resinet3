@@ -208,6 +208,8 @@ public class ResinetMockup implements Constants {
         netPanel.setBackground(Color.white);
 
         JScrollPane graphScrollPane = new JScrollPane(netPanel);
+        graphScrollPane.getVerticalScrollBar().setUnitIncrement(10);
+        graphScrollPane.getHorizontalScrollBar().setUnitIncrement(10);
         contentPane.add(graphScrollPane, BorderLayout.CENTER);
     }
 

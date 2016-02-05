@@ -147,9 +147,16 @@ public class NetPanel extends JPanel {
      * Zentriert den Graphen, wenn eine Flag dafür gesetzt wurde, etwa nach dem Laden eines Graphen aus einer Datei.
      */
     private void centerGraph() {
-        //Wenn die Größe des Panels geändert wurde, Graph neu zentrieren
-        int lastPaintHeight = getHeight();
-        int lastPaintWidth = getWidth();
+        int panelHeight = getHeight();
+        int panelWidth = getWidth();
+
+        //Direktes Vaterelement ist der ViewPort der Scrollpane, und davon das Vaterelement ist die Scrollpane
+        Container parent = getParent().getParent();
+        if (parent instanceof JScrollPane) {
+            panelHeight = getParent().getHeight();
+            panelWidth = getParent().getWidth();
+        }
+
         Rectangle graphRect = GraphUtil.getGraphBounds(drawnNodes);
 
         Integer offsetX, offsetY;
@@ -157,7 +164,7 @@ public class NetPanel extends JPanel {
         if (graphRect.getX() < 0) {
             offsetX = Math.abs(((int) graphRect.getX()));
         } else {
-            offsetX = (int) ((lastPaintWidth - graphRect.getWidth()) / 2 - graphRect.getX());
+            offsetX = (int) ((panelWidth - graphRect.getWidth()) / 2 - graphRect.getX());
         }
         if (graphRect.getX() + offsetX < 0) {
             offsetX = -((int) graphRect.getX());
@@ -166,7 +173,7 @@ public class NetPanel extends JPanel {
         if (graphRect.getY() < 0) {
             offsetY = Math.abs((int) graphRect.getY());
         } else {
-            offsetY = (int) ((lastPaintHeight - graphRect.getHeight()) / 2 - graphRect.getY());
+            offsetY = (int) ((panelHeight - graphRect.getHeight()) / 2 - graphRect.getY());
         }
         if (graphRect.getY() + offsetY < 0) {
             offsetY = -((int) graphRect.getY());
@@ -197,6 +204,14 @@ public class NetPanel extends JPanel {
         lineDragging = false;
         draggingLine = null;
         repaint();
+    }
+
+    @Override
+    public Dimension getPreferredSize() {
+        Rectangle graphRect = GraphUtil.getGraphBounds(drawnNodes);
+
+        return new Dimension((int) (graphRect.getX() + graphRect.getWidth()) + 10,
+                (int) (graphRect.getY() + graphRect.getHeight()) + 10);
     }
 
     private class MyMouseListener extends MouseAdapter {
@@ -449,6 +464,5 @@ public class NetPanel extends JPanel {
             setCursor(new Cursor(Cursor.CROSSHAIR_CURSOR));
         }
     }
-
 
 }
