@@ -12,14 +12,14 @@ import java.util.ArrayList;
  * Stellt Funktionen zur Verfügung, die beim Umgang mit Graphen helfen
  */
 public class GraphUtil {
-
     /**
      * Bestimmt das den Graphen umgebende Rechteck
      *
-     * @param nodes Die Knotenliste
+     * @param nodes  Die Knotenliste
+     * @param spaces Abstand des Rechtecks in alle Richtungen zum Graphen
      * @return Ein Rechteck, das den Graphen umschließt
      */
-    public static Rectangle getGraphBounds(ArrayList<NodePoint> nodes) {
+    public static Rectangle getGraphBounds(ArrayList<NodePoint> nodes, int spaces) {
         if (nodes.isEmpty()) {
             return new Rectangle(0, 0, 0, 0);
         }
@@ -39,7 +39,19 @@ public class GraphUtil {
                 maxY = (int) drawnNode.getMaxY();
             }
         }
-        return new Rectangle(minX, minY, maxX - minX, maxY - minY);
+
+        return new Rectangle(minX - spaces, minY - spaces, maxX - minX + 2 * spaces, maxY - minY + 2 * spaces);
+    }
+
+
+    /**
+     * Bestimmt das den Graphen umgebende Rechteck
+     *
+     * @param nodes Die Knotenliste
+     * @return Ein Rechteck, das den Graphen umschließt
+     */
+    public static Rectangle getGraphBounds(ArrayList<NodePoint> nodes) {
+        return getGraphBounds(nodes, 0);
     }
 
 

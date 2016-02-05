@@ -18,6 +18,15 @@ public class NetPanel extends JPanel {
     private EdgeLine draggingLine;
     private boolean lineDragging = false;
 
+    private boolean selectDragging = false;
+    private Point selectStartPoint;
+    private Timer selectionAnimationTimer;
+    private float selectionAnimationPhase = 0;
+    private boolean nodesSelected = false;
+    private Rectangle selectionRectangle;
+
+    private Point currentMousePosition;
+
     private Shape hoveredElement;
 
     public final ArrayList<NodePoint> drawnNodes;
@@ -59,6 +68,12 @@ public class NetPanel extends JPanel {
 
         switchCursor = getToolkit().createCustomCursor(switchCursorImage, new Point(0, 0), "Switch State");
         deleteCursor = getToolkit().createCustomCursor(deleteCursorImage, new Point(0, 0), "Delete Element");
+
+        selectionAnimationTimer = new Timer(30, (e) -> {
+            //modulo, damit es nicht nach langer zeit zu einer Exception kommen kann
+            selectionAnimationPhase = (selectionAnimationPhase + 0.5f) % 4;
+            repaint();
+        });
     }
 
     @Override
@@ -82,7 +97,13 @@ public class NetPanel extends JPanel {
         imgGraphics.setColor(Color.black);
 
         for (EdgeLine edgeLine : drawnEdges) {
-            drawShape(imgGraphics, edgeLine);
+            if (edgeLine.equals(hoveredElement)) {
+                imgGraphics.setStroke(new BasicStroke(2));
+                imgGraphics.draw(edgeLine);
+                imgGraphics.setStroke(new BasicStroke(1));
+            } else {
+                imgGraphics.draw(edgeLine);
+            }
 
             String s = String.valueOf(drawnEdges.indexOf(edgeLine));
             imgGraphics.drawString(s, (float) edgeLine.textPositionX, (float) edgeLine.textPositionY);
@@ -93,22 +114,8 @@ public class NetPanel extends JPanel {
         for (NodePoint nodePoint : drawnNodes) {
             imgGraphics.setColor(Color.black);
 
-            if (nodePoint.c_node) {
-                if (nodePoint.equals(hoveredElement)) {
-                    imgGraphics.fill(nodePoint.grow());
-                } else {
-                    imgGraphics.fill(nodePoint);
-                }
-                //Textfarbe weiß, da jetzt Hintergrund schwarz ist
-                imgGraphics.setColor(Color.white);
-            } else {
-                //Kreis erst weiß ausfüllen, damit die Kanten dadrin überschrieben werden
-                imgGraphics.setColor(Color.white);
-                imgGraphics.fill(nodePoint);
-                imgGraphics.setColor(Color.black);
+            drawNode(imgGraphics, nodePoint);
 
-                drawShape(imgGraphics, nodePoint);
-            }
             //Zahl im Knoten zeichnen
             String s = String.valueOf(count);
             if (count < 10)
@@ -118,29 +125,87 @@ public class NetPanel extends JPanel {
             count++;
         }
 
-        //Linie während des Kantenziehens zeichnen
-        if (lineDragging) {
-            imgGraphics.setColor(Color.BLACK);
+        imgGraphics.setColor(Color.BLACK);
+
+        //Linie während des Kantenziehens nur zeichnen, wenn die Maus bewegt wurde, also auch ein zweiter Punkt gesetzt wurde
+        if (lineDragging && draggingLine.x2 > 0 && draggingLine.y2 > 0) {
             imgGraphics.draw(draggingLine);
+        }
+
+        //Kasten zum auswählen zeichnen
+        if (selectDragging) {
+            //gestrichelte Linie
+            imgGraphics.setStroke(new BasicStroke(1, BasicStroke.CAP_BUTT, BasicStroke.JOIN_BEVEL, 0, new float[]{1, 2}, 0));
+            Rectangle selectRect = new Rectangle(selectStartPoint);
+            selectRect.add(currentMousePosition);
+            imgGraphics.draw(selectRect);
+        }
+
+        if (nodesSelected && !selectDragging) {
+            //animiert gestrichelte Linie
+            imgGraphics.setStroke(new BasicStroke(1, BasicStroke.CAP_BUTT, BasicStroke.JOIN_BEVEL, 0, new float[]{2, 2}, selectionAnimationPhase));
+            imgGraphics.draw(selectionRectangle);
         }
 
         g.drawImage(img, 0, 0, this);
     }
 
     /**
-     * Zeichnet ein Graphelement. Das Element wird hervorgehoben, wenn die Maus sich darüber findet
+     * Zeichnet ein Knoten. Der Knoten wird hervorgehoben, wenn die Maus sich darüber findet
      *
      * @param imgGraphics die Zielgraphik
-     * @param element     Das zu zeichnende Element
+     * @param nodePoint   Der zu zeichnende Knoten
      */
-    private void drawShape(Graphics2D imgGraphics, Shape element) {
-        if (element.equals(hoveredElement)) {
-            imgGraphics.setStroke(new BasicStroke(2));
-            imgGraphics.draw(element);
-            imgGraphics.setStroke(new BasicStroke(1));
+    private void drawNode(Graphics2D imgGraphics, NodePoint nodePoint) {
+        imgGraphics.setColor(Color.black);
+        if (nodePoint.equals(hoveredElement)) {
+
+            //wenn die Maus darüber ist, fett zeichnen
+            if (nodePoint.c_node) {
+                //oder wenns ein Terminalknoten ist, leicht größer füllen
+                imgGraphics.fill(nodePoint.grow());
+            } else {
+                //Kreis erst weiß ausfüllen, damit die Kanten dadrin überschrieben werden
+                imgGraphics.setColor(Color.white);
+                imgGraphics.fill(nodePoint);
+                imgGraphics.setColor(Color.black);
+
+                imgGraphics.setStroke(new BasicStroke(2));
+                imgGraphics.draw(nodePoint);
+            }
         } else {
-            imgGraphics.draw(element);
+            if (nodePoint.c_node) {
+                if (nodePoint.selected) {
+                    //animierte umrandung, falls ausgewählt
+                    //kleineren schwarzen Knoten ausgefüllt zeichnen
+                    imgGraphics.fill(nodePoint.shrink());
+
+                    imgGraphics.setStroke(new BasicStroke(2, BasicStroke.CAP_BUTT, BasicStroke.JOIN_BEVEL, 0, new float[]{2, 2}, selectionAnimationPhase));
+                    imgGraphics.draw(nodePoint);
+                } else {
+                    //schwarz ausfüllen
+                    imgGraphics.fill(nodePoint);
+                }
+            } else {
+                //Kreis erst weiß ausfüllen, damit die Kanten dadrin überschrieben werden
+                imgGraphics.setColor(Color.white);
+                imgGraphics.fill(nodePoint);
+                imgGraphics.setColor(Color.black);
+
+                //Falls der Knoten ausgewählt ist, gestrichelte Umrandung zeichnen
+                if (nodePoint.selected) {
+                    imgGraphics.setStroke(new BasicStroke(2, BasicStroke.CAP_BUTT, BasicStroke.JOIN_BEVEL, 0, new float[]{2, 2}, selectionAnimationPhase));
+                }
+
+                imgGraphics.draw(nodePoint);
+            }
         }
+
+        if (nodePoint.c_node) {
+            //Textfarbe weiß, da jetzt Hintergrund schwarz ist
+            imgGraphics.setColor(Color.white);
+        }
+        imgGraphics.setStroke(new BasicStroke(1));
     }
 
     /**
@@ -203,6 +268,7 @@ public class NetPanel extends JPanel {
         drawnEdges.clear();
         lineDragging = false;
         draggingLine = null;
+        resetSelection();
         repaint();
     }
 
@@ -218,6 +284,12 @@ public class NetPanel extends JPanel {
         @Override
         public void mouseClicked(MouseEvent mouseEvent) {
             requestFocusInWindow();
+
+            if (nodesSelected) {
+                resetSelection();
+                repaint();
+                return;
+            }
 
             Integer clickX = mouseEvent.getX();
             Integer clickY = mouseEvent.getY();
@@ -330,48 +402,81 @@ public class NetPanel extends JPanel {
                     //Es wurde in den Kreis geklickt, also Kantenziehen starten
                     draggingLine = new EdgeLine(np, null);
                     lineDragging = true;
-                    break;
+                    return;
                 }
             }
+
+            //Falls kein Knoten gedrückt wurde, auswählen beginnen
+            selectDragging = true;
+            selectStartPoint = mouseEvent.getPoint();
+            currentMousePosition = mouseEvent.getPoint();
         }
 
         @Override
         public void mouseReleased(MouseEvent mouseEvent) {
-            if (!lineDragging || mouseEvent.isMetaDown())
+            if (mouseEvent.isMetaDown())
                 return;
 
-            lineDragging = false;
-            int x = mouseEvent.getX();
-            int y = mouseEvent.getY();
+            if (lineDragging) {
+                lineDragging = false;
+                int x = mouseEvent.getX();
+                int y = mouseEvent.getY();
 
-            //Prüft, ob die Maus innerhalb eines Knotens losgelassen wurde
-            for (NodePoint currentNode : drawnNodes) {
+                //Prüft, ob die Maus innerhalb eines Knotens losgelassen wurde
+                for (NodePoint currentNode : drawnNodes) {
 
-                if (currentNode.contains(x, y) && draggingLine.startNode != currentNode) {
+                    if (currentNode.contains(x, y) && draggingLine.startNode != currentNode) {
 
-                    //Prüfen, ob eine Kante mit genau diesen anliegenden Knoten bereits existiert
-                    for (EdgeLine currentEdge : drawnEdges) {
+                        //Prüfen, ob eine Kante mit genau diesen anliegenden Knoten bereits existiert
+                        for (EdgeLine currentEdge : drawnEdges) {
 
-                        //Wenn die Kante existiert, dann abbrechen
-                        if (currentEdge.startNode == currentNode && currentEdge.endNode == draggingLine.startNode
-                                || currentEdge.startNode == draggingLine.startNode && currentEdge.endNode == currentNode) {
-                            repaint();
-                            return;
+                            //Wenn die Kante existiert, dann abbrechen
+                            if (currentEdge.startNode == currentNode && currentEdge.endNode == draggingLine.startNode
+                                    || currentEdge.startNode == draggingLine.startNode && currentEdge.endNode == currentNode) {
+                                repaint();
+                                return;
+                            }
                         }
+
+                        //Maus wurde in diesem Knoten losgelassen -> als Endknoten der Kante festlegen
+                        draggingLine.setEndNode(currentNode);
+                        drawnEdges.add(draggingLine);
+                        listener.graphElementAdded(false, drawnEdges.size() - 1);
+
+                        repaint();
+                        return;
                     }
+                }
+            }
+            if (selectDragging) {
+                selectDragging = false;
 
-                    //Maus wurde in diesem Knoten losgelassen -> als Endknoten der Kante festlegen
-                    draggingLine.setEndNode(currentNode);
-                    drawnEdges.add(draggingLine);
-                    listener.graphElementAdded(false, drawnEdges.size() - 1);
+                selectionRectangle = new Rectangle(mouseEvent.getPoint());
+                selectionRectangle.add(selectStartPoint);
 
-                    repaint();
-                    return;
+                ArrayList<NodePoint> selectedNodes = new ArrayList<>();
+
+                for (NodePoint node : drawnNodes) {
+                    if (node.intersects(selectionRectangle)) {
+                        node.selected = true;
+                        nodesSelected = true;
+                        selectedNodes.add(node);
+                    } else {
+                        node.selected = false;
+                    }
+                }
+
+                selectionRectangle = GraphUtil.getGraphBounds(selectedNodes, 5);
+
+                if (nodesSelected) {
+                    //Timer neu starten
+                    selectionAnimationTimer.restart();
                 }
             }
             repaint();
         }
     }
+
 
     private class MyMouseMotionListener extends MouseMotionAdapter {
         public void mouseDragged(MouseEvent evt) {
@@ -381,6 +486,9 @@ public class NetPanel extends JPanel {
                 int y = evt.getY();
                 draggingLine.x2 = x;
                 draggingLine.y2 = y;
+                repaint();
+            } else if (selectDragging) {
+                currentMousePosition = evt.getPoint();
                 repaint();
             }
         }
@@ -392,7 +500,7 @@ public class NetPanel extends JPanel {
          */
         @Override
         public void mouseMoved(MouseEvent mouseEvent) {
-            if (lineDragging)
+            if (lineDragging || selectDragging)
                 return;
 
             int x = mouseEvent.getX();
@@ -429,6 +537,14 @@ public class NetPanel extends JPanel {
                 repaint();
                 setCursorHover(mouseEvent.isShiftDown(), mouseEvent.isControlDown());
             }
+        }
+    }
+
+    private void resetSelection() {
+        nodesSelected = false;
+        selectionAnimationTimer.stop();
+        for (NodePoint node : drawnNodes) {
+            node.selected = false;
         }
     }
 

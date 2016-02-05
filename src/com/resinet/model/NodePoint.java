@@ -4,6 +4,7 @@ import java.awt.geom.Ellipse2D;
 
 public class NodePoint extends Ellipse2D.Double {
     public boolean c_node = false;
+    public boolean selected = false;
 
     /**
      * Erstellt einen neuen Knoten
@@ -18,7 +19,8 @@ public class NodePoint extends Ellipse2D.Double {
     }
 
     /**
-     * Gibt eine Kopie dieses Knotens wieder, der um 1 Pixel in alle Richtungen größer ist
+     * Gibt eine Kopie dieses Knotens wieder, der um 2 Pixel in alle Richtungen größer ist und 1 Pixel nach links und 1
+     * Pixel nach oben verschoben ist
      *
      * @return vergrößerter Knoten
      */
@@ -26,6 +28,19 @@ public class NodePoint extends Ellipse2D.Double {
         NodePoint np = new NodePoint(x - 1, y - 1, c_node);
         np.width += 2;
         np.height += 2;
+        return np;
+    }
+
+    /**
+     * Gibt eine Kopie dieses Knotens wieder, der um 1 Pixel in alle Richtungen kleiner ist und 1 Pixel nach unten und 1
+     * Pixel nach rechts verschoben ist
+     *
+     * @return verkleinerter Knoten
+     */
+    public NodePoint shrink() {
+        NodePoint np = new NodePoint(x + 1, y + 1, c_node);
+        np.width -= 1;
+        np.height -= 1;
         return np;
     }
 }
