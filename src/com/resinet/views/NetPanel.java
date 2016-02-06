@@ -24,6 +24,7 @@ public class NetPanel extends JPanel {
     private float selectionAnimationPhase = 0;
     private boolean nodesSelected = false;
     private Rectangle selectionRectangle;
+    private boolean cursorInsideSelection;
 
     private Point currentMousePosition;
 
@@ -505,38 +506,54 @@ public class NetPanel extends JPanel {
 
             int x = mouseEvent.getX();
             int y = mouseEvent.getY();
+            boolean consumed = false;
+
+            /**
+             * Prüfen, ob der Cursor auf einem markierten Bereich ist
+             */
+            if (nodesSelected && selectionRectangle.contains(x, y)) {
+                cursorInsideSelection = true;
+                consumed = true;
+            } else {
+                cursorInsideSelection = false;
+            }
 
             /**
              * Prüfen, ob ein Knoten getroffen wird
              */
-            for (NodePoint nodePoint : drawnNodes) {
+            if (!consumed) {
+                for (NodePoint nodePoint : drawnNodes) {
 
-                if (nodePoint.contains(x, y)) {
-                    hoveredElement = nodePoint;
-                    repaint();
-                    setCursorHover(mouseEvent.isShiftDown(), mouseEvent.isControlDown());
-                    return;
+                    if (nodePoint.contains(x, y)) {
+                        hoveredElement = nodePoint;
+                        repaint();
+                        consumed = true;
+                        break;
+                    }
                 }
             }
 
             /**
              * Prüfen, ob der Cursor nahe einer Kante ist (nah ist hier maximal 5px Abstand)
              */
-            for (EdgeLine edgeLine : drawnEdges) {
+            if (!consumed) {
+                for (EdgeLine edgeLine : drawnEdges) {
 
-                if (edgeLine.ptSegDist(x, y) < HOVER_DISTANCE) {
-                    hoveredElement = edgeLine;
-                    repaint();
-                    setCursorHover(mouseEvent.isShiftDown(), mouseEvent.isControlDown());
-                    return;
+                    if (edgeLine.ptSegDist(x, y) < HOVER_DISTANCE) {
+                        hoveredElement = edgeLine;
+                        repaint();
+                        consumed = true;
+                        break;
+                    }
                 }
             }
-            if (hoveredElement != null) {
+
+            if (!consumed && hoveredElement != null) {
                 //Cursor zurücksetzen, falls er auf keinem Element mehr ist
                 hoveredElement = null;
                 repaint();
-                setCursorHover(mouseEvent.isShiftDown(), mouseEvent.isControlDown());
             }
+            setCursorHover(mouseEvent.isShiftDown(), mouseEvent.isControlDown());
         }
     }
 
@@ -570,7 +587,9 @@ public class NetPanel extends JPanel {
      * @param controlDown Ob Strg gedrückt ist
      */
     private void setCursorHover(boolean shiftDown, boolean controlDown) {
-        if (shiftDown && hoveredElement != null) {
+        if (cursorInsideSelection) {
+            setCursor(new Cursor(Cursor.MOVE_CURSOR));
+        } else if (shiftDown && hoveredElement != null) {
             setCursor(deleteCursor);
         } else if (controlDown && hoveredElement instanceof NodePoint) {
             setCursor(switchCursor);
