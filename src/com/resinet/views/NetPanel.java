@@ -24,7 +24,9 @@ public class NetPanel extends JPanel {
     private float selectionAnimationPhase = 0;
     private boolean nodesSelected = false;
     private Rectangle selectionRectangle;
+
     private boolean cursorInsideSelection;
+    private boolean selectedNodesDragging = false;
 
     private Point currentMousePosition;
 
@@ -397,10 +399,19 @@ public class NetPanel extends JPanel {
                 //Rechtsklick ignorieren
                 return;
             }
+            //Mausposition setzen
+            currentMousePosition = mouseEvent.getPoint();
 
             lineDragging = false;
             int x = mouseEvent.getX();
             int y = mouseEvent.getY();
+
+            //Prüfen, ob die Auswahl verschoben werden soll
+            if (cursorInsideSelection) {
+                selectedNodesDragging = true;
+                hoveredElement = null;
+                return;
+            }
 
             //Prüfen, ob in ein Knoten gedrückt wurde, damit das Ziehen einer Kante gestartet wird
             for (NodePoint np : drawnNodes) {
@@ -413,11 +424,10 @@ public class NetPanel extends JPanel {
                 }
             }
 
-            //Falls kein Knoten gedrückt wurde, auswählen beginnen
+            //Ansonsten auswählen beginnen
             selectDragging = true;
-            //Startpunkt und Mausposition setzen
+            //Startpunkt setzen
             selectStartPoint = mouseEvent.getPoint();
-            currentMousePosition = mouseEvent.getPoint();
         }
 
         @Override
@@ -486,6 +496,10 @@ public class NetPanel extends JPanel {
                     selectionAnimationTimer.restart();
                 }
             }
+
+            if (selectedNodesDragging) {
+                selectedNodesDragging = false;
+            }
             repaint();
         }
     }
@@ -502,6 +516,34 @@ public class NetPanel extends JPanel {
                 repaint();
             } else if (selectDragging) {
                 //Mausposition setzen und Auswählrechteck neu zeichnen
+                currentMousePosition = evt.getPoint();
+                repaint();
+            } else if (selectedNodesDragging) {
+                Point newMousePosition = evt.getPoint();
+
+                //Offsets bestimmen
+                int offsetX = newMousePosition.x - currentMousePosition.x;
+                int offsetY = newMousePosition.y - currentMousePosition.y;
+
+                //Auswahlrechteck verschieben
+                selectionRectangle.x += offsetX;
+                selectionRectangle.y += offsetY;
+
+                //Ausgewählte Knoten verschieben
+                for (NodePoint nodePoint : drawnNodes) {
+                    if (nodePoint.selected) {
+                        nodePoint.x += offsetX;
+                        nodePoint.y += offsetY;
+                    }
+                }
+
+                //Anliegende Kanten verschieben
+                for (EdgeLine edgeLine : drawnEdges) {
+                    if (edgeLine.startNode.selected || edgeLine.endNode.selected) {
+                        edgeLine.refresh();
+                    }
+                }
+                //Neue Mausposition setzen
                 currentMousePosition = evt.getPoint();
                 repaint();
             }
@@ -527,6 +569,7 @@ public class NetPanel extends JPanel {
             if (nodesSelected && selectionRectangle.contains(x, y)) {
                 cursorInsideSelection = true;
                 consumed = true;
+                hoveredElement = null;
             } else {
                 cursorInsideSelection = false;
             }
