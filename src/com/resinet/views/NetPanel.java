@@ -94,7 +94,7 @@ public class NetPanel extends JPanel {
         imgGraphics.fillRect(0, 0, getWidth(), getHeight());
 
         //erst Kanten zeichnen, damit danach das Stück im inneren der Knoten überschrieben werden kann
-        // und die Kanten demzufolge nur bis zu den Rändern der Knoten gehen
+        //und die Kanten demzufolge nur bis zu den Rändern der Knoten gehen
         imgGraphics.setColor(Color.black);
 
         for (EdgeLine edgeLine : drawnEdges) {
@@ -142,6 +142,7 @@ public class NetPanel extends JPanel {
             imgGraphics.draw(selectRect);
         }
 
+        //Kasten um die ausgewählten Knoten zeichnen, wenn nicht gerade neu ausgewählt wird
         if (nodesSelected && !selectDragging) {
             //animiert gestrichelte Linie
             imgGraphics.setStroke(new BasicStroke(1, BasicStroke.CAP_BUTT, BasicStroke.JOIN_BEVEL, 0, new float[]{2, 2}, selectionAnimationPhase));
@@ -273,6 +274,11 @@ public class NetPanel extends JPanel {
         repaint();
     }
 
+    /**
+     * Setzt die bevorzugte Größe auf die vom Graphen eingenommene Fläche inklusive Offsets + 10 Pixel
+     *
+     * @return Bevorzugte Größe
+     */
     @Override
     public Dimension getPreferredSize() {
         Rectangle graphRect = GraphUtil.getGraphBounds(drawnNodes);
@@ -409,6 +415,7 @@ public class NetPanel extends JPanel {
 
             //Falls kein Knoten gedrückt wurde, auswählen beginnen
             selectDragging = true;
+            //Startpunkt und Mausposition setzen
             selectStartPoint = mouseEvent.getPoint();
             currentMousePosition = mouseEvent.getPoint();
         }
@@ -449,12 +456,15 @@ public class NetPanel extends JPanel {
                     }
                 }
             }
+            //Falls ausgewählt wurde
             if (selectDragging) {
                 selectDragging = false;
 
+                //Rechteck mit dem Startpunkt und der aktuellen Position erstellen
                 selectionRectangle = new Rectangle(mouseEvent.getPoint());
                 selectionRectangle.add(selectStartPoint);
 
+                //Liste mit ausgewählten Knoten
                 ArrayList<NodePoint> selectedNodes = new ArrayList<>();
 
                 for (NodePoint node : drawnNodes) {
@@ -467,10 +477,12 @@ public class NetPanel extends JPanel {
                     }
                 }
 
+                //Rechteck erstellen, dass mit 5 Pixel Abstand alle ausgewählten Knoten umschließt
+                //Falls keine Knoten ausgewählt wurden, hat das Reckteck alle Parameter auf 0
                 selectionRectangle = GraphUtil.getGraphBounds(selectedNodes, 5);
 
                 if (nodesSelected) {
-                    //Timer neu starten
+                    //Timer (neu) starten (falls er bereits läuft)
                     selectionAnimationTimer.restart();
                 }
             }
@@ -489,6 +501,7 @@ public class NetPanel extends JPanel {
                 draggingLine.y2 = y;
                 repaint();
             } else if (selectDragging) {
+                //Mausposition setzen und Auswählrechteck neu zeichnen
                 currentMousePosition = evt.getPoint();
                 repaint();
             }
@@ -557,6 +570,9 @@ public class NetPanel extends JPanel {
         }
     }
 
+    /**
+     * Setzt die Auswahl zurück
+     */
     private void resetSelection() {
         nodesSelected = false;
         selectionAnimationTimer.stop();
