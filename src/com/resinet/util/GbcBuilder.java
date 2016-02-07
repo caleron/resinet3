@@ -17,7 +17,7 @@ public class GbcBuilder extends GridBagConstraints {
      * @param weightx Gewichtung auf X-Achse (für Verteilung des freien Platzes)
      * @param weighty Gewichtung auf Y-Achse (für Verteilung des freien Platzes
      */
-    public GbcBuilder(int x, int y, int width, int height, double weightx, double weighty) {
+    private GbcBuilder(int x, int y, int width, int height, double weightx, double weighty) {
         gridx = x;
         gridy = y;
         gridwidth = width;

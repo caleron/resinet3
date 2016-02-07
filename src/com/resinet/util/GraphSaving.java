@@ -465,9 +465,8 @@ public final class GraphSaving {
             writer.write("*Edges");
 
             //Für jede Kante eine Zeile
-            for (int i = 0; i < edgeList.size(); i++) {
+            for (EdgeLine edge : edgeList) {
                 writer.append(System.getProperty("line.separator"));
-                EdgeLine edge = edgeList.get(i);
                 String node1 = Integer.toString(nodeList.indexOf(edge.startNode) + 1);
                 String node2 = Integer.toString(nodeList.indexOf(edge.endNode) + 1);
 

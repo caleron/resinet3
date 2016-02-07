@@ -1,7 +1,6 @@
 package com.resinet.model;
 
 import com.resinet.Resinet3;
-import com.resinet.util.Constants;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;

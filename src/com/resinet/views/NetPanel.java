@@ -499,6 +499,10 @@ public class NetPanel extends JPanel {
 
             if (selectedNodesDragging) {
                 selectedNodesDragging = false;
+
+                //Scrollpane aktualisieren
+                Component parent2 = getParent().getParent();
+                parent2.revalidate();
             }
             repaint();
         }
