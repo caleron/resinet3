@@ -53,8 +53,13 @@ public class MainframeController extends WindowAdapter implements ActionListener
             startCalculation(CALCULATION_MODES.RELIABILITY);
         } else if (button == mainFrame.getCalcResilienceBtn()) {
             startCalculation(CALCULATION_MODES.RESILIENCE);
+        } else if (button == mainFrame.collapseOutputBtn) {
+            mainFrame.setStatusBarCollapsed(true);
         }
     }
+    //TODO Zuletzt geöffnet-Liste, Graph generieren, Serienparallelreduktion, neues GUI-Layout mit größerer Zeichenfläche
+    //TODO rückgängig machen, copy&paste
+    //TODO Graph optimieren bezüglich Anordnung nach verschiedenen Algorithmen
 
     @Override
     public void itemStateChanged(ItemEvent e) {

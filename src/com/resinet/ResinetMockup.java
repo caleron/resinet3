@@ -38,7 +38,7 @@ public class ResinetMockup implements Constants {
 
     private JTextPane outputField;
 
-    private JLabel statusBarLabel;
+    private JTextPane statusBarCollapsedLabel;
     private JPanel singleReliabilitiesContainer;
 
     private GUI_STATES guiState;
@@ -53,6 +53,8 @@ public class ResinetMockup implements Constants {
     private JCheckBox considerNodesBox;
     private JCheckBox considerEdgesBox;
     private JScrollPane singleReliabilitiesScrollPane;
+    private JPanel expandedOutputPanel;
+    public JButton collapseOutputBtn;
 
     public ResinetMockup(MainframeController controller) {
         this.controller = controller;
@@ -332,26 +334,41 @@ public class ResinetMockup implements Constants {
         calculationProgressBar.setStringPainted(true);
         calculatePanel.add(calculationProgressBar, GbcBuilder.build(0, 2, 2, 1, 1, 0).fillBoth());
 
-        outputField = new JTextPane();
-        outputField.setEditable(false);
-        outputField.setCursor(new Cursor(Cursor.TEXT_CURSOR));
-        outputField.setBorder(null);
-        outputField.setBackground(null);
-        outputField.setFont(new Font("Tahoma", Font.PLAIN, 13));
-        outputField.setText("The Reliability of the network is:\n0.3885443333");
-        calculatePanel.add(outputField, GbcBuilder.build(0, 3, 1, 1, 1, 0).fillBoth().vertical(10));
-
         sidePanel.add(calculatePanel, BorderLayout.PAGE_END);
     }
 
 
     private void initStatusBar() {
-        JPanel statusBar = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        JPanel statusBar = new JPanel(new BorderLayout());
         statusBar.setBorder(new BevelBorder(BevelBorder.LOWERED));
 
-        statusBarLabel = new JLabel("Status", SwingConstants.LEFT);
-        statusBar.add(statusBarLabel);
+        outputField = new JTextPane();
+        outputField.setEditable(false);
+        outputField.setCursor(new Cursor(Cursor.TEXT_CURSOR));
+        outputField.setBorder(new EmptyBorder(5, 5, 5, 5));
+        outputField.setBackground(null);
+        outputField.setFont(new Font("Tahoma", Font.PLAIN, 13));
+
+        collapseOutputBtn = new JButton("Verstecken");
+        collapseOutputBtn.addActionListener(controller);
+
+        expandedOutputPanel = new JPanel(new BorderLayout());
+        expandedOutputPanel.add(collapseOutputBtn, BorderLayout.LINE_END);
+        expandedOutputPanel.add(outputField, BorderLayout.CENTER);
+
+        statusBar.add(expandedOutputPanel, BorderLayout.CENTER);
+
+        statusBarCollapsedLabel = new JTextPane();
+        statusBarCollapsedLabel.setEditable(false);
+        statusBarCollapsedLabel.setCursor(new Cursor(Cursor.TEXT_CURSOR));
+        statusBarCollapsedLabel.setBorder(new EmptyBorder(5, 5, 5, 5));
+        statusBarCollapsedLabel.setBackground(null);
+        statusBarCollapsedLabel.setFont(new Font("Tahoma", Font.PLAIN, 13));
+        statusBar.add(statusBarCollapsedLabel, BorderLayout.PAGE_END);
+
         contentPane.add(statusBar, BorderLayout.PAGE_END);
+
+        setResultText("");
     }
 
     /**
@@ -408,12 +425,27 @@ public class ResinetMockup implements Constants {
         }
     }
 
-    public void setResultText(String text) {
-        outputField.setText(text);
+    public void setResultText(String longText, String shortText) {
+        outputField.setText(longText);
+        statusBarCollapsedLabel.setText(shortText);
+
+        //wenn der lange Text gesetzt ist, soll die StatusBar groß dargestellt werden
+        setStatusBarCollapsed(longText.length() == 0);
     }
 
-    public void setStatusBarText(String text) {
-        statusBarLabel.setText(text);
+    public void setResultText(String text) {
+        String s[] = text.split("\r\n|\r|\n");
+        if (s.length > 1) {
+            //Text ist mehrzeilig
+            setResultText(text, "");
+        } else {
+            setResultText("", text);
+        }
+    }
+
+    public void setStatusBarCollapsed(boolean collapsed) {
+        expandedOutputPanel.setVisible(!collapsed);
+        statusBarCollapsedLabel.setVisible(collapsed);
     }
 
     public JPanel getContentPane() {

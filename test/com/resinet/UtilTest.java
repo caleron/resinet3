@@ -29,4 +29,12 @@ public class UtilTest {
         assertTrue(Util.textIsNotProbability("2.0"));
         assertTrue(Util.textIsNotProbability("2"));
     }
+    @Test
+    public void testShit() {
+        String text = "String\nadasdasdaa\nasdfd";
+
+
+        assertTrue(text.matches("(.*(\r\n|\r|\n).*)+"));
+
+    }
 }

@@ -122,8 +122,6 @@ public class Resinet3 extends JFrame
         setGUIState(GUI_STATES.SHOW_GRAPH_INFO);
     }
 
-    //TODO Zuletzt geöffnet-Liste, Graph generieren, Serienparallelreduktion, neues GUI-Layout mit größerer Zeichenfläche
-
     /**
      * Baut das Menü auf
      */
