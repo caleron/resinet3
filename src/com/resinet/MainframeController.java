@@ -55,6 +55,8 @@ public class MainframeController extends WindowAdapter implements ActionListener
             startCalculation(CALCULATION_MODES.RESILIENCE);
         } else if (button == mainFrame.collapseOutputBtn) {
             mainFrame.setStatusBarCollapsed(true);
+        } else {
+            mainFrame.getNetPanel().actionPerformed(e);
         }
     }
     //TODO Zuletzt geöffnet-Liste, Graph generieren, Serienparallelreduktion, neues GUI-Layout mit größerer Zeichenfläche
@@ -76,16 +78,16 @@ public class MainframeController extends WindowAdapter implements ActionListener
 
     @Override
     public void graphElementAdded(boolean isNode, int number) {
+        //Feld nur hinzufügen, falls der Einzelzuverlässigkeitsmodus aktiv ist und die Komponente berücksichtigt werden soll
         if (mainFrame.getReliabilityMode() == RELIABILITY_MODES.SAME)
             return;
 
         if ((!isNode && !mainFrame.getConsiderEdgesBox().isSelected()) || (isNode && !mainFrame.getConsiderNodesBox().isSelected()))
             return;
 
-        //Feld nur hinzufügen, falls der Einzelzuverlässigkeitsmodus aktiv ist und die Komponente berücksichtigt werden soll
-
         addFieldToProbPanel(number, isNode);
 
+        //Scrollpane updaten
         refreshSingleReliabilityScrollPane();
     }
 
@@ -108,9 +110,11 @@ public class MainframeController extends WindowAdapter implements ActionListener
         }
 
         //Letztes Element aus Liste und aus GUI entfernen
+        //if (list.size() > 0) {
         ProbabilitySpinner spinner = list.get(list.size() - 1);
         spinner.getParent().getParent().remove(spinner.getParent());
         list.remove(spinner);
+        //}
 
         refreshSingleReliabilityScrollPane();
     }
@@ -130,6 +134,11 @@ public class MainframeController extends WindowAdapter implements ActionListener
                 edgeProbabilityBoxes.get(number).requestFocusInWindow();
             }
         }
+    }
+
+    @Override
+    public void graphChanged() {
+        updateSingleReliabilityProbPanel();
     }
 
     @Override

@@ -780,6 +780,11 @@ public class Resinet3 extends JFrame
 
     }
 
+    @Override
+    public void graphChanged() {
+
+    }
+
     /**
      * Setzt die Zuverlässigkeit einer Netzwerkkomponente
      *

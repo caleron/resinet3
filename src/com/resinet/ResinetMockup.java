@@ -104,9 +104,34 @@ public class ResinetMockup implements Constants {
     private void initMenu() {
         menuBar = new JMenuBar();
         initFileMenu();
+        initEditMenu();
         initGenerateMenu();
         initLanguageMenu();
         initHelpMenu();
+    }
+
+    private void initEditMenu() {
+        JMenu editMenu = new JMenu("Edit");
+
+        JMenuItem cutMenuItem = new JMenuItem("Cut");
+        cutMenuItem.addActionListener(controller);
+        cutMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_X, KeyEvent.CTRL_MASK));
+        cutMenuItem.setActionCommand((String) TransferHandler.getCutAction().getValue(Action.NAME));
+        editMenu.add(cutMenuItem);
+
+        JMenuItem copyMenuItem = new JMenuItem("Copy");
+        copyMenuItem.addActionListener(controller);
+        copyMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_C, KeyEvent.CTRL_MASK));
+        copyMenuItem.setActionCommand((String) TransferHandler.getCopyAction().getValue(Action.NAME));
+        editMenu.add(copyMenuItem);
+
+        JMenuItem pasteMenuItem = new JMenuItem("Paste");
+        pasteMenuItem.addActionListener(controller);
+        pasteMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_V, KeyEvent.CTRL_MASK));
+        pasteMenuItem.setActionCommand((String) TransferHandler.getPasteAction().getValue(Action.NAME));
+        editMenu.add(pasteMenuItem);
+
+        menuBar.add(editMenu);
     }
 
     private void initHelpMenu() {

@@ -8,7 +8,7 @@ import java.awt.geom.Line2D;
 public class EdgeLine extends Line2D.Double {
 
     public double textPositionX, textPositionY;
-    public final NodePoint startNode;
+    public NodePoint startNode;
     public NodePoint endNode;
 
     /**

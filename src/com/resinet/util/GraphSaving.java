@@ -59,8 +59,6 @@ public final class GraphSaving {
             return null;
         }
 
-        //TODO resinet3.resetGraph();
-
         if (resinetFilter.accept(netFile)) {
             return readResinetNetwork(netFile, dialogParentComponent);
         } else if (pajekFilter.accept(netFile)) {
@@ -317,9 +315,6 @@ public final class GraphSaving {
             }
             calculationParams.setGraphLists(drawnNodes, drawnEdges);
             return calculationParams;
-            //TODO Oberfläche von Resinet updaten lassen
-            //resinet3.updateSingleReliabilityProbPanel();
-            //resinet3.loadCalculationParams(calculationParams);
         } catch (ParserConfigurationException | SAXException | IOException e) {
             e.printStackTrace();
             inputError(parentComponent);

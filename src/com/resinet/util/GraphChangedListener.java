@@ -29,4 +29,9 @@ public interface GraphChangedListener {
      * @param number Die Komponentennummer
      */
     void graphElementClicked(boolean isNode, int number);
+
+    /**
+     * Wird ausgelöst, wenn der Graph durch andere Operationen, wie Copy&Paste verändert wird.
+     */
+    void graphChanged();
 }
