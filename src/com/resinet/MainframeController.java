@@ -12,7 +12,10 @@ import com.sun.istack.internal.Nullable;
 import javax.swing.*;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import java.awt.*;
 import java.awt.event.*;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.math.BigDecimal;
 import java.text.MessageFormat;
 import java.util.ArrayList;
@@ -20,11 +23,18 @@ import java.util.List;
 
 @SuppressWarnings("Duplicates")
 public class MainframeController extends WindowAdapter implements ActionListener, GraphChangedListener,
-        CalculationProgressListener, Constants, ItemListener, ChangeListener {
+        CalculationProgressListener, Constants, ItemListener, ChangeListener, PropertyChangeListener {
     ResinetMockup mainFrame;
+
+    JComponent permanentFocusOwner;
 
     private final List<ProbabilitySpinner> edgeProbabilityBoxes = new ArrayList<>();
     private final List<ProbabilitySpinner> nodeProbabilityBoxes = new ArrayList<>();
+
+    public MainframeController() {
+        KeyboardFocusManager manager = KeyboardFocusManager.getCurrentKeyboardFocusManager();
+        manager.addPropertyChangeListener("permanentFocusOwner", this);
+    }
 
     public void setMainFrame(ResinetMockup mainFrame) {
         this.mainFrame = mainFrame;
@@ -55,7 +65,7 @@ public class MainframeController extends WindowAdapter implements ActionListener
             startCalculation(CALCULATION_MODES.RESILIENCE);
         } else if (button == mainFrame.collapseOutputBtn) {
             mainFrame.setStatusBarCollapsed(true);
-        } else {
+        } else if (permanentFocusOwner.equals(mainFrame.getNetPanel())){
             mainFrame.getNetPanel().actionPerformed(e);
         }
     }
@@ -205,6 +215,16 @@ public class MainframeController extends WindowAdapter implements ActionListener
         if (result == JOptionPane.YES_OPTION) {*/
         System.exit(0);
         //}
+    }
+
+    @Override
+    public void propertyChange(PropertyChangeEvent evt) {
+        Object o = evt.getNewValue();
+        if (o instanceof JComponent) {
+            permanentFocusOwner = (JComponent) o;
+        } else {
+            permanentFocusOwner = null;
+        }
     }
 
     public void resetGraph() {

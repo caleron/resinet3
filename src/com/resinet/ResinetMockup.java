@@ -131,6 +131,15 @@ public class ResinetMockup implements Constants {
         pasteMenuItem.setActionCommand((String) TransferHandler.getPasteAction().getValue(Action.NAME));
         editMenu.add(pasteMenuItem);
 
+        editMenu.addSeparator();
+
+        JMenuItem deleteMenuItem = new JMenuItem("Delete");
+        deleteMenuItem.addActionListener(controller);
+        deleteMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_DELETE, 0));
+        //Dieser Aktions-String entspricht dem ActionEvent.getActionCommand in der Methode actionPerformed
+        deleteMenuItem.setActionCommand("delete");
+        editMenu.add(deleteMenuItem);
+
         menuBar.add(editMenu);
     }
 

@@ -506,11 +506,19 @@ public class NetPanel extends JPanel {
                 selectedNodesDragging = false;
 
                 //Scrollpane aktualisieren
-                Component parent2 = getParent().getParent();
-                parent2.revalidate();
+                revalidateScrollPane();
             }
             repaint();
         }
+    }
+
+    /**
+     * Lässt die Scrollpane revalidieren, damit etwa die Scrollbars an die veränderte Größe des Graphen angepasst
+     * werden.
+     */
+    private void revalidateScrollPane() {
+        Component parent2 = getParent().getParent();
+        parent2.revalidate();
     }
 
     /**
@@ -668,9 +676,14 @@ public class NetPanel extends JPanel {
      */
     public void actionPerformed(ActionEvent e) {
         String action = e.getActionCommand();
-        Action a = getActionMap().get(action);
-        if (a != null) {
-            a.actionPerformed(new ActionEvent(this, ActionEvent.ACTION_PERFORMED, null));
+
+        if (action.equals("delete")) {
+            removeSelectedNodes();
+        } else {
+            Action a = getActionMap().get(action);
+            if (a != null) {
+                a.actionPerformed(new ActionEvent(this, ActionEvent.ACTION_PERFORMED, null));
+            }
         }
     }
 
@@ -764,7 +777,9 @@ public class NetPanel extends JPanel {
     }
 
     /**
-     * Fügt Knoten und Kanten in den Graphen ein, welche vorher möglicherweise kopiert/ausgeschnitten wurden.
+     * Fügt Knoten und Kanten in den Graphen ein, welche vorher möglicherweise kopiert/ausgeschnitten wurden. Die Knoten
+     * werden automatisch ausgewählt, damit sie verschoben werden können. Zum Einfügen wird ein freier Platz ausgehend
+     * von der Mausposition gesucht, falls die eingefügten Knoten mit bestehenden Knoten überlappen.
      *
      * @param nodeEdgeWrapper Das Wrapper-Objekt mit Knoten- und Kantenmenge
      */
@@ -772,13 +787,92 @@ public class NetPanel extends JPanel {
         //Auswahl zurücksetzen, damit die neuen Knoten nicht automatisch zusätzlich ausgewählt sind
         resetSelection();
 
-        drawnNodes.addAll(nodeEdgeWrapper.nodes);
+        ArrayList<NodePoint> nodes = nodeEdgeWrapper.nodes;
+
+        //Freie Stelle für neue Knoten suchen
+        Rectangle pasteRectangle = GraphUtil.getGraphBounds(nodeEdgeWrapper.nodes);
+        Point originalLocation = pasteRectangle.getLocation();
+
+        //Wenn das Rechteck um die eingefügten Knoten andere Knoten kreuzt, neue Position suchen
+        if (intersectsNode(pasteRectangle)) {
+            Point mousePosition = getMousePosition();
+
+            if (mousePosition != null) {
+                pasteRectangle.setLocation(mousePosition);
+            }
+
+            //Falls an der Mausposition nicht möglich
+            if (intersectsNode(pasteRectangle)) {
+                //Weißes Rechteck suchen
+                Point whiteRectanglePosition = searchSafeRectanglePosition(pasteRectangle);
+                if (whiteRectanglePosition != null) {
+                    pasteRectangle.setLocation(whiteRectanglePosition);
+                } else {
+                    //Alle Methoden erfolglos, Rechteck außerhalb der Zeichenfläche verschieben, damit die Zeichenfläche vergrößert wird.
+                    pasteRectangle.x = getWidth();
+                }
+            }
+        }
+
+        for (NodePoint nodePoint : nodes) {
+            nodePoint.x += pasteRectangle.getX() - originalLocation.getX();
+            nodePoint.y += pasteRectangle.getY() - originalLocation.getY();
+        }
+
+        //Kantenkoordinaten neu setzen
+        nodeEdgeWrapper.edges.forEach(EdgeLine::refresh);
+
+        //Neue Knoten und Kanten hinzufügen
+        drawnNodes.addAll(nodes);
         drawnEdges.addAll(nodeEdgeWrapper.edges);
 
         listener.graphChanged();
 
+        //Eingefügte Knoten auswählen
+        nodeEdgeWrapper.nodes.forEach((nodePoint -> nodePoint.selected = true));
+        selectionRectangle = GraphUtil.getGraphBounds(nodeEdgeWrapper.nodes, 5);
+        nodesSelected = true;
+        selectionAnimationTimer.restart();
+
+        //Scrollbar refreshen
+        revalidateScrollPane();
         repaint();
     }
+
+    /**
+     * Sucht eine Position für das Rechteck, an der es mit keinem Knoten überlappt.
+     *
+     * @param rectangle Das Rechteck
+     * @return neue Position oder null
+     */
+    public Point searchSafeRectanglePosition(Rectangle rectangle) {
+        for (int x = 0; x < getWidth() - rectangle.getWidth(); x += 20) {
+            for (int y = 0; y < getHeight() - rectangle.getHeight(); y += 20) {
+                rectangle.setLocation(x, y);
+
+                if (!intersectsNode(rectangle)) {
+                    return rectangle.getLocation();
+                }
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Prüft, ob das Rechteck einen Knoten schneidet.
+     *
+     * @param pasteRectangle Das zu überprüfende Rechteck
+     * @return Boolean
+     */
+    private boolean intersectsNode(Rectangle pasteRectangle) {
+        for (NodePoint nodePoint : drawnNodes) {
+            if (nodePoint.intersects(pasteRectangle)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
 
     /**
      * Entfernt die Knoten und deren anliegende Kanten vom Graphen.
@@ -790,5 +884,24 @@ public class NetPanel extends JPanel {
         drawnNodes.removeAll(nodes);
         listener.graphChanged();
         repaint();
+    }
+
+    /**
+     * Entfernt alle ausgewählten Knoten vom Graphen
+     */
+    public void removeSelectedNodes() {
+        if (!nodesSelected)
+            return;
+
+        ArrayList<NodePoint> selectedNodes = new ArrayList<>();
+
+        //Ausgewählte Knoten sammeln
+        for (NodePoint nodePoint : drawnNodes) {
+            if (nodePoint.selected) {
+                selectedNodes.add(nodePoint);
+            }
+        }
+        resetSelection();
+        removeNodes(selectedNodes);
     }
 }
