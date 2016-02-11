@@ -795,15 +795,16 @@ public class NetPanel extends JPanel {
 
         //Wenn das Rechteck um die eingefügten Knoten andere Knoten kreuzt, neue Position suchen
         if (intersectsNode(pasteRectangle)) {
+            //Mausposition testen
             Point mousePosition = getMousePosition();
-
+            //Mausposition kann null sein, etwa wenn die Maus nicht über dem NetPanel ist
             if (mousePosition != null) {
                 pasteRectangle.setLocation(mousePosition);
             }
 
-            //Falls an der Mausposition nicht möglich
             if (intersectsNode(pasteRectangle)) {
-                //Weißes Rechteck suchen
+                //Falls an der Mausposition nicht möglich, sicheres Rechteck suchen
+
                 Point whiteRectanglePosition = searchSafeRectanglePosition(pasteRectangle);
                 if (whiteRectanglePosition != null) {
                     pasteRectangle.setLocation(whiteRectanglePosition);
@@ -814,6 +815,7 @@ public class NetPanel extends JPanel {
             }
         }
 
+        //Knoten wie das Rechteck verschieben
         for (NodePoint nodePoint : nodes) {
             nodePoint.x += pasteRectangle.getX() - originalLocation.getX();
             nodePoint.y += pasteRectangle.getY() - originalLocation.getY();
@@ -846,8 +848,11 @@ public class NetPanel extends JPanel {
      * @return neue Position oder null
      */
     public Point searchSafeRectanglePosition(Rectangle rectangle) {
-        for (int x = 0; x < getWidth() - rectangle.getWidth(); x += 20) {
-            for (int y = 0; y < getHeight() - rectangle.getHeight(); y += 20) {
+        double xRange = getWidth() - rectangle.getWidth();
+        double yRange = getHeight() - rectangle.getHeight();
+
+        for (int x = 0; x < xRange; x += 20) {
+            for (int y = 0; y < yRange; y += 20) {
                 rectangle.setLocation(x, y);
 
                 if (!intersectsNode(rectangle)) {
