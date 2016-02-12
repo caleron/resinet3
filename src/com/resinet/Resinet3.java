@@ -607,14 +607,14 @@ public class Resinet3 extends JFrame
 
         if (button == inputNetBtn) {
             //Graph aus Datei laden
-            //GraphSaving.inputNet(mainFrame, netPanel);
+            //GraphSaver.inputNet(mainFrame, netPanel);
             netPanel.repaint();
             updateSingleReliabilityProbPanel();
         }
 
         if (button == exportNetBtn) {
             //Aktuellen Graph speichern
-            //GraphSaving.exportNet(mainFrame, netPanel);
+            //GraphSaver.exportNet(mainFrame, netPanel);
         }
 
         if (button == resetGraphBtn) {

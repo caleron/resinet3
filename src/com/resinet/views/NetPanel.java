@@ -15,6 +15,7 @@ import java.util.ArrayList;
 
 public class NetPanel extends JPanel {
     private final GraphChangedListener listener;
+    private final NetPanelController controller;
 
     //die Kante, die gezeichnet wird, während man die Maus gedrückt hält (beim Kanten erstellen)
     private EdgeLine draggingLine;
@@ -48,6 +49,8 @@ public class NetPanel extends JPanel {
 
     public NetPanel(GraphChangedListener listener) {
         this.listener = listener;
+
+        controller = new NetPanelController(this);
 
         drawnEdges = new ArrayList<>();
         drawnNodes = new ArrayList<>();
@@ -94,7 +97,7 @@ public class NetPanel extends JPanel {
     public void paintComponent(Graphics g) {
         if (centerGraphOnNextPaint) {
             centerGraphOnNextPaint = false;
-            centerGraph();
+            controller.centerGraph();
         }
 
         BufferedImage img = new BufferedImage(getWidth(), getHeight(), BufferedImage.TYPE_INT_RGB);
@@ -223,50 +226,6 @@ public class NetPanel extends JPanel {
         imgGraphics.setStroke(new BasicStroke(1));
     }
 
-    /**
-     * Zentriert den Graphen, wenn eine Flag dafür gesetzt wurde, etwa nach dem Laden eines Graphen aus einer Datei.
-     */
-    private void centerGraph() {
-        int panelHeight = getHeight();
-        int panelWidth = getWidth();
-
-        //Direktes Vaterelement ist der ViewPort der Scrollpane, und davon das Vaterelement ist die Scrollpane
-        Container parent = getParent().getParent();
-        if (parent instanceof JScrollPane) {
-            panelHeight = getParent().getHeight();
-            panelWidth = getParent().getWidth();
-        }
-
-        Rectangle graphRect = GraphUtil.getGraphBounds(drawnNodes);
-
-        Integer offsetX, offsetY;
-
-        if (graphRect.getX() < 0) {
-            offsetX = Math.abs(((int) graphRect.getX()));
-        } else {
-            offsetX = (int) ((panelWidth - graphRect.getWidth()) / 2 - graphRect.getX());
-        }
-        if (graphRect.getX() + offsetX < 0) {
-            offsetX = -((int) graphRect.getX());
-        }
-
-        if (graphRect.getY() < 0) {
-            offsetY = Math.abs((int) graphRect.getY());
-        } else {
-            offsetY = (int) ((panelHeight - graphRect.getHeight()) / 2 - graphRect.getY());
-        }
-        if (graphRect.getY() + offsetY < 0) {
-            offsetY = -((int) graphRect.getY());
-        }
-
-
-        for (NodePoint node : drawnNodes) {
-            node.x += offsetX;
-            node.y += offsetY;
-        }
-
-        drawnEdges.forEach(EdgeLine::refresh);
-    }
 
     /**
      * Setzt die Flag, dass beim nächsten Zeichnen der Graph zentriert wird

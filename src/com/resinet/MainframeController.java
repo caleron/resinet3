@@ -244,7 +244,7 @@ public class MainframeController extends WindowAdapter implements ActionListener
         int width = netPanel.getWidth();
         int height = netPanel.getHeight();
 
-        CalculationParams params = GraphSaving.inputNet(mainFrame.getContentPane(), width, height);
+        CalculationParams params = GraphSaver.inputNet(mainFrame.getContentPane(), width, height);
 
         if (params == null)
             return;
@@ -380,7 +380,7 @@ public class MainframeController extends WindowAdapter implements ActionListener
 
         CalculationParams params = buildCalculationParams(null, true);
 
-        GraphSaving.exportNet(params, mainFrame.getContentPane(), width, height);
+        GraphSaver.exportNet(params, mainFrame.getContentPane(), width, height);
     }
 
     private CalculationParams buildCalculationParams(CALCULATION_MODES mode, boolean forSaving) {

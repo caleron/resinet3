@@ -29,7 +29,7 @@ import java.util.ArrayList;
  * Dabei wurde mit ResiNet3 ein neues und eigenes Dateiformat basierend auf XML eingeführt. Des weiteren können auch
  * Graphen im Pajek-Format eingelesen und gespeichert werden.
  */
-public final class GraphSaving {
+public final class GraphSaver {
 
     /**
      * Methode zum Einlesen von Netzen aus Textdateien im Pajek-Format.
