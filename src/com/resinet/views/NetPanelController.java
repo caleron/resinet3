@@ -63,7 +63,7 @@ public class NetPanelController implements MouseListener, MouseMotionListener {
         } else {
             Action a = netPanel.getActionMap().get(action);
             if (a != null) {
-                a.actionPerformed(new ActionEvent(this, ActionEvent.ACTION_PERFORMED, null));
+                a.actionPerformed(new ActionEvent(netPanel, ActionEvent.ACTION_PERFORMED, null));
             }
         }
     }

@@ -15,7 +15,6 @@ import java.awt.event.KeyEvent;
 import java.util.Locale;
 import java.util.Map;
 
-@SuppressWarnings("Duplicates")
 public class Resinet implements Constants {
     MainframeController controller;
 
@@ -83,7 +82,7 @@ public class Resinet implements Constants {
             Resinet resinet = new Resinet(controller);
             controller.setMainFrame(resinet);
 
-            JFrame mainFrame = new JFrame("Mockup");
+            JFrame mainFrame = new JFrame(Strings.getLocalizedString("title"));
             mainFrame.addWindowListener(controller);
 
             mainFrame.setContentPane(resinet.getContentPane());
@@ -111,21 +110,21 @@ public class Resinet implements Constants {
     }
 
     private void initEditMenu() {
-        JMenu editMenu = new JMenu("Edit");
+        JMenu editMenu = new JMenu(Strings.getLocalizedString("edit"));
 
-        JMenuItem cutMenuItem = new JMenuItem("Cut");
+        JMenuItem cutMenuItem = new JMenuItem(Strings.getLocalizedString("cut"));
         cutMenuItem.addActionListener(controller);
         cutMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_X, KeyEvent.CTRL_MASK));
         cutMenuItem.setActionCommand((String) TransferHandler.getCutAction().getValue(Action.NAME));
         editMenu.add(cutMenuItem);
 
-        JMenuItem copyMenuItem = new JMenuItem("Copy");
+        JMenuItem copyMenuItem = new JMenuItem(Strings.getLocalizedString("copy"));
         copyMenuItem.addActionListener(controller);
         copyMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_C, KeyEvent.CTRL_MASK));
         copyMenuItem.setActionCommand((String) TransferHandler.getCopyAction().getValue(Action.NAME));
         editMenu.add(copyMenuItem);
 
-        JMenuItem pasteMenuItem = new JMenuItem("Paste");
+        JMenuItem pasteMenuItem = new JMenuItem(Strings.getLocalizedString("paste"));
         pasteMenuItem.addActionListener(controller);
         pasteMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_V, KeyEvent.CTRL_MASK));
         pasteMenuItem.setActionCommand((String) TransferHandler.getPasteAction().getValue(Action.NAME));
@@ -133,7 +132,7 @@ public class Resinet implements Constants {
 
         editMenu.addSeparator();
 
-        JMenuItem deleteMenuItem = new JMenuItem("Delete");
+        JMenuItem deleteMenuItem = new JMenuItem(Strings.getLocalizedString("delete"));
         deleteMenuItem.addActionListener(controller);
         deleteMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_DELETE, 0));
         //Dieser Aktions-String entspricht dem ActionEvent.getActionCommand in der Methode actionPerformed
@@ -383,7 +382,7 @@ public class Resinet implements Constants {
         outputField.setBackground(null);
         outputField.setFont(new Font("Tahoma", Font.PLAIN, 13));
 
-        collapseOutputBtn = new JButton("Verstecken");
+        collapseOutputBtn = new JButton(Strings.getLocalizedString("hide"));
         collapseOutputBtn.addActionListener(controller);
 
         expandedOutputPanel = new JPanel(new BorderLayout());

@@ -1,5 +1,7 @@
 package com.resinet.views;
 
+import com.resinet.util.Strings;
+
 import javax.swing.*;
 import java.awt.*;
 
@@ -31,8 +33,8 @@ public class SingleReliabilityPanel extends JPanel {
         this.isNode = isNode;
 
         String text;
-        String type = isNode ? "Vertex " : "Edge ";
-        text = type + number;
+        String type = isNode ? Strings.getLocalizedString("vertex") : Strings.getLocalizedString("edge");
+        text = type + " " + number;
 
         JLabel label = new JLabel(text, SwingConstants.RIGHT);
         spinner = new ProbabilitySpinner(9);
