@@ -34,7 +34,7 @@ public class NetPanelTransferHandler extends TransferHandler {
             return false;
         }
 
-        netPanel.pasteNodesAndEdges(nodeEdgeWrapper);
+        netPanel.controller.pasteNodesAndEdges(nodeEdgeWrapper);
         return true;
     }
 
@@ -54,7 +54,7 @@ public class NetPanelTransferHandler extends TransferHandler {
         NetPanelTransferable transferable = (NetPanelTransferable) data;
 
         netPanel.resetSelection();
-        netPanel.removeNodes(transferable.getTransferData().originalNodes);
+        netPanel.controller.removeNodes(transferable.getTransferData().originalNodes);
     }
 
     @Override
@@ -71,6 +71,6 @@ public class NetPanelTransferHandler extends TransferHandler {
     protected Transferable createTransferable(JComponent c) {
         NetPanel netPanel = ((NetPanel) c);
 
-        return new NetPanelTransferable(netPanel.getSelectionCopyData());
+        return new NetPanelTransferable(netPanel.controller.getSelectionCopyData());
     }
 }
