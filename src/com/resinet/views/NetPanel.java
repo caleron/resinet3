@@ -8,7 +8,9 @@ import com.resinet.util.NetPanelTransferHandler;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 
@@ -17,25 +19,22 @@ public class NetPanel extends JPanel {
     public final NetPanelController controller;
 
     //die Kante, die gezeichnet wird, während man die Maus gedrückt hält (beim Kanten erstellen)
-    private EdgeLine draggingLine;
-    private boolean lineDragging = false;
+    EdgeLine draggingLine;
+    boolean lineDragging = false;
 
-    private boolean selectDragging = false;
-    private Point selectStartPoint;
+    boolean selectDragging = false;
+    Point selectStartPoint;
     Timer selectionAnimationTimer;
     private float selectionAnimationPhase = 0;
     boolean nodesSelected = false;
     Rectangle selectionRectangle;
 
-    private boolean cursorInsideSelection;
-    private boolean selectedNodesDragging = false;
+    boolean cursorInsideSelection;
+    boolean selectedNodesDragging = false;
 
-    private Point currentMousePosition;
+    Point currentMousePosition;
 
-    private Shape hoveredElement;
-
-    public final ArrayList<NodePoint> drawnNodes;
-    public final ArrayList<EdgeLine> drawnEdges;
+    Shape hoveredElement;
 
     public boolean nodeClickable = true;
     public boolean edgeClickable = true;
@@ -44,19 +43,16 @@ public class NetPanel extends JPanel {
 
     private final Cursor switchCursor, deleteCursor;
 
-    private static final int HOVER_DISTANCE = 7;
+    static final int HOVER_DISTANCE = 7;
 
     public NetPanel(GraphChangedListener listener) {
         this.listener = listener;
 
         controller = new NetPanelController(this, listener);
 
-        drawnEdges = new ArrayList<>();
-        drawnNodes = new ArrayList<>();
-
         //EventListener setzen
-        addMouseListener(new MyMouseListener());
-        addMouseMotionListener(new MyMouseMotionListener());
+        addMouseListener(controller);
+        addMouseMotionListener(controller);
         addKeyListener(new MyKeyListener());
 
         //Standardcursor setzen
@@ -94,6 +90,8 @@ public class NetPanel extends JPanel {
 
     @Override
     public void paintComponent(Graphics g) {
+        ArrayList<NodePoint> drawnNodes = controller.drawnNodes;
+        ArrayList<EdgeLine> drawnEdges = controller.drawnEdges;
         if (centerGraphOnNextPaint) {
             centerGraphOnNextPaint = false;
             controller.centerGraph();
@@ -237,8 +235,8 @@ public class NetPanel extends JPanel {
      * Setzt den Graph zurück
      */
     public void resetGraph() {
-        drawnNodes.clear();
-        drawnEdges.clear();
+        controller.drawnNodes.clear();
+        controller.drawnEdges.clear();
         lineDragging = false;
         draggingLine = null;
         resetSelection();
@@ -252,337 +250,18 @@ public class NetPanel extends JPanel {
      */
     @Override
     public Dimension getPreferredSize() {
-        Rectangle graphRect = GraphUtil.getGraphBounds(drawnNodes);
+        Rectangle graphRect = GraphUtil.getGraphBounds(controller.drawnNodes);
 
         return new Dimension((int) (graphRect.getX() + graphRect.getWidth()) + 10,
                 (int) (graphRect.getY() + graphRect.getHeight()) + 10);
-    }
-
-    private class MyMouseListener extends MouseAdapter {
-        @Override
-        public void mouseClicked(MouseEvent mouseEvent) {
-            requestFocusInWindow();
-
-            if (nodesSelected) {
-                resetSelection();
-                repaint();
-                return;
-            }
-
-            Integer clickX = mouseEvent.getX();
-            Integer clickY = mouseEvent.getY();
-            boolean nodeClicked = false;
-
-            //Prüfen, ob der Click einen Knoten getroffen hat
-            for (NodePoint currentNode : drawnNodes) {
-
-                if (currentNode.contains(clickX, clickY)) {
-                    //Knoten wurde angeklickt
-                    nodeClicked = true;
-
-                    if (mouseEvent.isShiftDown()) {
-                        //Knoten löschen
-                        int currentNodeIndex = drawnNodes.indexOf(currentNode);
-                        drawnNodes.remove(currentNode);
-                        listener.graphElementDeleted(true, currentNodeIndex);
-
-                        //Anliegende Kanten löschen
-                        controller.removeAdjacentEdges(currentNode);
-
-                    } else if (mouseEvent.isControlDown()) {
-                        //Knoten zum K-Knoten machen oder umgekehrt
-                        currentNode.c_node = !currentNode.c_node;
-
-                    } else if (nodeClickable) {
-                        //Event auslösen
-                        listener.graphElementClicked(true, drawnNodes.indexOf(currentNode));
-                    }
-                    break;
-                }
-            }
-
-            if (!nodeClicked) {
-                boolean edgeClicked = false;
-                //Wenn kein Knoten angeklickt wurde, auf Kante prüfen
-                for (EdgeLine edgeLine : drawnEdges) {
-
-                    if (edgeLine.ptSegDist(clickX, clickY) < HOVER_DISTANCE) {
-                        if (mouseEvent.isShiftDown()) {
-                            int edgeIndex = drawnEdges.indexOf(edgeLine);
-                            drawnEdges.remove(edgeLine);
-                            listener.graphElementDeleted(false, edgeIndex);
-
-                        } else if (edgeClickable) {
-                            //Event auslösen
-                            listener.graphElementClicked(false, drawnEdges.indexOf(edgeLine));
-                        }
-                        edgeClicked = true;
-                        break;
-                    }
-                }
-
-                if (!edgeClicked) {
-                    //Wenn kein bestehendes Element angeklickt wurde, neuen Knoten erzeugen
-                    int x = clickX - 10;
-                    int y = clickY - 10;
-
-                    //isMetaDown() ist beim Rechtsklick true
-                    boolean c_node = mouseEvent.isMetaDown();
-
-                    NodePoint newNode = new NodePoint(x, y, c_node);
-                    //Prüfen, ob der neue Knoten mit einem anderen überlappt
-                    for (NodePoint currentNode : drawnNodes) {
-
-                        //Falls er überlappt, den neuen Knoten in die entsprechende Richtung verschieben
-                        if (currentNode.getFrame().intersects(newNode.getFrame())) {
-                            if (x > currentNode.getX() && y > currentNode.getY()) {
-                                newNode = new NodePoint(x + 10, y + 10, c_node);
-                            } else if (x > currentNode.getX() && y < currentNode.getY()) {
-                                newNode = new NodePoint(x + 10, y - 10, c_node);
-                            } else if (x < currentNode.getX() && y > currentNode.getY()) {
-                                newNode = new NodePoint(x - 10, y + 10, c_node);
-                            } else {
-                                newNode = new NodePoint(x - 10, y - 10, c_node);
-                            }
-                        }
-                    }
-                    //neuen Knoten hinzufügen
-                    drawnNodes.add(newNode);
-                    listener.graphElementAdded(true, drawnNodes.size() - 1);
-                }
-            }
-            //neu zeichnen
-            repaint();
-        }
-
-
-        @Override
-        public void mousePressed(MouseEvent mouseEvent) {
-            if (mouseEvent.isMetaDown()) {
-                //Rechtsklick ignorieren
-                return;
-            }
-            //Mausposition setzen
-            currentMousePosition = mouseEvent.getPoint();
-
-            lineDragging = false;
-            int x = mouseEvent.getX();
-            int y = mouseEvent.getY();
-
-            //Prüfen, ob die Auswahl verschoben werden soll
-            if (cursorInsideSelection) {
-                selectedNodesDragging = true;
-                hoveredElement = null;
-                return;
-            }
-
-            //Prüfen, ob in ein Knoten gedrückt wurde, damit das Ziehen einer Kante gestartet wird
-            for (NodePoint np : drawnNodes) {
-
-                if (np.contains(x, y)) {
-                    //Es wurde in den Kreis geklickt, also Kantenziehen starten
-                    draggingLine = new EdgeLine(np, null);
-                    lineDragging = true;
-                    return;
-                }
-            }
-
-            //Ansonsten auswählen beginnen
-            selectDragging = true;
-            //Startpunkt setzen
-            selectStartPoint = mouseEvent.getPoint();
-        }
-
-        @Override
-        public void mouseReleased(MouseEvent mouseEvent) {
-            if (mouseEvent.isMetaDown())
-                return;
-
-            if (lineDragging) {
-                lineDragging = false;
-                int x = mouseEvent.getX();
-                int y = mouseEvent.getY();
-
-                //Prüft, ob die Maus innerhalb eines Knotens losgelassen wurde
-                for (NodePoint currentNode : drawnNodes) {
-
-                    if (currentNode.contains(x, y) && draggingLine.startNode != currentNode) {
-
-                        //Prüfen, ob eine Kante mit genau diesen anliegenden Knoten bereits existiert
-                        for (EdgeLine currentEdge : drawnEdges) {
-
-                            //Wenn die Kante existiert, dann abbrechen
-                            if (currentEdge.startNode == currentNode && currentEdge.endNode == draggingLine.startNode
-                                    || currentEdge.startNode == draggingLine.startNode && currentEdge.endNode == currentNode) {
-                                repaint();
-                                return;
-                            }
-                        }
-
-                        //Maus wurde in diesem Knoten losgelassen -> als Endknoten der Kante festlegen
-                        draggingLine.setEndNode(currentNode);
-                        drawnEdges.add(draggingLine);
-                        listener.graphElementAdded(false, drawnEdges.size() - 1);
-
-                        repaint();
-                        return;
-                    }
-                }
-            }
-            //Falls ausgewählt wurde
-            if (selectDragging) {
-                selectDragging = false;
-
-                //Rechteck mit dem Startpunkt und der aktuellen Position erstellen
-                selectionRectangle = new Rectangle(mouseEvent.getPoint());
-                selectionRectangle.add(selectStartPoint);
-
-                //Liste mit ausgewählten Knoten
-                ArrayList<NodePoint> selectedNodes = new ArrayList<>();
-
-                for (NodePoint node : drawnNodes) {
-                    if (node.intersects(selectionRectangle)) {
-                        node.selected = true;
-                        nodesSelected = true;
-                        selectedNodes.add(node);
-                    } else {
-                        node.selected = false;
-                    }
-                }
-
-                //Rechteck erstellen, dass mit 5 Pixel Abstand alle ausgewählten Knoten umschließt
-                //Falls keine Knoten ausgewählt wurden, hat das Reckteck alle Parameter auf 0
-                selectionRectangle = GraphUtil.getGraphBounds(selectedNodes, 5);
-
-                if (nodesSelected) {
-                    //Timer (neu) starten (falls er bereits läuft)
-                    selectionAnimationTimer.restart();
-                }
-            }
-
-            if (selectedNodesDragging) {
-                selectedNodesDragging = false;
-
-                //Scrollpane aktualisieren
-                controller.revalidateScrollPane();
-            }
-            repaint();
-        }
-    }
-
-
-    private class MyMouseMotionListener extends MouseMotionAdapter {
-        public void mouseDragged(MouseEvent evt) {
-            if (lineDragging) {
-                //Während des Kantenziehens die Endposition der Kante aktualisieren, damit Sie immer unter dem Cursor endet
-                int x = evt.getX();
-                int y = evt.getY();
-                draggingLine.x2 = x;
-                draggingLine.y2 = y;
-                repaint();
-            } else if (selectDragging) {
-                //Mausposition setzen und Auswählrechteck neu zeichnen
-                currentMousePosition = evt.getPoint();
-                repaint();
-            } else if (selectedNodesDragging) {
-                Point newMousePosition = evt.getPoint();
-
-                //Offsets bestimmen
-                int offsetX = newMousePosition.x - currentMousePosition.x;
-                int offsetY = newMousePosition.y - currentMousePosition.y;
-
-                //Auswahlrechteck verschieben
-                selectionRectangle.x += offsetX;
-                selectionRectangle.y += offsetY;
-
-                //Ausgewählte Knoten verschieben
-                for (NodePoint nodePoint : drawnNodes) {
-                    if (nodePoint.selected) {
-                        nodePoint.x += offsetX;
-                        nodePoint.y += offsetY;
-                    }
-                }
-
-                //Anliegende Kanten verschieben
-                for (EdgeLine edgeLine : drawnEdges) {
-                    if (edgeLine.startNode.selected || edgeLine.endNode.selected) {
-                        edgeLine.refresh();
-                    }
-                }
-                //Neue Mausposition setzen
-                currentMousePosition = evt.getPoint();
-                repaint();
-            }
-        }
-
-        /**
-         * Prüft, ob der Cursor über einem Element liegt und verändert den Cursor entsprechend
-         *
-         * @param mouseEvent Das MouseEvent
-         */
-        @Override
-        public void mouseMoved(MouseEvent mouseEvent) {
-            if (lineDragging || selectDragging)
-                return;
-
-            int x = mouseEvent.getX();
-            int y = mouseEvent.getY();
-            boolean consumed = false;
-
-            /**
-             * Prüfen, ob der Cursor auf einem markierten Bereich ist
-             */
-            if (nodesSelected && selectionRectangle.contains(x, y)) {
-                cursorInsideSelection = true;
-                consumed = true;
-                hoveredElement = null;
-            } else {
-                cursorInsideSelection = false;
-            }
-
-            /**
-             * Prüfen, ob ein Knoten getroffen wird
-             */
-            if (!consumed) {
-                for (NodePoint nodePoint : drawnNodes) {
-
-                    if (nodePoint.contains(x, y)) {
-                        hoveredElement = nodePoint;
-                        repaint();
-                        consumed = true;
-                        break;
-                    }
-                }
-            }
-
-            /**
-             * Prüfen, ob der Cursor nahe einer Kante ist (nah ist hier maximal 5px Abstand)
-             */
-            if (!consumed) {
-                for (EdgeLine edgeLine : drawnEdges) {
-
-                    if (edgeLine.ptSegDist(x, y) < HOVER_DISTANCE) {
-                        hoveredElement = edgeLine;
-                        repaint();
-                        consumed = true;
-                        break;
-                    }
-                }
-            }
-
-            if (!consumed && hoveredElement != null) {
-                //Cursor zurücksetzen, falls er auf keinem Element mehr ist
-                hoveredElement = null;
-                repaint();
-            }
-            setCursorHover(mouseEvent.isShiftDown(), mouseEvent.isControlDown());
-        }
     }
 
     /**
      * Setzt die Auswahl zurück
      */
     public void resetSelection() {
+        ArrayList<NodePoint> drawnNodes = controller.drawnNodes;
+
         nodesSelected = false;
         selectionAnimationTimer.stop();
         for (NodePoint node : drawnNodes) {
@@ -621,7 +300,7 @@ public class NetPanel extends JPanel {
      * @param shiftDown   Ob Shift gedrückt ist
      * @param controlDown Ob Strg gedrückt ist
      */
-    private void setCursorHover(boolean shiftDown, boolean controlDown) {
+    void setCursorHover(boolean shiftDown, boolean controlDown) {
         if (cursorInsideSelection) {
             setCursor(new Cursor(Cursor.MOVE_CURSOR));
         } else if (shiftDown && hoveredElement != null) {
@@ -635,5 +314,12 @@ public class NetPanel extends JPanel {
         }
     }
 
+    public ArrayList<NodePoint> getNodes() {
+        return controller.drawnNodes;
+    }
+
+    public ArrayList<EdgeLine> getEdges() {
+        return controller.drawnEdges;
+    }
 
 }

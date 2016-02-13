@@ -98,20 +98,23 @@ public class GraphUtil {
      * @return das Graph-Objekt zum gezeichneten Graph
      */
     public static Graph makeGraph(NetPanel netPanel) {
+        ArrayList<EdgeLine> graphEdges = netPanel.getEdges();
+        ArrayList<NodePoint> graphNodes = netPanel.getNodes();
+
         ArrayList<Node> nodeList = new ArrayList<>();
         ArrayList<Edge> edgeList = new ArrayList<>();
 
         int cnt = 0;
-        for (NodePoint np : netPanel.drawnNodes) {
+        for (NodePoint np : graphNodes) {
             Node node = new Node(cnt, np.c_node);
             nodeList.add(node);
             cnt++;
         }
         //fertig mit dem Eintragen von Knoten
         cnt = 0;
-        for (EdgeLine e : netPanel.drawnEdges) {
-            int m = netPanel.drawnNodes.indexOf(e.startNode);
-            int n = netPanel.drawnNodes.indexOf(e.endNode);
+        for (EdgeLine e : graphEdges) {
+            int m = graphNodes.indexOf(e.startNode);
+            int n = graphNodes.indexOf(e.endNode);
             Edge edge = new Edge(cnt);
             Node node1 = nodeList.get(m);
             Node node2 = nodeList.get(n);

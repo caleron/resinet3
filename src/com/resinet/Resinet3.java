@@ -817,9 +817,9 @@ public class Resinet3 extends JFrame
             return;
 
         //Knoten/Kantenzahl auf 0 setzen, wenn sie nicht berücksichtigt werden sollen
-        int edgeCount = considerEdgeSingleReliabilities ? netPanel.drawnEdges.size() : 0;
+        int edgeCount = considerEdgeSingleReliabilities ? netPanel.getEdges().size() : 0;
         int edgeBoxCount = edgeProbabilityBoxes.size();
-        int nodeCount = considerNodeSingleReliabilities ? netPanel.drawnNodes.size() : 0;
+        int nodeCount = considerNodeSingleReliabilities ? netPanel.getNodes().size() : 0;
         int nodeBoxCount = nodeProbabilityBoxes.size();
 
         //Fehlende Kantenwahrscheinlichkeitsfelder hinzufügen

@@ -252,8 +252,8 @@ public class MainframeController extends WindowAdapter implements ActionListener
         resetGraph();
 
         //Graphelemente hinzufügen
-        netPanel.drawnEdges.addAll(params.graphEdges);
-        netPanel.drawnNodes.addAll(params.graphNodes);
+        netPanel.getEdges().addAll(params.graphEdges);
+        netPanel.getNodes().addAll(params.graphNodes);
 
         updateSingleReliabilityProbPanel();
         if (params.probabilitiesLoaded) {
@@ -300,9 +300,9 @@ public class MainframeController extends WindowAdapter implements ActionListener
         boolean considerEdges = mainFrame.getConsiderEdgesBox().isSelected();
 
         //Knoten/Kantenzahl auf 0 setzen, wenn sie nicht berücksichtigt werden sollen
-        int edgeCount = considerEdges ? mainFrame.getNetPanel().drawnEdges.size() : 0;
+        int edgeCount = considerEdges ? mainFrame.getNetPanel().getEdges().size() : 0;
         int edgeBoxCount = edgeProbabilityBoxes.size();
-        int nodeCount = considerNodes ? mainFrame.getNetPanel().drawnNodes.size() : 0;
+        int nodeCount = considerNodes ? mainFrame.getNetPanel().getNodes().size() : 0;
         int nodeBoxCount = nodeProbabilityBoxes.size();
 
         //Fehlende Kantenwahrscheinlichkeitsfelder hinzufügen
@@ -400,7 +400,7 @@ public class MainframeController extends WindowAdapter implements ActionListener
 
         //Falls die Parameter gespeichert werden sollen, die Graphelementlisten setzen
         if (forSaving) {
-            params.setGraphLists(netPanel.drawnNodes, netPanel.drawnEdges);
+            params.setGraphLists(netPanel.getNodes(), netPanel.getEdges());
         }
 
         if (reliabilityMode == RELIABILITY_MODES.SAME) {
