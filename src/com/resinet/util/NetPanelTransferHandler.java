@@ -53,7 +53,7 @@ public class NetPanelTransferHandler extends TransferHandler {
         NetPanel netPanel = ((NetPanel) source);
         NetPanelTransferable transferable = (NetPanelTransferable) data;
 
-        netPanel.resetSelection();
+        netPanel.getController().resetSelection();
         netPanel.controller.removeNodes(transferable.getTransferData().originalNodes);
     }
 

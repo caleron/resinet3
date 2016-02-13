@@ -15,33 +15,18 @@ import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 
 public class NetPanel extends JPanel {
-    private final GraphChangedListener listener;
+    private static final long serialVersionUID = -124106422709849520L;
+
     public final NetPanelController controller;
 
-    //die Kante, die gezeichnet wird, während man die Maus gedrückt hält (beim Kanten erstellen)
-    EdgeLine draggingLine;
-    boolean lineDragging = false;
-
-    boolean selectDragging = false;
-    Point selectStartPoint;
     Timer selectionAnimationTimer;
     private float selectionAnimationPhase = 0;
-    boolean nodesSelected = false;
-    Rectangle selectionRectangle;
-
-    Point currentMousePosition;
-
-    Shape hoveredElement;
 
     private boolean centerGraphOnNextPaint = false;
 
     private final Cursor switchCursor, deleteCursor;
 
-    static final int HOVER_DISTANCE = 7;
-
     public NetPanel(GraphChangedListener listener) {
-        this.listener = listener;
-
         controller = new NetPanelController(this, listener);
 
         //EventListener setzen
@@ -105,7 +90,7 @@ public class NetPanel extends JPanel {
         imgGraphics.setColor(Color.black);
 
         for (EdgeLine edgeLine : drawnEdges) {
-            if (edgeLine.equals(hoveredElement)) {
+            if (edgeLine.equals(controller.getHoveredElement())) {
                 imgGraphics.setStroke(new BasicStroke(2));
                 imgGraphics.draw(edgeLine);
                 imgGraphics.setStroke(new BasicStroke(1));
@@ -135,25 +120,25 @@ public class NetPanel extends JPanel {
 
         imgGraphics.setColor(Color.BLACK);
 
+        EdgeLine draggingLine = controller.getDraggingLine();
+
         //Linie während des Kantenziehens nur zeichnen, wenn die Maus bewegt wurde, also auch ein zweiter Punkt gesetzt wurde
-        if (lineDragging && draggingLine.x2 > 0 && draggingLine.y2 > 0) {
+        if (controller.isLineDragging() && draggingLine.x2 > 0 && draggingLine.y2 > 0) {
             imgGraphics.draw(draggingLine);
         }
 
         //Kasten zum auswählen zeichnen
-        if (selectDragging) {
+        if (controller.isSelectDragging()) {
             //gestrichelte Linie
             imgGraphics.setStroke(new BasicStroke(1, BasicStroke.CAP_BUTT, BasicStroke.JOIN_BEVEL, 0, new float[]{1, 2}, 0));
-            Rectangle selectRect = new Rectangle(selectStartPoint);
-            selectRect.add(currentMousePosition);
+            Rectangle selectRect = new Rectangle(controller.getSelectStartPoint());
+            selectRect.add(controller.getCurrentMousePosition());
             imgGraphics.draw(selectRect);
-        }
-
-        //Kasten um die ausgewählten Knoten zeichnen, wenn nicht gerade neu ausgewählt wird
-        if (nodesSelected && !selectDragging) {
+        } else if (controller.isNodesSelected()) {
+            //Kasten um die ausgewählten Knoten zeichnen, wenn nicht gerade neu ausgewählt wird
             //animiert gestrichelte Linie
             imgGraphics.setStroke(new BasicStroke(1, BasicStroke.CAP_BUTT, BasicStroke.JOIN_BEVEL, 0, new float[]{2, 2}, selectionAnimationPhase));
-            imgGraphics.draw(selectionRectangle);
+            imgGraphics.draw(controller.getSelectionRectangle());
         }
 
         g.drawImage(img, 0, 0, this);
@@ -167,7 +152,7 @@ public class NetPanel extends JPanel {
      */
     private void drawNode(Graphics2D imgGraphics, NodePoint nodePoint) {
         imgGraphics.setColor(Color.black);
-        if (nodePoint.equals(hoveredElement)) {
+        if (nodePoint.equals(controller.getHoveredElement())) {
 
             //wenn die Maus darüber ist, fett zeichnen
             if (nodePoint.c_node) {
@@ -239,19 +224,6 @@ public class NetPanel extends JPanel {
     }
 
     /**
-     * Setzt die Auswahl zurück
-     */
-    public void resetSelection() {
-        ArrayList<NodePoint> drawnNodes = controller.getNodes();
-
-        nodesSelected = false;
-        selectionAnimationTimer.stop();
-        for (NodePoint node : drawnNodes) {
-            node.selected = false;
-        }
-    }
-
-    /**
      * Setzt den Graph zurück
      */
     public void resetGraph() {
@@ -290,6 +262,8 @@ public class NetPanel extends JPanel {
      * @param controlDown Ob Strg gedrückt ist
      */
     void setCursorHover(boolean shiftDown, boolean controlDown) {
+        Shape hoveredElement = controller.getHoveredElement();
+
         if (controller.isCursorInsideSelection()) {
             setCursor(new Cursor(Cursor.MOVE_CURSOR));
         } else if (shiftDown && hoveredElement != null) {
