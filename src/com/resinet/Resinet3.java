@@ -804,8 +804,7 @@ public class Resinet3 extends JFrame
      * Aktualisiert, was im Graphen angeklickt werden kann und aktualisiert das Wahrscheinlichkeitspanel
      */
     private void updateConsideredComponents() {
-        netPanel.edgeClickable = considerEdgeSingleReliabilities;
-        netPanel.nodeClickable = considerNodeSingleReliabilities;
+        netPanel.getController().setClickableElements(considerNodeSingleReliabilities, considerEdgeSingleReliabilities);
         updateSingleReliabilityProbPanel();
     }
 

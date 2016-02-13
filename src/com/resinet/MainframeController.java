@@ -5,6 +5,7 @@ import com.resinet.model.CalculationParams;
 import com.resinet.model.Graph;
 import com.resinet.util.*;
 import com.resinet.views.NetPanel;
+import com.resinet.views.NetPanelController;
 import com.resinet.views.ProbabilitySpinner;
 import com.resinet.views.SingleReliabilityPanel;
 import com.sun.istack.internal.Nullable;
@@ -65,7 +66,7 @@ public class MainframeController extends WindowAdapter implements ActionListener
             startCalculation(CALCULATION_MODES.RESILIENCE);
         } else if (button == mainFrame.collapseOutputBtn) {
             mainFrame.setStatusBarCollapsed(true);
-        } else if (permanentFocusOwner.equals(mainFrame.getNetPanel())){
+        } else if (permanentFocusOwner.equals(mainFrame.getNetPanel())) {
             mainFrame.getNetPanel().actionPerformed(e);
         }
     }
@@ -73,6 +74,11 @@ public class MainframeController extends WindowAdapter implements ActionListener
     //TODO rückgängig machen, copy&paste
     //TODO Graph optimieren bezüglich Anordnung nach verschiedenen Algorithmen
 
+    /**
+     * Wird bei der Statusänderung einer Checkbox ausgelöst.
+     *
+     * @param e das ItemEvent
+     */
     @Override
     public void itemStateChanged(ItemEvent e) {
         if (mainFrame == null)
@@ -82,6 +88,12 @@ public class MainframeController extends WindowAdapter implements ActionListener
         if (checkbox == mainFrame.getCalculationSeriesCheckBox()) {
             mainFrame.setGuiState(GUI_STATES.ENTER_GRAPH, true);
         } else if (checkbox == mainFrame.getConsiderEdgesBox() || checkbox == mainFrame.getConsiderNodesBox()) {
+            NetPanelController netPanelController = mainFrame.getNetPanel().getController();
+
+            boolean considerNodes = mainFrame.getConsiderNodesBox().isSelected();
+            boolean considerEdges = mainFrame.getConsiderEdgesBox().isSelected();
+
+            netPanelController.setClickableElements(considerNodes, considerEdges);
             updateSingleReliabilityProbPanel();
         }
     }
@@ -139,9 +151,13 @@ public class MainframeController extends WindowAdapter implements ActionListener
             }
         } else {
             if (isNode) {
-                nodeProbabilityBoxes.get(number).requestFocusInWindow();
+                if (nodeProbabilityBoxes.size() > number) {
+                    nodeProbabilityBoxes.get(number).requestFocusInWindow();
+                }
             } else {
-                edgeProbabilityBoxes.get(number).requestFocusInWindow();
+                if (edgeProbabilityBoxes.size() > number) {
+                    edgeProbabilityBoxes.get(number).requestFocusInWindow();
+                }
             }
         }
     }
@@ -197,6 +213,19 @@ public class MainframeController extends WindowAdapter implements ActionListener
      */
     @Override
     public void stateChanged(ChangeEvent e) {
+        if (mainFrame == null)
+            return;
+
+        NetPanelController netPanelController = mainFrame.getNetPanel().getController();
+
+        if (mainFrame.getReliabilityMode() == RELIABILITY_MODES.SAME) {
+            netPanelController.setClickableElements(true, true);
+        } else {
+            boolean considerNodes = mainFrame.getConsiderNodesBox().isSelected();
+            boolean considerEdges = mainFrame.getConsiderEdgesBox().isSelected();
+
+            netPanelController.setClickableElements(considerNodes, considerEdges);
+        }
         updateSingleReliabilityProbPanel();
     }
 

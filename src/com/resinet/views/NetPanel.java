@@ -33,9 +33,6 @@ public class NetPanel extends JPanel {
 
     Shape hoveredElement;
 
-    public boolean nodeClickable = true;
-    public boolean edgeClickable = true;
-
     private boolean centerGraphOnNextPaint = false;
 
     private final Cursor switchCursor, deleteCursor;
@@ -299,7 +296,8 @@ public class NetPanel extends JPanel {
             setCursor(deleteCursor);
         } else if (controlDown && hoveredElement instanceof NodePoint) {
             setCursor(switchCursor);
-        } else if (((hoveredElement instanceof NodePoint && nodeClickable) || (hoveredElement instanceof EdgeLine && edgeClickable))) {
+        } else if (((hoveredElement instanceof NodePoint && controller.isNodeClickable()) ||
+                (hoveredElement instanceof EdgeLine && controller.isEdgeClickable()))) {
             setCursor(new Cursor(Cursor.HAND_CURSOR));
         } else {
             setCursor(new Cursor(Cursor.CROSSHAIR_CURSOR));
@@ -314,4 +312,7 @@ public class NetPanel extends JPanel {
         return controller.getEdges();
     }
 
+    public NetPanelController getController() {
+        return controller;
+    }
 }

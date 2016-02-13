@@ -24,6 +24,9 @@ public class NetPanelController implements MouseListener, MouseMotionListener {
     private boolean cursorInsideSelection;
     private boolean selectedNodesDragging = false;
 
+    private boolean nodeClickable = true;
+    private boolean edgeClickable = true;
+
     public NetPanelController(NetPanel netPanel, GraphChangedListener listener) {
         this.netPanel = netPanel;
         this.listener = listener;
@@ -372,7 +375,7 @@ public class NetPanelController implements MouseListener, MouseMotionListener {
                     //Knoten zum K-Knoten machen oder umgekehrt
                     currentNode.c_node = !currentNode.c_node;
 
-                } else if (netPanel.nodeClickable) {
+                } else if (nodeClickable) {
                     //Event auslösen
                     listener.graphElementClicked(true, drawnNodes.indexOf(currentNode));
                 }
@@ -391,7 +394,7 @@ public class NetPanelController implements MouseListener, MouseMotionListener {
                         drawnEdges.remove(edgeLine);
                         listener.graphElementDeleted(false, edgeIndex);
 
-                    } else if (netPanel.edgeClickable) {
+                    } else if (edgeClickable) {
                         //Event auslösen
                         listener.graphElementClicked(false, drawnEdges.indexOf(edgeLine));
                     }
@@ -670,5 +673,18 @@ public class NetPanelController implements MouseListener, MouseMotionListener {
 
     public ArrayList<EdgeLine> getEdges() {
         return drawnEdges;
+    }
+
+    public boolean isNodeClickable() {
+        return nodeClickable;
+    }
+
+    public boolean isEdgeClickable() {
+        return edgeClickable;
+    }
+
+    public void setClickableElements(boolean nodeClickable, boolean edgeClickable) {
+        this.nodeClickable = nodeClickable;
+        this.edgeClickable = edgeClickable;
     }
 }
