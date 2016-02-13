@@ -16,7 +16,7 @@ import java.util.Locale;
 import java.util.Map;
 
 @SuppressWarnings("Duplicates")
-public class ResinetMockup implements Constants {
+public class Resinet implements Constants {
     MainframeController controller;
 
     private JPanel contentPane;
@@ -56,7 +56,7 @@ public class ResinetMockup implements Constants {
     private JPanel expandedOutputPanel;
     public JButton collapseOutputBtn;
 
-    public ResinetMockup(MainframeController controller) {
+    public Resinet(MainframeController controller) {
         this.controller = controller;
         contentPane = new JPanel(new BorderLayout());
 
@@ -80,14 +80,14 @@ public class ResinetMockup implements Constants {
         SwingUtilities.invokeLater(() -> {
             MainframeController controller = new MainframeController();
 
-            ResinetMockup resinetMockup = new ResinetMockup(controller);
-            controller.setMainFrame(resinetMockup);
+            Resinet resinet = new Resinet(controller);
+            controller.setMainFrame(resinet);
 
             JFrame mainFrame = new JFrame("Mockup");
             mainFrame.addWindowListener(controller);
 
-            mainFrame.setContentPane(resinetMockup.getContentPane());
-            mainFrame.setJMenuBar(resinetMockup.getMenuBar());
+            mainFrame.setContentPane(resinet.getContentPane());
+            mainFrame.setJMenuBar(resinet.getMenuBar());
 
             //Beim Klicken auf X das Programm beenden
             mainFrame.setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);

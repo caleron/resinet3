@@ -25,7 +25,7 @@ import java.util.List;
 @SuppressWarnings("Duplicates")
 public class MainframeController extends WindowAdapter implements ActionListener, GraphChangedListener,
         CalculationProgressListener, Constants, ItemListener, ChangeListener, PropertyChangeListener {
-    ResinetMockup mainFrame;
+    Resinet mainFrame;
 
     JComponent permanentFocusOwner;
 
@@ -37,7 +37,7 @@ public class MainframeController extends WindowAdapter implements ActionListener
         manager.addPropertyChangeListener("permanentFocusOwner", this);
     }
 
-    public void setMainFrame(ResinetMockup mainFrame) {
+    public void setMainFrame(Resinet mainFrame) {
         this.mainFrame = mainFrame;
     }
 

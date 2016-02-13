@@ -1,5 +1,7 @@
 package com.resinet.util;
 
+import com.resinet.Resinet;
+
 import javax.swing.*;
 import java.awt.*;
 import java.util.HashMap;
@@ -30,7 +32,7 @@ public class Strings {
         Locale.setDefault(new Locale("en"));
 
         //Eingestellte Sprache aus Einstellungen laden
-        preferences = Preferences.userNodeForPackage(com.resinet.ResinetMockup.class);
+        preferences = Preferences.userNodeForPackage(Resinet.class);
         String language = preferences.get("language", "en");
 
         currentLocale = new Locale(language);
