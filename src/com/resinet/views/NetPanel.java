@@ -29,9 +29,6 @@ public class NetPanel extends JPanel {
     boolean nodesSelected = false;
     Rectangle selectionRectangle;
 
-    boolean cursorInsideSelection;
-    boolean selectedNodesDragging = false;
-
     Point currentMousePosition;
 
     Shape hoveredElement;
@@ -90,8 +87,8 @@ public class NetPanel extends JPanel {
 
     @Override
     public void paintComponent(Graphics g) {
-        ArrayList<NodePoint> drawnNodes = controller.drawnNodes;
-        ArrayList<EdgeLine> drawnEdges = controller.drawnEdges;
+        ArrayList<NodePoint> drawnNodes = controller.getNodes();
+        ArrayList<EdgeLine> drawnEdges = controller.getEdges();
         if (centerGraphOnNextPaint) {
             centerGraphOnNextPaint = false;
             controller.centerGraph();
@@ -232,25 +229,13 @@ public class NetPanel extends JPanel {
     }
 
     /**
-     * Setzt den Graph zurück
-     */
-    public void resetGraph() {
-        controller.drawnNodes.clear();
-        controller.drawnEdges.clear();
-        lineDragging = false;
-        draggingLine = null;
-        resetSelection();
-        repaint();
-    }
-
-    /**
      * Setzt die bevorzugte Größe auf die vom Graphen eingenommene Fläche inklusive Offsets + 10 Pixel
      *
      * @return Bevorzugte Größe
      */
     @Override
     public Dimension getPreferredSize() {
-        Rectangle graphRect = GraphUtil.getGraphBounds(controller.drawnNodes);
+        Rectangle graphRect = GraphUtil.getGraphBounds(controller.getNodes());
 
         return new Dimension((int) (graphRect.getX() + graphRect.getWidth()) + 10,
                 (int) (graphRect.getY() + graphRect.getHeight()) + 10);
@@ -260,13 +245,20 @@ public class NetPanel extends JPanel {
      * Setzt die Auswahl zurück
      */
     public void resetSelection() {
-        ArrayList<NodePoint> drawnNodes = controller.drawnNodes;
+        ArrayList<NodePoint> drawnNodes = controller.getNodes();
 
         nodesSelected = false;
         selectionAnimationTimer.stop();
         for (NodePoint node : drawnNodes) {
             node.selected = false;
         }
+    }
+
+    /**
+     * Setzt den Graph zurück
+     */
+    public void resetGraph() {
+        controller.resetGraph();
     }
 
     /**
@@ -301,7 +293,7 @@ public class NetPanel extends JPanel {
      * @param controlDown Ob Strg gedrückt ist
      */
     void setCursorHover(boolean shiftDown, boolean controlDown) {
-        if (cursorInsideSelection) {
+        if (controller.isCursorInsideSelection()) {
             setCursor(new Cursor(Cursor.MOVE_CURSOR));
         } else if (shiftDown && hoveredElement != null) {
             setCursor(deleteCursor);
@@ -315,11 +307,11 @@ public class NetPanel extends JPanel {
     }
 
     public ArrayList<NodePoint> getNodes() {
-        return controller.drawnNodes;
+        return controller.getNodes();
     }
 
     public ArrayList<EdgeLine> getEdges() {
-        return controller.drawnEdges;
+        return controller.getEdges();
     }
 
 }

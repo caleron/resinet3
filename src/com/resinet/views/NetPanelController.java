@@ -14,12 +14,15 @@ import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
 import java.util.ArrayList;
 
-public class NetPanelController implements MouseListener, MouseMotionListener{
+public class NetPanelController implements MouseListener, MouseMotionListener {
     private NetPanel netPanel;
     private GraphChangedListener listener;
 
-    public final ArrayList<NodePoint> drawnNodes;
-    public final ArrayList<EdgeLine> drawnEdges;
+    private final ArrayList<NodePoint> drawnNodes;
+    private final ArrayList<EdgeLine> drawnEdges;
+
+    private boolean cursorInsideSelection;
+    private boolean selectedNodesDragging = false;
 
     public NetPanelController(NetPanel netPanel, GraphChangedListener listener) {
         this.netPanel = netPanel;
@@ -135,6 +138,18 @@ public class NetPanelController implements MouseListener, MouseMotionListener{
         netPanel.repaint();
     }
 
+
+    /**
+     * Setzt den Graph zurück
+     */
+    public void resetGraph() {
+        drawnNodes.clear();
+        drawnEdges.clear();
+        netPanel.lineDragging = false;
+        netPanel.draggingLine = null;
+        netPanel.resetSelection();
+        netPanel.repaint();
+    }
 
     /**
      * Entfernt alle ausgewählten Knoten vom Graphen
@@ -433,8 +448,8 @@ public class NetPanelController implements MouseListener, MouseMotionListener{
         int y = mouseEvent.getY();
 
         //Prüfen, ob die Auswahl verschoben werden soll
-        if (netPanel.cursorInsideSelection) {
-            netPanel.selectedNodesDragging = true;
+        if (cursorInsideSelection) {
+            selectedNodesDragging = true;
             netPanel.hoveredElement = null;
             return;
         }
@@ -523,8 +538,8 @@ public class NetPanelController implements MouseListener, MouseMotionListener{
             }
         }
 
-        if (netPanel.selectedNodesDragging) {
-            netPanel.selectedNodesDragging = false;
+        if (selectedNodesDragging) {
+            selectedNodesDragging = false;
 
             //Scrollpane aktualisieren
             revalidateScrollPane();
@@ -553,9 +568,9 @@ public class NetPanelController implements MouseListener, MouseMotionListener{
             netPanel.repaint();
         } else if (netPanel.selectDragging) {
             //Mausposition setzen und Auswählrechteck neu zeichnen
-           netPanel.currentMousePosition = evt.getPoint();
-           netPanel.repaint();
-        } else if (netPanel.selectedNodesDragging) {
+            netPanel.currentMousePosition = evt.getPoint();
+            netPanel.repaint();
+        } else if (selectedNodesDragging) {
             Point newMousePosition = evt.getPoint();
 
             //Offsets bestimmen
@@ -600,11 +615,11 @@ public class NetPanelController implements MouseListener, MouseMotionListener{
          * Prüfen, ob der Cursor auf einem markierten Bereich ist
          */
         if (netPanel.nodesSelected && netPanel.selectionRectangle.contains(x, y)) {
-            netPanel.cursorInsideSelection = true;
+            cursorInsideSelection = true;
             consumed = true;
             netPanel.hoveredElement = null;
         } else {
-            netPanel.cursorInsideSelection = false;
+            cursorInsideSelection = false;
         }
 
         /**
@@ -643,5 +658,17 @@ public class NetPanelController implements MouseListener, MouseMotionListener{
             netPanel.repaint();
         }
         netPanel.setCursorHover(mouseEvent.isShiftDown(), mouseEvent.isControlDown());
+    }
+
+    public boolean isCursorInsideSelection() {
+        return cursorInsideSelection;
+    }
+
+    public ArrayList<NodePoint> getNodes() {
+        return drawnNodes;
+    }
+
+    public ArrayList<EdgeLine> getEdges() {
+        return drawnEdges;
     }
 }
