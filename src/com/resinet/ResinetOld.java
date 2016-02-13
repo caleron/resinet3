@@ -32,7 +32,7 @@ import java.util.List;
  * <p>
  * <strong>views:</strong> GUI-Komponentenklassen
  */
-public class Resinet3 extends JFrame
+public class ResinetOld extends JFrame
         implements ActionListener, GraphChangedListener, CalculationProgressListener, Constants {
 
     public NetPanel netPanel;
@@ -56,7 +56,7 @@ public class Resinet3 extends JFrame
     private final List<JTextField> edgeProbabilityBoxes = new ArrayList<>();
     private final List<JTextField> nodeProbabilityBoxes = new ArrayList<>();
 
-    private static Resinet3 mainFrame;
+    private static ResinetOld mainFrame;
 
     private GUI_STATES guiState;
     private boolean considerNodeSingleReliabilities = true;
@@ -68,7 +68,7 @@ public class Resinet3 extends JFrame
         CALCULATION_RUNNING
     }
 
-    private Resinet3() {
+    private ResinetOld() {
         init();
     }
 
@@ -79,7 +79,7 @@ public class Resinet3 extends JFrame
      */
     public static void main(String[] args) {
         SwingUtilities.invokeLater(() -> {
-            mainFrame = new Resinet3();
+            mainFrame = new ResinetOld();
 
             //Größe und minimale Größe setzen
             mainFrame.setSize(700, 825);

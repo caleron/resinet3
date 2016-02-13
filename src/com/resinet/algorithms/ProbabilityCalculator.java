@@ -1,6 +1,5 @@
 package com.resinet.algorithms;
 
-import com.resinet.Resinet3;
 import com.resinet.model.*;
 import com.resinet.util.CalculationProgressListener;
 import com.resinet.util.Constants;
@@ -40,7 +39,7 @@ public class ProbabilityCalculator extends Thread implements Constants {
     @Override
     public void run() {
         System.out.println("ProbabilityCalculator: " + Thread.currentThread().getName());
-        if (params.calculationMode == Resinet3.CALCULATION_MODES.RELIABILITY) {
+        if (params.calculationMode == CALCULATION_MODES.RELIABILITY) {
             //Zuverlässigkeit berechnen
             if (params.calculationSeries) {
                 calculationSeries(CALCULATION_MODES.RELIABILITY);

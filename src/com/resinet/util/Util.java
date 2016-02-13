@@ -1,6 +1,6 @@
 package com.resinet.util;/* com.resinet.util.Util.java */
 
-import com.resinet.Resinet3;
+import com.resinet.ResinetMockup;
 
 import java.awt.*;
 import java.io.*;
@@ -98,7 +98,7 @@ public class Util {
 
         final File currentCodePath;
         try {
-            currentCodePath = new File(Resinet3.class.getProtectionDomain().getCodeSource().getLocation().toURI());
+            currentCodePath = new File(ResinetMockup.class.getProtectionDomain().getCodeSource().getLocation().toURI());
         } catch (Exception e) {
             return;
         }
@@ -111,7 +111,7 @@ public class Util {
             command.add(javaBin);
             command.add("-jar");
             command.add(currentCodePath.getPath());
-        }else if (currentCodePath.getName().endsWith(".exe")) {
+        } else if (currentCodePath.getName().endsWith(".exe")) {
             //codepath ist dann der Pfad der exe
             command.add(currentCodePath.toString());
         } else {
@@ -119,7 +119,7 @@ public class Util {
             command.add(javaBin);
             command.add("-cp");
             command.add(currentCodePath.getPath());
-            command.add(Resinet3.class.getName());
+            command.add(ResinetMockup.class.getName());
         }
 
         final ProcessBuilder builder = new ProcessBuilder(command);
