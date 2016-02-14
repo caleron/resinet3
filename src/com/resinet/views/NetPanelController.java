@@ -233,12 +233,10 @@ public class NetPanelController implements MouseListener, MouseMotionListener {
 
         //Knoten klonen und dabei Referenzen der geklonten Kanten neu setzen
         for (int i = 0; i < selectedNodes.size(); i++) {
-            NodePoint nodePoint = drawnNodes.get(i);
+            NodePoint nodePoint = selectedNodes.get(i);
 
             NodePoint newNode = (NodePoint) nodePoint.clone();
             newNode.selected = false;
-            //Aktuellen Knoten durch geklonten ersetzen
-            selectedNodes.set(i, newNode);
 
             //Referenzen neu setzen
             for (EdgeLine edgeLine : selectedEdges) {
@@ -249,6 +247,8 @@ public class NetPanelController implements MouseListener, MouseMotionListener {
                     edgeLine.startNode = newNode;
                 }
             }
+            //Aktuellen Knoten durch geklonten ersetzen
+            selectedNodes.set(i, newNode);
         }
         return new NodeEdgeWrapper(originalSelectedNodes, selectedNodes, selectedEdges);
     }
@@ -262,6 +262,9 @@ public class NetPanelController implements MouseListener, MouseMotionListener {
      * @param nodeEdgeWrapper Das Wrapper-Objekt mit Knoten- und Kantenmenge
      */
     public void pasteNodesAndEdges(NodeEdgeWrapper nodeEdgeWrapper) {
+        if (nodeEdgeWrapper == null)
+            return;
+
         //Auswahl zurücksetzen, damit die neuen Knoten nicht automatisch zusätzlich ausgewählt sind
         resetSelection();
 

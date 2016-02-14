@@ -70,7 +70,10 @@ public class NetPanelTransferHandler extends TransferHandler {
     @Override
     protected Transferable createTransferable(JComponent c) {
         NetPanel netPanel = ((NetPanel) c);
-
-        return new NetPanelTransferable(netPanel.controller.getSelectionCopyData());
+        NodeEdgeWrapper data = netPanel.controller.getSelectionCopyData();
+        if (data == null) {
+            return null;
+        }
+        return new NetPanelTransferable(data);
     }
 }
