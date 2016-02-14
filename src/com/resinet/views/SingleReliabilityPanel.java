@@ -9,6 +9,7 @@ import java.awt.*;
  * Stellt ein Panel für eine Einzelkomponentenwahrscheinlichkeit mit Label und Textfeld dar
  */
 public class SingleReliabilityPanel extends JPanel {
+    private static final long serialVersionUID = -754335718725658583L;
 
     private final ProbabilitySpinner spinner;
     private final boolean isNode;

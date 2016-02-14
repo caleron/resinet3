@@ -390,7 +390,8 @@ public class NetPanelController implements MouseListener, MouseMotionListener {
                 //Knoten wurde angeklickt
                 nodeClicked = true;
 
-                if (mouseEvent.isShiftDown()) {
+                if (mouseEvent.isShiftDown() || SwingUtilities.isMiddleMouseButton(mouseEvent)) {
+                    //mit Shift geklickt oder mit mittlerer Maustaste
                     //Knoten löschen
                     int currentNodeIndex = drawnNodes.indexOf(currentNode);
                     drawnNodes.remove(currentNode);
@@ -399,7 +400,8 @@ public class NetPanelController implements MouseListener, MouseMotionListener {
                     //Anliegende Kanten löschen
                     removeAdjacentEdges(currentNode);
 
-                } else if (mouseEvent.isControlDown()) {
+                } else if (mouseEvent.isControlDown() || SwingUtilities.isRightMouseButton(mouseEvent)) {
+                    //Rechtsklick oder mit Strg
                     //Knoten zum K-Knoten machen oder umgekehrt
                     currentNode.c_node = !currentNode.c_node;
 
@@ -417,7 +419,8 @@ public class NetPanelController implements MouseListener, MouseMotionListener {
             for (EdgeLine edgeLine : drawnEdges) {
 
                 if (edgeLine.ptSegDist(clickX, clickY) < HOVER_DISTANCE) {
-                    if (mouseEvent.isShiftDown()) {
+                    if (mouseEvent.isShiftDown() || SwingUtilities.isMiddleMouseButton(mouseEvent)) {
+                        //mit shift oder mit mittlerer Maustaste geklickt
                         int edgeIndex = drawnEdges.indexOf(edgeLine);
                         drawnEdges.remove(edgeLine);
                         listener.graphElementDeleted(false, edgeIndex);

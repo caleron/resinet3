@@ -70,8 +70,8 @@ public class MainframeController extends WindowAdapter implements ActionListener
             mainFrame.getNetPanel().actionPerformed(e);
         }
     }
-    //TODO Zuletzt geöffnet-Liste, Graph generieren, Serienparallelreduktion, neues GUI-Layout mit größerer Zeichenfläche
-    //TODO rückgängig machen, copy&paste
+    //TODO Zuletzt geöffnet-Liste, Graph generieren, Serienparallelreduktion
+    //TODO rückgängig machen
     //TODO Graph optimieren bezüglich Anordnung nach verschiedenen Algorithmen
 
     /**
