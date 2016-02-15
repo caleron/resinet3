@@ -1,10 +1,11 @@
-package com.resinet.views;
+package com.resinet.controller;
 
 import com.resinet.model.EdgeLine;
 import com.resinet.model.NodePoint;
 import com.resinet.util.GraphChangedListener;
 import com.resinet.util.GraphUtil;
 import com.resinet.util.NodeEdgeWrapper;
+import com.resinet.views.NetPanel;
 
 import javax.swing.*;
 import java.awt.*;
@@ -71,7 +72,7 @@ public class NetPanelController implements MouseListener, MouseMotionListener {
     /**
      * Zentriert den Graphen, wenn eine Flag dafür gesetzt wurde, etwa nach dem Laden eines Graphen aus einer Datei.
      */
-    void centerGraph() {
+    public void centerGraph() {
         int panelHeight = netPanel.getHeight();
         int panelWidth = netPanel.getWidth();
 

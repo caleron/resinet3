@@ -1,11 +1,11 @@
-package com.resinet;
+package com.resinet.controller;
 
+import com.resinet.Resinet;
 import com.resinet.algorithms.ProbabilityCalculator;
 import com.resinet.model.CalculationParams;
 import com.resinet.model.Graph;
 import com.resinet.util.*;
 import com.resinet.views.NetPanel;
-import com.resinet.views.NetPanelController;
 import com.resinet.views.ProbabilitySpinner;
 import com.resinet.views.SingleReliabilityPanel;
 import com.sun.istack.internal.Nullable;

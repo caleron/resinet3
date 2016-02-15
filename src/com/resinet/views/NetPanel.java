@@ -1,5 +1,6 @@
 package com.resinet.views;
 
+import com.resinet.controller.NetPanelController;
 import com.resinet.model.EdgeLine;
 import com.resinet.model.NodePoint;
 import com.resinet.util.GraphChangedListener;
@@ -19,7 +20,7 @@ public class NetPanel extends JPanel {
 
     public final NetPanelController controller;
 
-    Timer selectionAnimationTimer;
+    public Timer selectionAnimationTimer;
     private float selectionAnimationPhase = 0;
 
     private boolean centerGraphOnNextPaint = false;
@@ -261,7 +262,7 @@ public class NetPanel extends JPanel {
      * @param shiftDown   Ob Shift gedrückt ist
      * @param controlDown Ob Strg gedrückt ist
      */
-    void setCursorHover(boolean shiftDown, boolean controlDown) {
+    public void setCursorHover(boolean shiftDown, boolean controlDown) {
         Shape hoveredElement = controller.getHoveredElement();
 
         if (controller.isCursorInsideSelection()) {
