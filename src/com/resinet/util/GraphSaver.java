@@ -21,6 +21,7 @@ import java.awt.*;
 import java.io.*;
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Diese Klasse enthält nur statische Methoden, mit denen Netzwerke und dessen Berechnungsparameter in Dateien
@@ -386,8 +387,8 @@ public final class GraphSaver {
      * @param path Der Zielpfad
      */
     private static void writePajekNetwork(String path, CalculationParams params, Component parentComponent, int graphWidth, int graphHeight) {
-        ArrayList<NodePoint> nodeList = params.graphNodes;
-        ArrayList<EdgeLine> edgeList = params.graphEdges;
+        List<NodePoint> nodeList = params.graphNodes;
+        List<EdgeLine> edgeList = params.graphEdges;
 
         //Ab hier in die Datei schreiben
         Writer writer;
@@ -500,8 +501,8 @@ public final class GraphSaver {
             return;
         }
 
-        ArrayList<NodePoint> drawnNodes = params.graphNodes;
-        ArrayList<EdgeLine> drawnEdges = params.graphEdges;
+        List<NodePoint> drawnNodes = params.graphNodes;
+        List<EdgeLine> drawnEdges = params.graphEdges;
 
         try {
             DocumentBuilderFactory docFactory = DocumentBuilderFactory.newInstance();

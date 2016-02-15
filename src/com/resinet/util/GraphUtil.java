@@ -7,6 +7,7 @@ import com.resinet.views.NetPanel;
 import javax.swing.*;
 import java.awt.*;
 import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Stellt Funktionen zur Verfügung, die beim Umgang mit Graphen helfen
@@ -19,7 +20,7 @@ public class GraphUtil {
      * @param spaces Abstand des Rechtecks in alle Richtungen zum Graphen
      * @return Ein Rechteck, das den Graphen umschließt
      */
-    public static Rectangle getGraphBounds(ArrayList<NodePoint> nodes, int spaces) {
+    public static Rectangle getGraphBounds(List<NodePoint> nodes, int spaces) {
         if (nodes.isEmpty()) {
             return new Rectangle(0, 0, 0, 0);
         }
@@ -50,7 +51,7 @@ public class GraphUtil {
      * @param nodes Die Knotenliste
      * @return Ein Rechteck, das den Graphen umschließt
      */
-    public static Rectangle getGraphBounds(ArrayList<NodePoint> nodes) {
+    public static Rectangle getGraphBounds(List<NodePoint> nodes) {
         return getGraphBounds(nodes, 0);
     }
 
@@ -98,8 +99,8 @@ public class GraphUtil {
      * @return das Graph-Objekt zum gezeichneten Graph
      */
     public static Graph makeGraph(NetPanel netPanel) {
-        ArrayList<EdgeLine> graphEdges = netPanel.getEdges();
-        ArrayList<NodePoint> graphNodes = netPanel.getNodes();
+        List<EdgeLine> graphEdges = netPanel.getEdges();
+        List<NodePoint> graphNodes = netPanel.getNodes();
 
         ArrayList<Node> nodeList = new ArrayList<>();
         ArrayList<Edge> edgeList = new ArrayList<>();

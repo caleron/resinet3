@@ -1,6 +1,7 @@
 package com.resinet.controller;
 
 import com.resinet.model.EdgeLine;
+import com.resinet.model.NetPanelData;
 import com.resinet.model.NodePoint;
 import com.resinet.util.GraphChangedListener;
 import com.resinet.util.GraphUtil;
@@ -14,16 +15,17 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
 import java.util.ArrayList;
+import java.util.List;
 
 public class NetPanelController implements MouseListener, MouseMotionListener {
     private NetPanel netPanel;
     private GraphChangedListener listener;
 
-    private final ArrayList<NodePoint> drawnNodes;
-    private final ArrayList<EdgeLine> drawnEdges;
+    private final NetPanelData netData;
 
     private boolean cursorInsideSelection;
     private boolean selectedNodesDragging = false;
+    private Point selectionDraggingStart;
 
     private boolean nodeClickable = true;
     private boolean edgeClickable = true;
@@ -46,8 +48,7 @@ public class NetPanelController implements MouseListener, MouseMotionListener {
         this.netPanel = netPanel;
         this.listener = listener;
 
-        drawnEdges = new ArrayList<>();
-        drawnNodes = new ArrayList<>();
+        netData = new NetPanelData();
     }
 
     /**
@@ -59,14 +60,26 @@ public class NetPanelController implements MouseListener, MouseMotionListener {
     public void actionPerformed(ActionEvent e) {
         String action = e.getActionCommand();
 
-        if (action.equals("delete")) {
-            removeSelectedNodes();
-        } else {
-            Action a = netPanel.getActionMap().get(action);
-            if (a != null) {
-                a.actionPerformed(new ActionEvent(netPanel, ActionEvent.ACTION_PERFORMED, null));
-            }
+        switch (action) {
+            case "delete":
+                removeSelectedNodes();
+                break;
+            case "undo":
+                netData.undo();
+                resetSelection();
+                break;
+            case "redo":
+                netData.redo();
+                resetSelection();
+                break;
+            default:
+                Action a = netPanel.getActionMap().get(action);
+                if (a != null) {
+                    a.actionPerformed(new ActionEvent(netPanel, ActionEvent.ACTION_PERFORMED, null));
+                }
+                break;
         }
+        netPanel.repaint();
     }
 
     /**
@@ -83,7 +96,7 @@ public class NetPanelController implements MouseListener, MouseMotionListener {
             panelWidth = netPanel.getParent().getWidth();
         }
 
-        Rectangle graphRect = GraphUtil.getGraphBounds(drawnNodes);
+        Rectangle graphRect = GraphUtil.getGraphBounds(netData.getNodes());
 
         Integer offsetX, offsetY;
 
@@ -105,44 +118,9 @@ public class NetPanelController implements MouseListener, MouseMotionListener {
             offsetY = -((int) graphRect.getY());
         }
 
-        //Knoten verschieben
-        for (NodePoint node : drawnNodes) {
-            node.x += offsetX;
-            node.y += offsetY;
-        }
-
-        //Kantenpositionen verschieben
-        drawnEdges.forEach(EdgeLine::refresh);
+        //Aktion zum verschieben auslösen
+        netData.moveAllNodesNoUndo(new Dimension(offsetX, offsetY));
     }
-
-
-    /**
-     * Löscht die an einen Knoten anliegenden Kanten
-     *
-     * @param node Der Knoten
-     */
-    void removeAdjacentEdges(NodePoint node) {
-        ArrayList<NodePoint> nodes = new ArrayList<>();
-        nodes.add(node);
-        removeAdjacentEdges(nodes);
-    }
-
-    /**
-     * Löscht die an einer Knotenmenge anliegenden Kanten
-     *
-     * @param nodes Die Knotenmenge
-     */
-    void removeAdjacentEdges(ArrayList<NodePoint> nodes) {
-        for (int i = 0; i < drawnEdges.size(); i++) {
-            EdgeLine edl = drawnEdges.get(i);
-            if (nodes.contains(edl.startNode) || nodes.contains(edl.endNode)) {
-                drawnEdges.remove(edl);
-                listener.graphElementDeleted(false, i);
-                i--;
-            }
-        }
-    }
-
 
     /**
      * Entfernt die Knoten und deren anliegende Kanten vom Graphen.
@@ -150,8 +128,7 @@ public class NetPanelController implements MouseListener, MouseMotionListener {
      * @param nodes Die zu entfernende Knotenliste
      */
     public void removeNodes(ArrayList<NodePoint> nodes) {
-        removeAdjacentEdges(nodes);
-        drawnNodes.removeAll(nodes);
+        netData.removeNodes(nodes);
         listener.graphChanged();
         netPanel.repaint();
     }
@@ -161,8 +138,7 @@ public class NetPanelController implements MouseListener, MouseMotionListener {
      * Setzt den Graph zurück
      */
     public void resetGraph() {
-        drawnNodes.clear();
-        drawnEdges.clear();
+        netData.resetGraph();
         lineDragging = false;
         draggingLine = null;
         resetSelection();
@@ -175,9 +151,7 @@ public class NetPanelController implements MouseListener, MouseMotionListener {
     public void resetSelection() {
         nodesSelected = false;
         netPanel.selectionAnimationTimer.stop();
-        for (NodePoint node : drawnNodes) {
-            node.selected = false;
-        }
+        netData.resetSelection();
     }
 
     /**
@@ -187,16 +161,8 @@ public class NetPanelController implements MouseListener, MouseMotionListener {
         if (!nodesSelected)
             return;
 
-        ArrayList<NodePoint> selectedNodes = new ArrayList<>();
-
-        //Ausgewählte Knoten sammeln
-        for (NodePoint nodePoint : drawnNodes) {
-            if (nodePoint.selected) {
-                selectedNodes.add(nodePoint);
-            }
-        }
+        netData.removeSelectedNodes();
         resetSelection();
-        removeNodes(selectedNodes);
     }
 
 
@@ -210,48 +176,7 @@ public class NetPanelController implements MouseListener, MouseMotionListener {
         if (!nodesSelected) {
             return null;
         }
-
-        //Diese Liste wird zum Entfernen der Knoten benötigt, falls die Aktion "Ausschneiden" ist
-        ArrayList<NodePoint> originalSelectedNodes = new ArrayList<>();
-        ArrayList<NodePoint> selectedNodes = new ArrayList<>();
-        ArrayList<EdgeLine> selectedEdges = new ArrayList<>();
-
-        //Ausgewählte Knoten sammeln
-        for (NodePoint nodePoint : drawnNodes) {
-            if (nodePoint.selected) {
-                selectedNodes.add(nodePoint);
-            }
-        }
-
-        originalSelectedNodes.addAll(selectedNodes);
-
-        //Anliegende Kanten klonen
-        for (EdgeLine edgeLine : drawnEdges) {
-            if (selectedNodes.contains(edgeLine.endNode) && selectedNodes.contains(edgeLine.startNode)) {
-                selectedEdges.add((EdgeLine) edgeLine.clone());
-            }
-        }
-
-        //Knoten klonen und dabei Referenzen der geklonten Kanten neu setzen
-        for (int i = 0; i < selectedNodes.size(); i++) {
-            NodePoint nodePoint = selectedNodes.get(i);
-
-            NodePoint newNode = (NodePoint) nodePoint.clone();
-            newNode.selected = false;
-
-            //Referenzen neu setzen
-            for (EdgeLine edgeLine : selectedEdges) {
-                if (edgeLine.endNode.equals(nodePoint)) {
-                    edgeLine.endNode = newNode;
-                }
-                if (edgeLine.startNode.equals(nodePoint)) {
-                    edgeLine.startNode = newNode;
-                }
-            }
-            //Aktuellen Knoten durch geklonten ersetzen
-            selectedNodes.set(i, newNode);
-        }
-        return new NodeEdgeWrapper(originalSelectedNodes, selectedNodes, selectedEdges);
+        return netData.getSelectionCopyData();
     }
 
 
@@ -307,8 +232,7 @@ public class NetPanelController implements MouseListener, MouseMotionListener {
         nodeEdgeWrapper.edges.forEach(EdgeLine::refresh);
 
         //Neue Knoten und Kanten hinzufügen
-        drawnNodes.addAll(nodes);
-        drawnEdges.addAll(nodeEdgeWrapper.edges);
+        netData.addNodesAndEdges(nodes, nodeEdgeWrapper.edges);
 
         listener.graphChanged();
 
@@ -353,6 +277,8 @@ public class NetPanelController implements MouseListener, MouseMotionListener {
      * @return Boolean
      */
     private boolean intersectsNode(Rectangle pasteRectangle) {
+        List<NodePoint> drawnNodes = netData.getNodes();
+
         for (NodePoint nodePoint : drawnNodes) {
             if (nodePoint.intersects(pasteRectangle)) {
                 return true;
@@ -379,6 +305,8 @@ public class NetPanelController implements MouseListener, MouseMotionListener {
             netPanel.repaint();
             return;
         }
+        List<NodePoint> drawnNodes = netData.getNodes();
+        List<EdgeLine> drawnEdges = netData.getEdges();
 
         Integer clickX = mouseEvent.getX();
         Integer clickY = mouseEvent.getY();
@@ -394,17 +322,15 @@ public class NetPanelController implements MouseListener, MouseMotionListener {
                 if (mouseEvent.isShiftDown() || SwingUtilities.isMiddleMouseButton(mouseEvent)) {
                     //mit Shift geklickt oder mit mittlerer Maustaste
                     //Knoten löschen
-                    int currentNodeIndex = drawnNodes.indexOf(currentNode);
-                    drawnNodes.remove(currentNode);
-                    listener.graphElementDeleted(true, currentNodeIndex);
+                    netData.removeNode(currentNode);
 
-                    //Anliegende Kanten löschen
-                    removeAdjacentEdges(currentNode);
+                    int currentNodeIndex = drawnNodes.indexOf(currentNode);
+                    listener.graphElementDeleted(true, currentNodeIndex);
 
                 } else if (mouseEvent.isControlDown() || SwingUtilities.isRightMouseButton(mouseEvent)) {
                     //Rechtsklick oder mit Strg
                     //Knoten zum K-Knoten machen oder umgekehrt
-                    currentNode.c_node = !currentNode.c_node;
+                    netData.changeTerminalStatus(currentNode);
 
                 } else if (nodeClickable) {
                     //Event auslösen
@@ -421,9 +347,10 @@ public class NetPanelController implements MouseListener, MouseMotionListener {
 
                 if (edgeLine.ptSegDist(clickX, clickY) < HOVER_DISTANCE) {
                     if (mouseEvent.isShiftDown() || SwingUtilities.isMiddleMouseButton(mouseEvent)) {
-                        //mit shift oder mit mittlerer Maustaste geklickt
+                        //mit shift oder mit mittlerer Maustaste geklickt --> Kante entfernen
+                        netData.removeEdge(edgeLine);
+
                         int edgeIndex = drawnEdges.indexOf(edgeLine);
-                        drawnEdges.remove(edgeLine);
                         listener.graphElementDeleted(false, edgeIndex);
 
                     } else if (edgeClickable) {
@@ -461,7 +388,7 @@ public class NetPanelController implements MouseListener, MouseMotionListener {
                     }
                 }
                 //neuen Knoten hinzufügen
-                drawnNodes.add(newNode);
+                netData.addNode(newNode);
                 listener.graphElementAdded(true, drawnNodes.size() - 1);
             }
         }
@@ -485,16 +412,17 @@ public class NetPanelController implements MouseListener, MouseMotionListener {
         //Prüfen, ob die Auswahl verschoben werden soll
         if (cursorInsideSelection) {
             selectedNodesDragging = true;
+            selectionDraggingStart = mouseEvent.getPoint();
             hoveredElement = null;
             return;
         }
 
         //Prüfen, ob in ein Knoten gedrückt wurde, damit das Ziehen einer Kante gestartet wird
-        for (NodePoint np : drawnNodes) {
-
-            if (np.contains(x, y)) {
+        List<NodePoint> drawnNodes = netData.getNodes();
+        for (NodePoint node : drawnNodes) {
+            if (node.contains(x, y)) {
                 //Es wurde in den Kreis geklickt, also Kantenziehen starten
-                draggingLine = new EdgeLine(np, null);
+                draggingLine = new EdgeLine(node, null);
                 lineDragging = true;
                 return;
             }
@@ -510,6 +438,9 @@ public class NetPanelController implements MouseListener, MouseMotionListener {
     public void mouseReleased(MouseEvent mouseEvent) {
         if (mouseEvent.isMetaDown())
             return;
+
+        List<NodePoint> drawnNodes = netData.getNodes();
+        List<EdgeLine> drawnEdges = netData.getEdges();
 
         if (lineDragging) {
             lineDragging = false;
@@ -533,8 +464,7 @@ public class NetPanelController implements MouseListener, MouseMotionListener {
                     }
 
                     //Maus wurde in diesem Knoten losgelassen -> als Endknoten der Kante festlegen
-                    draggingLine.setEndNode(currentNode);
-                    drawnEdges.add(draggingLine);
+                    netData.addEdge(draggingLine.startNode, currentNode);
                     listener.graphElementAdded(false, drawnEdges.size() - 1);
 
                     netPanel.repaint();
@@ -576,6 +506,19 @@ public class NetPanelController implements MouseListener, MouseMotionListener {
         if (selectedNodesDragging) {
             selectedNodesDragging = false;
 
+            ArrayList<NodePoint> selectedNodes = new ArrayList<>();
+
+            //Ausgewählte Knoten sammeln
+            for (NodePoint nodePoint : drawnNodes) {
+                if (nodePoint.selected) {
+                    selectedNodes.add(nodePoint);
+                }
+            }
+            Point endPoint = mouseEvent.getPoint();
+
+            Dimension moveAmount = new Dimension(endPoint.x - selectionDraggingStart.x, endPoint.y - selectionDraggingStart.y);
+
+            netData.moveNodesFinal(selectedNodes, moveAmount);
             //Scrollpane aktualisieren
             revalidateScrollPane();
         }
@@ -616,20 +559,17 @@ public class NetPanelController implements MouseListener, MouseMotionListener {
             selectionRectangle.x += offsetX;
             selectionRectangle.y += offsetY;
 
-            //Ausgewählte Knoten verschieben
+            List<NodePoint> drawnNodes = netData.getNodes();
+            ArrayList<NodePoint> selectedNodes = new ArrayList<>();
+
+            //Ausgewählte Knoten sammeln
             for (NodePoint nodePoint : drawnNodes) {
                 if (nodePoint.selected) {
-                    nodePoint.x += offsetX;
-                    nodePoint.y += offsetY;
+                    selectedNodes.add(nodePoint);
                 }
             }
+            netData.moveNodesNotFinal(selectedNodes, new Dimension(offsetX, offsetY));
 
-            //Anliegende Kanten verschieben
-            for (EdgeLine edgeLine : drawnEdges) {
-                if (edgeLine.startNode.selected || edgeLine.endNode.selected) {
-                    edgeLine.refresh();
-                }
-            }
             //Neue Mausposition setzen
             currentMousePosition = evt.getPoint();
             netPanel.repaint();
@@ -656,6 +596,9 @@ public class NetPanelController implements MouseListener, MouseMotionListener {
         } else {
             cursorInsideSelection = false;
         }
+
+        List<NodePoint> drawnNodes = netData.getNodes();
+        List<EdgeLine> drawnEdges = netData.getEdges();
 
         /**
          * Prüfen, ob ein Knoten getroffen wird
@@ -695,16 +638,20 @@ public class NetPanelController implements MouseListener, MouseMotionListener {
         netPanel.setCursorHover(mouseEvent.isShiftDown(), mouseEvent.isControlDown());
     }
 
+    public void addNodesAndEdges(List<NodePoint> nodes, List<EdgeLine> edges) {
+        netData.addNodesAndEdges(nodes, edges);
+    }
+
     public boolean isCursorInsideSelection() {
         return cursorInsideSelection;
     }
 
-    public ArrayList<NodePoint> getNodes() {
-        return drawnNodes;
+    public List<NodePoint> getNodes() {
+        return netData.getNodes();
     }
 
-    public ArrayList<EdgeLine> getEdges() {
-        return drawnEdges;
+    public List<EdgeLine> getEdges() {
+        return netData.getEdges();
     }
 
     public boolean isNodeClickable() {

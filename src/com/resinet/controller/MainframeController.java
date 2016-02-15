@@ -281,8 +281,7 @@ public class MainframeController extends WindowAdapter implements ActionListener
         resetGraph();
 
         //Graphelemente hinzufügen
-        netPanel.getEdges().addAll(params.graphEdges);
-        netPanel.getNodes().addAll(params.graphNodes);
+        netPanel.addNodesAndEdges(params.graphNodes, params.graphEdges);
 
         updateSingleReliabilityProbPanel();
         if (params.probabilitiesLoaded) {

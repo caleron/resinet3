@@ -3,7 +3,7 @@ package com.resinet.model;
 import com.resinet.util.Constants;
 
 import java.math.BigDecimal;
-import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Dies ist eine Wrapper-Klasse für die Berechnungsparameter
@@ -24,8 +24,8 @@ public class CalculationParams implements Constants {
     //Für Berechnung mit einzelnen Wahrscheinlichkeiten
     public BigDecimal[] edgeProbabilities, nodeProbabilities;
 
-    public ArrayList<NodePoint> graphNodes;
-    public ArrayList<EdgeLine> graphEdges;
+    public List<NodePoint> graphNodes;
+    public List<EdgeLine> graphEdges;
 
     /**
      * Parameterloser Konstruktor zur Benutzung als Datenwrapper.
@@ -112,7 +112,7 @@ public class CalculationParams implements Constants {
      * @param nodes Die Knotenliste
      * @param edges Die Kantenliste
      */
-    public void setGraphLists(ArrayList<NodePoint> nodes, ArrayList<EdgeLine> edges) {
+    public void setGraphLists(List<NodePoint> nodes, List<EdgeLine> edges) {
         graphNodes = nodes;
         graphEdges = edges;
     }

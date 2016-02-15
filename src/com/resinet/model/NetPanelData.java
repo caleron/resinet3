@@ -1,5 +1,7 @@
 package com.resinet.model;
 
+import com.resinet.util.NodeEdgeWrapper;
+
 import javax.swing.undo.AbstractUndoableEdit;
 import javax.swing.undo.CannotRedoException;
 import javax.swing.undo.CannotUndoException;
@@ -7,6 +9,8 @@ import javax.swing.undo.UndoManager;
 import java.awt.*;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 /**
  * Verwaltet die Knoten- und Kantenmengen und deren Zustände, die im NetPanel dargestellt werden. Aktionen wie Knoten
@@ -28,16 +32,13 @@ public class NetPanelData implements Serializable {
     }
 
     /**
-     * Fügt einen Knoten an dem angegebenen Punkt hinzu
+     * Fügt einen Knoten hinzu
      *
-     * @param x            X-Koordinate
-     * @param y            Y-Koordinate
-     * @param terminalNode Ob der Knoten ein Terminalknoten ist
+     * @param newNode Der neue Knoten
      */
-    public void addNode(int x, int y, boolean terminalNode) {
-        NodePoint newNode = new NodePoint(x, y, terminalNode);
+    public void addNode(NodePoint newNode) {
         AddOrRemoveAction action = new AddOrRemoveAction(true, newNode);
-        action.redo();
+        action.execute();
         undoManager.addEdit(action);
     }
 
@@ -59,7 +60,7 @@ public class NetPanelData implements Serializable {
         }
 
         AddOrRemoveAction action = new AddOrRemoveAction(false, nodeWrapper, removeEdges);
-        action.redo();
+        action.execute();
         undoManager.addEdit(action);
     }
 
@@ -72,7 +73,7 @@ public class NetPanelData implements Serializable {
     public void addEdge(NodePoint startNode, NodePoint endNode) {
         EdgeLine newEdge = new EdgeLine(startNode, endNode);
         AddOrRemoveAction action = new AddOrRemoveAction(true, newEdge);
-        action.redo();
+        action.execute();
         undoManager.addEdit(action);
     }
 
@@ -83,28 +84,78 @@ public class NetPanelData implements Serializable {
      */
     public void removeEdge(EdgeLine edge) {
         AddOrRemoveAction action = new AddOrRemoveAction(false, edge);
-        action.redo();
+        action.execute();
         undoManager.addEdit(action);
     }
 
     /**
      * Entfernt eine Menge von Knoten und alle anliegenden Kanten.
      *
-     * @param nodes Die Menge von zu entfernenden Knoten
+     * @param removeNodes Die Menge von zu entfernenden Knoten
      */
-    public void removeNodes(ArrayList<NodePoint> nodes) {
+    public void removeNodes(ArrayList<NodePoint> removeNodes) {
         ArrayList<EdgeLine> removeEdges = new ArrayList<>();
 
         //Anliegende Kanten sammeln
         for (EdgeLine edge : edges) {
-            if (nodes.contains(edge.startNode) || nodes.contains(edge.endNode)) {
+            if (removeNodes.contains(edge.startNode) || removeNodes.contains(edge.endNode)) {
                 removeEdges.add(edge);
             }
         }
 
-        AddOrRemoveAction action = new AddOrRemoveAction(false, nodes, removeEdges);
-        action.redo();
+        AddOrRemoveAction action = new AddOrRemoveAction(false, removeNodes, removeEdges);
+        action.execute();
         undoManager.addEdit(action);
+    }
+
+    /**
+     * Erstellt ein Objekt mit den ausgewählten Knoten und den Kanten innerhalb der Knotenmenge. Dabei werden die Knoten
+     * und Kanten geklont. Die Referenzen der Kanten werden auf die geklonten Knoten gesetzt.
+     *
+     * @return NodeEdgeWrapper
+     */
+    public NodeEdgeWrapper getSelectionCopyData() {
+        //Diese Liste wird zum Entfernen der Knoten benötigt, falls die Aktion "Ausschneiden" ist
+        ArrayList<NodePoint> originalSelectedNodes = new ArrayList<>();
+        ArrayList<NodePoint> selectedNodes = new ArrayList<>();
+        ArrayList<EdgeLine> selectedEdges = new ArrayList<>();
+
+        //Ausgewählte Knoten sammeln
+        for (NodePoint nodePoint : nodes) {
+            if (nodePoint.selected) {
+                selectedNodes.add(nodePoint);
+            }
+        }
+
+        originalSelectedNodes.addAll(selectedNodes);
+
+        //Anliegende Kanten klonen
+        for (EdgeLine edgeLine : edges) {
+            if (selectedNodes.contains(edgeLine.endNode) && selectedNodes.contains(edgeLine.startNode)) {
+                selectedEdges.add((EdgeLine) edgeLine.clone());
+            }
+        }
+
+        //Knoten klonen und dabei Referenzen der geklonten Kanten neu setzen
+        for (int i = 0; i < selectedNodes.size(); i++) {
+            NodePoint nodePoint = selectedNodes.get(i);
+
+            NodePoint newNode = (NodePoint) nodePoint.clone();
+            newNode.selected = false;
+
+            //Referenzen neu setzen
+            for (EdgeLine edgeLine : selectedEdges) {
+                if (edgeLine.endNode.equals(nodePoint)) {
+                    edgeLine.endNode = newNode;
+                }
+                if (edgeLine.startNode.equals(nodePoint)) {
+                    edgeLine.startNode = newNode;
+                }
+            }
+            //Aktuellen Knoten durch geklonten ersetzen
+            selectedNodes.set(i, newNode);
+        }
+        return new NodeEdgeWrapper(originalSelectedNodes, selectedNodes, selectedEdges);
     }
 
     /**
@@ -113,22 +164,78 @@ public class NetPanelData implements Serializable {
      * @param nodes Die Knotenmenge
      * @param edges Die Kantenmenge
      */
-    public void addNodesAndEdges(ArrayList<NodePoint> nodes, ArrayList<EdgeLine> edges) {
-        AddOrRemoveAction action = new AddOrRemoveAction(false, nodes, edges);
-        action.redo();
+    public void addNodesAndEdges(List<NodePoint> nodes, List<EdgeLine> edges) {
+        AddOrRemoveAction action = new AddOrRemoveAction(true, nodes, edges);
+        action.execute();
         undoManager.addEdit(action);
     }
 
     /**
-     * Bewegt eine Menge von Knoten um die angegebenen Koordinaten
+     * Bewegt eine Menge von Knoten um die angegebenen Koordinaten. Diese Methode sollte nicht aufgerufen werden,
+     * während das Verschieben noch im Gange ist.
+     *
+     * @param moveNodes Die Menge der zu bewegenden Knoten
+     * @param amount    Die Dimension, um die die Knoten verschoben werden sollen
+     */
+    public void moveNodesFinal(ArrayList<NodePoint> moveNodes, Dimension amount) {
+        MoveAction action = new MoveAction(moveNodes, amount);
+        undoManager.addEdit(action);
+    }
+
+    /**
+     * Bewegt eine Menge von Knoten um die angegebenen Koordinaten, aber fügt diese Aktion nicht in den UndoManager ein.
+     * Diese Methode sollte aufgerufen werden, während das Verschieben am Gange ist.
      *
      * @param nodes  Die Menge der zu bewegenden Knoten
      * @param amount Die Dimension, um die die Knoten verschoben werden sollen
      */
-    public void moveNodes(ArrayList<NodePoint> nodes, Dimension amount) {
+    public void moveNodesNotFinal(ArrayList<NodePoint> nodes, Dimension amount) {
         MoveAction action = new MoveAction(nodes, amount);
-        action.redo();
+        action.execute();
+    }
+
+    /**
+     * Bewegt alle Knoten um die angegebenen Koordinaten. Diese Aktion kann nicht rückgängig gemacht werden.
+     *
+     * @param amount Die Dimension, um die die Knoten verschoben werden sollen
+     */
+    public void moveAllNodesNoUndo(Dimension amount) {
+        MoveAction action = new MoveAction(nodes, amount);
+        action.execute();
+    }
+
+    /**
+     * Entfernt alle Elemente des Graphen
+     */
+    public void resetGraph() {
+        AddOrRemoveAction action = new AddOrRemoveAction(false, nodes, edges);
+        action.execute();
         undoManager.addEdit(action);
+    }
+
+    public void removeSelectedNodes() {
+        ArrayList<NodePoint> selectedNodes = new ArrayList<>();
+
+        //Ausgewählte Knoten sammeln
+        for (NodePoint nodePoint : nodes) {
+            if (nodePoint.selected) {
+                nodePoint.selected = false;
+                selectedNodes.add(nodePoint);
+            }
+        }
+        removeNodes(selectedNodes);
+    }
+
+    public void changeTerminalStatus(NodePoint node) {
+        TerminalChangeAction action = new TerminalChangeAction(node);
+        action.execute();
+        undoManager.addEdit(action);
+    }
+
+    public void resetSelection() {
+        for (NodePoint node : nodes) {
+            node.selected = false;
+        }
     }
 
     /**
@@ -149,13 +256,12 @@ public class NetPanelData implements Serializable {
         }
     }
 
-
-    public ArrayList<NodePoint> getNodes() {
-        return nodes;
+    public List<NodePoint> getNodes() {
+        return Collections.unmodifiableList(nodes);
     }
 
-    public ArrayList<EdgeLine> getEdges() {
-        return edges;
+    public List<EdgeLine> getEdges() {
+        return Collections.unmodifiableList(edges);
     }
 
     /**
@@ -163,14 +269,14 @@ public class NetPanelData implements Serializable {
      */
     class AddOrRemoveAction extends AbstractUndoableEdit {
         private static final long serialVersionUID = 7183317665439824767L;
-        ArrayList<NodePoint> affectedNodes;
-        ArrayList<EdgeLine> affectedEdges;
+        List<NodePoint> affectedNodes;
+        List<EdgeLine> affectedEdges;
         boolean isAddAction;
 
-        public AddOrRemoveAction(boolean isAddAction, ArrayList<NodePoint> addedNodes, ArrayList<EdgeLine> addedEdges) {
+        public AddOrRemoveAction(boolean isAddAction, List<NodePoint> addedNodes, List<EdgeLine> addedEdges) {
             this.isAddAction = isAddAction;
-            this.affectedNodes = addedNodes;
-            this.affectedEdges = addedEdges;
+            affectedNodes = new ArrayList<>(addedNodes);
+            affectedEdges = new ArrayList<>(addedEdges);
         }
 
         public AddOrRemoveAction(boolean isAddAction, NodePoint node) {
@@ -188,6 +294,10 @@ public class NetPanelData implements Serializable {
         @Override
         public void redo() throws CannotRedoException {
             super.redo();
+            execute();
+        }
+
+        public void execute() {
             if (affectedNodes != null) {
                 if (isAddAction) {
                     nodes.addAll(affectedNodes);
@@ -230,23 +340,27 @@ public class NetPanelData implements Serializable {
     class MoveAction extends AbstractUndoableEdit {
         private static final long serialVersionUID = 37760421287789359L;
 
-        ArrayList<NodePoint> movedNodes;
+        List<NodePoint> movedNodes;
         Dimension amount;
 
         public MoveAction(ArrayList<NodePoint> nodes, Dimension amount) {
-            movedNodes = nodes;
+            movedNodes = new ArrayList<>(nodes);
             this.amount = amount;
         }
 
         @Override
         public void redo() throws CannotRedoException {
             super.redo();
+            execute();
+        }
+
+        public void execute() {
             if (movedNodes != null) {
                 for (NodePoint node : movedNodes) {
                     node.x += amount.getWidth();
                     node.y += amount.getHeight();
                 }
-                edges.forEach(EdgeLine::refresh);
+                refreshEdges();
             }
         }
 
@@ -258,8 +372,44 @@ public class NetPanelData implements Serializable {
                     node.x -= amount.getWidth();
                     node.y -= amount.getHeight();
                 }
-                edges.forEach(EdgeLine::refresh);
+                refreshEdges();
             }
+        }
+
+        private void refreshEdges() {
+            for (EdgeLine edgeLine : edges) {
+                if (movedNodes.contains(edgeLine.startNode) || movedNodes.contains(edgeLine.endNode)) {
+                    edgeLine.refresh();
+                }
+            }
+        }
+    }
+
+    /**
+     * Beschreibt eine Aktion, bei der der Terminalstatus eines Knotens verändert wird
+     */
+    static class TerminalChangeAction extends AbstractUndoableEdit {
+        private static final long serialVersionUID = 8220691958588757429L;
+        NodePoint node;
+
+        public TerminalChangeAction(NodePoint node) {
+            this.node = node;
+        }
+
+        @Override
+        public void undo() throws CannotUndoException {
+            super.undo();
+            execute();
+        }
+
+        @Override
+        public void redo() throws CannotRedoException {
+            super.redo();
+            execute();
+        }
+
+        public void execute() {
+            node.c_node = !node.c_node;
         }
     }
 }

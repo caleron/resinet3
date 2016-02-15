@@ -113,6 +113,18 @@ public class Resinet implements Constants {
     private void initEditMenu() {
         JMenu editMenu = new JMenu(Strings.getLocalizedString("edit"));
 
+        JMenuItem undoMenuItem = new JMenuItem(Strings.getLocalizedString("undo"));
+        undoMenuItem.addActionListener(controller);
+        undoMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_Z, KeyEvent.CTRL_MASK));
+        undoMenuItem.setActionCommand("undo");
+        editMenu.add(undoMenuItem);
+
+        JMenuItem redoMenuItem = new JMenuItem(Strings.getLocalizedString("redo"));
+        redoMenuItem.addActionListener(controller);
+        redoMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_Y, KeyEvent.CTRL_MASK));
+        redoMenuItem.setActionCommand("redo");
+        editMenu.add(redoMenuItem);
+
         JMenuItem cutMenuItem = new JMenuItem(Strings.getLocalizedString("cut"));
         cutMenuItem.addActionListener(controller);
         cutMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_X, KeyEvent.CTRL_MASK));

@@ -13,7 +13,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.awt.image.BufferedImage;
-import java.util.ArrayList;
+import java.util.List;
 
 public class NetPanel extends JPanel {
     private static final long serialVersionUID = -124106422709849520L;
@@ -70,8 +70,8 @@ public class NetPanel extends JPanel {
 
     @Override
     public void paintComponent(Graphics g) {
-        ArrayList<NodePoint> drawnNodes = controller.getNodes();
-        ArrayList<EdgeLine> drawnEdges = controller.getEdges();
+        List<NodePoint> drawnNodes = controller.getNodes();
+        List<EdgeLine> drawnEdges = controller.getEdges();
         if (centerGraphOnNextPaint) {
             centerGraphOnNextPaint = false;
             controller.centerGraph();
@@ -279,12 +279,16 @@ public class NetPanel extends JPanel {
         }
     }
 
-    public ArrayList<NodePoint> getNodes() {
+    public List<NodePoint> getNodes() {
         return controller.getNodes();
     }
 
-    public ArrayList<EdgeLine> getEdges() {
+    public List<EdgeLine> getEdges() {
         return controller.getEdges();
+    }
+
+    public void addNodesAndEdges(List<NodePoint> nodes, List<EdgeLine> edges) {
+        controller.addNodesAndEdges(nodes, edges);
     }
 
     public NetPanelController getController() {
