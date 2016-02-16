@@ -25,9 +25,9 @@ import java.util.List;
 @SuppressWarnings("Duplicates")
 public class MainframeController extends WindowAdapter implements ActionListener, GraphChangedListener,
         CalculationProgressListener, Constants, ItemListener, ChangeListener, PropertyChangeListener {
-    Resinet mainFrame;
+    private Resinet mainFrame;
 
-    JComponent permanentFocusOwner;
+    private JComponent permanentFocusOwner;
 
     private final List<ProbabilitySpinner> edgeProbabilityBoxes = new ArrayList<>();
     private final List<ProbabilitySpinner> nodeProbabilityBoxes = new ArrayList<>();
@@ -256,7 +256,7 @@ public class MainframeController extends WindowAdapter implements ActionListener
         }
     }
 
-    public void resetGraph() {
+    private void resetGraph() {
         mainFrame.setGuiState(GUI_STATES.ENTER_GRAPH);
 
         mainFrame.getNetPanel().resetGraph();
@@ -320,7 +320,7 @@ public class MainframeController extends WindowAdapter implements ActionListener
     /**
      * Aktualisiert das Wahrscheinlichkeitspanel
      */
-    public void updateSingleReliabilityProbPanel() {
+    private void updateSingleReliabilityProbPanel() {
         if (mainFrame == null || mainFrame.getReliabilityMode() == RELIABILITY_MODES.SAME)
             return;
 

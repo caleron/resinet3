@@ -297,7 +297,7 @@ public class NetPanelData implements Serializable {
         private static final long serialVersionUID = 7183317665439824767L;
         List<NodePoint> affectedNodes;
         List<EdgeLine> affectedEdges;
-        boolean isAddAction;
+        final boolean isAddAction;
 
         public AddOrRemoveAction(boolean isAddAction, List<NodePoint> addedNodes, List<EdgeLine> addedEdges) {
             this.isAddAction = isAddAction;
@@ -366,8 +366,8 @@ public class NetPanelData implements Serializable {
     class MoveAction extends AbstractUndoableEdit {
         private static final long serialVersionUID = 37760421287789359L;
 
-        List<NodePoint> movedNodes;
-        Dimension amount;
+        final List<NodePoint> movedNodes;
+        final Dimension amount;
 
         public MoveAction(ArrayList<NodePoint> nodes, Dimension amount) {
             movedNodes = new ArrayList<>(nodes);
@@ -416,7 +416,7 @@ public class NetPanelData implements Serializable {
      */
     static class TerminalChangeAction extends AbstractUndoableEdit {
         private static final long serialVersionUID = 8220691958588757429L;
-        NodePoint node;
+        final NodePoint node;
 
         public TerminalChangeAction(NodePoint node) {
             this.node = node;

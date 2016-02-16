@@ -20,7 +20,7 @@ public class NetPanel extends JPanel {
 
     public final NetPanelController controller;
 
-    public Timer selectionAnimationTimer;
+    public final Timer selectionAnimationTimer;
     private float selectionAnimationPhase = 0;
 
     private boolean centerGraphOnNextPaint = false;

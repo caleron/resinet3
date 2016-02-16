@@ -18,8 +18,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class NetPanelController implements MouseListener, MouseMotionListener {
-    private NetPanel netPanel;
-    private GraphChangedListener listener;
+    private final NetPanel netPanel;
+    private final GraphChangedListener listener;
 
     private final NetPanelData netData;
 
@@ -157,7 +157,7 @@ public class NetPanelController implements MouseListener, MouseMotionListener {
     /**
      * Entfernt alle ausgewählten Knoten vom Graphen
      */
-    public void removeSelectedNodes() {
+    private void removeSelectedNodes() {
         if (!nodesSelected)
             return;
 
@@ -254,7 +254,7 @@ public class NetPanelController implements MouseListener, MouseMotionListener {
      * @param rectangle Das Rechteck
      * @return neue Position oder null
      */
-    public Point searchSafeRectanglePosition(Rectangle rectangle) {
+    private Point searchSafeRectanglePosition(Rectangle rectangle) {
         double xRange = netPanel.getWidth() - rectangle.getWidth();
         double yRange = netPanel.getHeight() - rectangle.getHeight();
 
@@ -291,7 +291,7 @@ public class NetPanelController implements MouseListener, MouseMotionListener {
      * Lässt die Scrollpane revalidieren, damit etwa die Scrollbars an die veränderte Größe des Graphen angepasst
      * werden.
      */
-    void revalidateScrollPane() {
+    private void revalidateScrollPane() {
         Component parent2 = netPanel.getParent().getParent();
         parent2.revalidate();
     }

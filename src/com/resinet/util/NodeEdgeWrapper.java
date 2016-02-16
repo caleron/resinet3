@@ -18,8 +18,8 @@ public class NodeEdgeWrapper implements Serializable {
      */
     public ArrayList<NodePoint> originalNodes;
 
-    public ArrayList<NodePoint> nodes;
-    public ArrayList<EdgeLine> edges;
+    public final ArrayList<NodePoint> nodes;
+    public final ArrayList<EdgeLine> edges;
 
     public NodeEdgeWrapper(ArrayList<NodePoint> nodes, ArrayList<EdgeLine> edges) {
         this.nodes = nodes;

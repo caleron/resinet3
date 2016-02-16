@@ -17,9 +17,9 @@ import java.util.Locale;
 import java.util.Map;
 
 public class Resinet implements Constants {
-    MainframeController controller;
+    private final MainframeController controller;
 
-    private JPanel contentPane;
+    private final JPanel contentPane;
     private JMenuBar menuBar;
 
     private JPanel sidePanel;
@@ -471,7 +471,7 @@ public class Resinet implements Constants {
         }
     }
 
-    public void setResultText(String longText, String shortText) {
+    private void setResultText(String longText, String shortText) {
         outputField.setText(longText);
         statusBarCollapsedLabel.setText(shortText);
 
@@ -498,7 +498,7 @@ public class Resinet implements Constants {
         return contentPane;
     }
 
-    public JMenuBar getMenuBar() {
+    private JMenuBar getMenuBar() {
         return menuBar;
     }
 

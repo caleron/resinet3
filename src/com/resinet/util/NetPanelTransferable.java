@@ -3,10 +3,10 @@ package com.resinet.util;
 import java.awt.datatransfer.*;
 import java.io.IOException;
 
-public class NetPanelTransferable implements Transferable, ClipboardOwner {
+class NetPanelTransferable implements Transferable, ClipboardOwner {
     public static final DataFlavor DATA_FLAVOR = new DataFlavor(NodeEdgeWrapper.class, "Nodes and Edges");
 
-    private NodeEdgeWrapper copyData;
+    private final NodeEdgeWrapper copyData;
 
     public NetPanelTransferable(NodeEdgeWrapper wrapper) {
         copyData = wrapper;
