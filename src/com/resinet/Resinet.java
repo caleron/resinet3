@@ -125,6 +125,8 @@ public class Resinet implements Constants {
         redoMenuItem.setActionCommand("redo");
         editMenu.add(redoMenuItem);
 
+        editMenu.addSeparator();
+
         JMenuItem cutMenuItem = new JMenuItem(Strings.getLocalizedString("cut"));
         cutMenuItem.addActionListener(controller);
         cutMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_X, KeyEvent.CTRL_MASK));
