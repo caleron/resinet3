@@ -74,7 +74,7 @@ class Zerleg extends Thread {
                     }
                 }
             }
-            //int pathCount = 0;
+            int pathCount = 0;
             for (int i = 1; i <= trs.size(); i++) {
                 ArrayList<HashSet<GraphElement>> listK = new ArrayList<>();
                 HashSet<GraphElement> setI0 = trs.get(i - 1);
@@ -100,9 +100,11 @@ class Zerleg extends Thread {
                         }
                     }
                 }
-                //pathCount++;
+                pathCount++;
+                if (pathCount % 100 == 0)
+                    System.out.println("Anzahl Pfade: " + pathCount + "/" + trs.size());
             }
-            //System.out.println("Anzahl Pfade: " + pathCount);
+            System.out.println("Anzahl Pfade: " + pathCount);
         }
 
         /**

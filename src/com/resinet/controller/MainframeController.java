@@ -73,6 +73,7 @@ public class MainframeController extends WindowAdapter implements ActionListener
     //TODO Zuletzt geöffnet-Liste, Graph generieren, Serienparallelreduktion
     //TODO rückgängig machen
     //TODO Graph optimieren bezüglich Anordnung nach verschiedenen Algorithmen
+    //TODO Option hinzufügen, dass Terminalknoten nicht ausfallen können bzw. gesondertes Eingabefeld haben
 
     /**
      * Wird bei der Statusänderung einer Checkbox ausgelöst.
