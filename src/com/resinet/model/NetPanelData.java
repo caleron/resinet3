@@ -16,6 +16,11 @@ import java.util.List;
  * Verwaltet die Knoten- und Kantenmengen und deren Zustände, die im NetPanel dargestellt werden. Aktionen wie Knoten
  * hinzufügen/löschen können ausgeführt werden. Alle Aktionen werden auch in einem UndoManager registriert und können
  * auch rückgängig gemacht werden.
+ * <p>
+ * In Form von Unterklassen werden Aktionensklassen definiert. Jede Aktion hat diese drei Methoden:<ul><li>execute():
+ * Führt die Aktion erstmalig aus</li><li>undo(): Macht die Aktion rückgängig</li><li>redo(): Wiederholt die Aktion,
+ * wenn diese rückgängig gemacht wurde</li></ul> Zusätzlich hält jede Aktion natürlich alle Daten, die für die Methoden
+ * benötigt werden.
  */
 public class NetPanelData implements Serializable {
     private static final long serialVersionUID = -293719411015421415L;
@@ -213,6 +218,9 @@ public class NetPanelData implements Serializable {
         undoManager.addEdit(action);
     }
 
+    /**
+     * Entfernt alle ausgewählten Knoten.
+     */
     public void removeSelectedNodes() {
         ArrayList<NodePoint> selectedNodes = new ArrayList<>();
 
@@ -226,12 +234,20 @@ public class NetPanelData implements Serializable {
         removeNodes(selectedNodes);
     }
 
+    /**
+     * Ändert den Terminalstatus eines Knotens (grafisch gesehen wird zwischen schwarz und weiß gewechselt).
+     *
+     * @param node Der Knoten, von dem der Terminalstatus geändert werden soll.
+     */
     public void changeTerminalStatus(NodePoint node) {
         TerminalChangeAction action = new TerminalChangeAction(node);
         action.execute();
         undoManager.addEdit(action);
     }
 
+    /**
+     * Setzt bei allen Knoten den selected-Status auf false.
+     */
     public void resetSelection() {
         for (NodePoint node : nodes) {
             node.selected = false;
@@ -256,10 +272,20 @@ public class NetPanelData implements Serializable {
         }
     }
 
+    /**
+     * Gibt eine nicht veränderbare Listenrepräsentation der Knotenliste zurück.
+     *
+     * @return nicht veränderbare Listenrepräsentation der Knotenliste
+     */
     public List<NodePoint> getNodes() {
         return Collections.unmodifiableList(nodes);
     }
 
+    /**
+     * Gibt eine nicht veränderbare Listenrepräsentation der Kantenliste zurück.
+     *
+     * @return nicht veränderbare Listenrepräsentation der Kantenliste
+     */
     public List<EdgeLine> getEdges() {
         return Collections.unmodifiableList(edges);
     }

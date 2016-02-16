@@ -638,6 +638,12 @@ public class NetPanelController implements MouseListener, MouseMotionListener {
         netPanel.setCursorHover(mouseEvent.isShiftDown(), mouseEvent.isControlDown());
     }
 
+    /**
+     * Fügt eine Menge von Knoten und Kanten hinzu.
+     *
+     * @param nodes Die Knotenmenge
+     * @param edges Die Kantenmenge
+     */
     public void addNodesAndEdges(List<NodePoint> nodes, List<EdgeLine> edges) {
         netData.addNodesAndEdges(nodes, edges);
     }

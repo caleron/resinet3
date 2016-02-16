@@ -287,6 +287,12 @@ public class NetPanel extends JPanel {
         return controller.getEdges();
     }
 
+    /**
+     * Fügt eine Menge von Knoten und Kanten hinzu.
+     *
+     * @param nodes Die Knotenmenge
+     * @param edges Die Kantenmenge
+     */
     public void addNodesAndEdges(List<NodePoint> nodes, List<EdgeLine> edges) {
         controller.addNodesAndEdges(nodes, edges);
     }
