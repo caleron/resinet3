@@ -293,11 +293,18 @@ public class MainframeController extends WindowAdapter implements ActionListener
                 mainFrame.getSameReliabilityNodeProbBox().setValue(params.nodeValue);
                 mainFrame.getSameReliabilityEdgeProbBox().setValue(params.edgeValue);
                 if (params.calculationSeries) {
+                    mainFrame.getCalculationSeriesCheckBox().setSelected(true);
+
                     mainFrame.getNodeEndProbabilityBox().setValue(params.nodeEndValue);
                     mainFrame.getNodeProbabilityStepSizeBox().setValue(params.nodeStepSize);
 
                     mainFrame.getEdgeEndProbabilityBox().setValue(params.edgeEndValue);
                     mainFrame.getEdgeProbabilityStepSizeBox().setValue(params.edgeStepSize);
+                }
+
+                if (params.differentTerminalNodeReliability) {
+                    mainFrame.getDifferentForTerminalCheckBox().setSelected(true);
+                    mainFrame.getTerminalNodeProbBox().setValue(params.terminalNodeValue);
                 }
             } else {
                 mainFrame.setReliabilityMode(RELIABILITY_MODES.SINGLE);
@@ -312,6 +319,7 @@ public class MainframeController extends WindowAdapter implements ActionListener
                 }
             }
         }
+        mainFrame.setGuiState(GUI_STATES.ENTER_GRAPH, true);
         netPanel.centerGraphOnNextPaint();
         //verzögert Repaint auslösen
         SwingUtilities.invokeLater(netPanel::repaint);
