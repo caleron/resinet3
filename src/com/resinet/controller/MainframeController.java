@@ -64,14 +64,13 @@ public class MainframeController extends WindowAdapter implements ActionListener
             startCalculation(CALCULATION_MODES.RELIABILITY);
         } else if (button == mainFrame.getCalcResilienceBtn()) {
             startCalculation(CALCULATION_MODES.RESILIENCE);
-        } else if (button == mainFrame.collapseOutputBtn) {
+        } else if (button == mainFrame.getCollapseOutputBtn()) {
             mainFrame.setStatusBarCollapsed(true);
         } else if (permanentFocusOwner.equals(mainFrame.getNetPanel())) {
             mainFrame.getNetPanel().actionPerformed(e);
         }
     }
     //TODO Zuletzt geöffnet-Liste, Graph generieren, Serienparallelreduktion
-    //TODO rückgängig machen
     //TODO Graph optimieren bezüglich Anordnung nach verschiedenen Algorithmen
     //TODO Option hinzufügen, dass Terminalknoten nicht ausfallen können bzw. gesondertes Eingabefeld haben
 
@@ -86,7 +85,7 @@ public class MainframeController extends WindowAdapter implements ActionListener
             return;
 
         AbstractButton checkbox = (AbstractButton) e.getSource();
-        if (checkbox == mainFrame.getCalculationSeriesCheckBox()) {
+        if (checkbox == mainFrame.getCalculationSeriesCheckBox() || checkbox == mainFrame.getDifferentForTerminalCheckBox()) {
             mainFrame.setGuiState(GUI_STATES.ENTER_GRAPH, true);
         } else if (checkbox == mainFrame.getConsiderEdgesBox() || checkbox == mainFrame.getConsiderNodesBox()) {
             NetPanelController netPanelController = mainFrame.getNetPanel().getController();
@@ -451,6 +450,12 @@ public class MainframeController extends WindowAdapter implements ActionListener
                         nodeStartValue, nodeEndValue, nodeStepSize);
             } else {
                 params.setSameReliabilityParams(edgeStartValue, nodeStartValue);
+            }
+
+            if (mainFrame.getDifferentForTerminalCheckBox().isSelected()) {
+                //Falls für Terminalknoten eine andere Zuverlässigkeit verwendet werden soll, diese einlesen
+                BigDecimal terminalNodeValue = mainFrame.getTerminalNodeProbBox().getBigDecimalValue();
+                params.setDifferentTerminalNodeReliability(terminalNodeValue);
             }
         } else {
             params.setReliabilityMode(false);

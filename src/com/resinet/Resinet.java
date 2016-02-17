@@ -54,7 +54,9 @@ public class Resinet implements Constants {
     private JCheckBox considerEdgesBox;
     private JScrollPane singleReliabilitiesScrollPane;
     private JPanel expandedOutputPanel;
-    public JButton collapseOutputBtn;
+    private JButton collapseOutputBtn;
+    private JCheckBox differentForTerminalCheckBox;
+    private ProbabilitySpinner terminalNodeProbBox;
 
     public Resinet(MainframeController controller) {
         this.controller = controller;
@@ -301,39 +303,49 @@ public class Resinet implements Constants {
         sameReliabilityNodeProbBox = new ProbabilitySpinner();
         sameReliabilityPanel.add(sameReliabilityNodeProbBox, GbcBuilder.build(1, 1, 1, 1, 1, 0).bottom(10));
 
+        //Terminalknotenwahrscheinlichkeiten / CheckBox
+        differentForTerminalCheckBox = new JCheckBox("Zuverlässigkeit Terminalknoten:");
+        differentForTerminalCheckBox.addItemListener(controller);
+        differentForTerminalCheckBox.setMargin(new Insets(0, 0, 0, 0));
+        sameReliabilityPanel.add(differentForTerminalCheckBox, GbcBuilder.build(0, 2, 1, 1, 1, 0).bottom(10).left());
+
+        terminalNodeProbBox = new ProbabilitySpinner();
+        sameReliabilityPanel.add(terminalNodeProbBox, GbcBuilder.build(1, 2, 1, 1, 1, 0).bottom(10));
+
         //Checkbox für Berechnungsserie
         calculationSeriesCheckBox = new JCheckBox(Strings.getLocalizedString("perform.calculation.series"));
+        calculationSeriesCheckBox.setMargin(new Insets(0, 0, 0, 0));
         calculationSeriesCheckBox.addItemListener(controller);
-        sameReliabilityPanel.add(calculationSeriesCheckBox, GbcBuilder.build(0, 2, 2, 1, 1, 0).bottom(10).left());
+        sameReliabilityPanel.add(calculationSeriesCheckBox, GbcBuilder.build(0, 3, 2, 1, 1, 0).bottom(10).left());
 
         //Eingabefelder für Berechnungsserie
         JLabel edgeProbEndValueLbl = new JLabel(Strings.getLocalizedString("edge.end.value"), SwingConstants.RIGHT);
-        sameReliabilityPanel.add(edgeProbEndValueLbl, GbcBuilder.build(0, 3, 1, 1, 1, 0).bottom(10).left());
+        sameReliabilityPanel.add(edgeProbEndValueLbl, GbcBuilder.build(0, 4, 1, 1, 1, 0).bottom(10).left());
 
         edgeEndProbabilityBox = new ProbabilitySpinner();
         edgeEndProbabilityBox.setEnabled(false);
-        sameReliabilityPanel.add(edgeEndProbabilityBox, GbcBuilder.build(1, 3, 1, 1, 1, 0).bottom(10));
+        sameReliabilityPanel.add(edgeEndProbabilityBox, GbcBuilder.build(1, 4, 1, 1, 1, 0).bottom(10));
 
         JLabel edgeStepSizeLbl = new JLabel(Strings.getLocalizedString("edge.step.size"), SwingConstants.RIGHT);
-        sameReliabilityPanel.add(edgeStepSizeLbl, GbcBuilder.build(0, 4, 1, 1, 1, 0).bottom(10).left());
+        sameReliabilityPanel.add(edgeStepSizeLbl, GbcBuilder.build(0, 5, 1, 1, 1, 0).bottom(10).left());
 
         edgeProbabilityStepSizeBox = new ProbabilitySpinner();
         edgeProbabilityStepSizeBox.setEnabled(false);
-        sameReliabilityPanel.add(edgeProbabilityStepSizeBox, GbcBuilder.build(1, 4, 1, 1, 1, 0).bottom(10));
+        sameReliabilityPanel.add(edgeProbabilityStepSizeBox, GbcBuilder.build(1, 5, 1, 1, 1, 0).bottom(10));
 
         JLabel nodeEndValueLbl = new JLabel(Strings.getLocalizedString("vertex.end.value"), SwingConstants.RIGHT);
-        sameReliabilityPanel.add(nodeEndValueLbl, GbcBuilder.build(0, 5, 1, 1, 1, 0).bottom(10).left());
+        sameReliabilityPanel.add(nodeEndValueLbl, GbcBuilder.build(0, 6, 1, 1, 1, 0).bottom(10).left());
 
         nodeEndProbabilityBox = new ProbabilitySpinner();
         nodeEndProbabilityBox.setEnabled(false);
-        sameReliabilityPanel.add(nodeEndProbabilityBox, GbcBuilder.build(1, 5, 1, 1, 1, 0).bottom(10));
+        sameReliabilityPanel.add(nodeEndProbabilityBox, GbcBuilder.build(1, 6, 1, 1, 1, 0).bottom(10));
 
         JLabel nodeStepSizeLbl = new JLabel(Strings.getLocalizedString("vertex.step.size"), SwingConstants.RIGHT);
-        sameReliabilityPanel.add(nodeStepSizeLbl, GbcBuilder.build(0, 6, 1, 1, 1, 0).bottom(10).left());
+        sameReliabilityPanel.add(nodeStepSizeLbl, GbcBuilder.build(0, 7, 1, 1, 1, 0).bottom(10).left());
 
         nodeProbabilityStepSizeBox = new ProbabilitySpinner();
         nodeProbabilityStepSizeBox.setEnabled(false);
-        sameReliabilityPanel.add(nodeProbabilityStepSizeBox, GbcBuilder.build(1, 6, 1, 1, 1, 0).bottom(10));
+        sameReliabilityPanel.add(nodeProbabilityStepSizeBox, GbcBuilder.build(1, 7, 1, 1, 1, 0).bottom(10));
     }
 
     private void initSingleReliabilitiesTab() {
@@ -454,6 +466,10 @@ public class Resinet implements Constants {
             nodeProbabilityStepSizeBox.setEnabled(false);
             edgeEndProbabilityBox.setEnabled(false);
             nodeEndProbabilityBox.setEnabled(false);
+        }
+
+        if (reliabilityBoxesEnabled && !differentForTerminalCheckBox.isSelected()) {
+            terminalNodeProbBox.setEnabled(false);
         }
     }
 
@@ -586,5 +602,17 @@ public class Resinet implements Constants {
 
     public NetPanel getNetPanel() {
         return netPanel;
+    }
+
+    public JButton getCollapseOutputBtn() {
+        return collapseOutputBtn;
+    }
+
+    public JCheckBox getDifferentForTerminalCheckBox() {
+        return differentForTerminalCheckBox;
+    }
+
+    public ProbabilitySpinner getTerminalNodeProbBox() {
+        return terminalNodeProbBox;
     }
 }

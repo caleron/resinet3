@@ -13,13 +13,14 @@ public class CalculationParams implements Constants {
     public boolean sameReliabilityMode = false;
     public boolean calculationSeries = false;
     public boolean probabilitiesLoaded = false;
+    public boolean differentTerminalNodeReliability = false;
     public final CALCULATION_MODES calculationMode;
 
     //für die Serienberechnung
     public BigDecimal edgeStartValue, edgeEndValue, edgeStepSize, nodeStartValue, nodeEndValue, nodeStepSize;
 
     //Für Berechnung mit gleichen Wahrscheinlichkeiten für alle Komponenten
-    public BigDecimal edgeValue, nodeValue;
+    public BigDecimal edgeValue, nodeValue, terminalNodeValue;
 
     //Für Berechnung mit einzelnen Wahrscheinlichkeiten
     public BigDecimal[] edgeProbabilities, nodeProbabilities;
@@ -69,7 +70,7 @@ public class CalculationParams implements Constants {
     }
 
     /**
-     * Setzt die Parameter für die Berechnung mit gleichn Wahrscheinlichkeiten
+     * Setzt die Parameter für die Berechnung mit gleichen Wahrscheinlichkeiten
      *
      * @param edgeValue Wahrscheinlichkeit für alle Kanten
      * @param nodeValue Wahrscheinlichkeit für alle Knoten
@@ -78,6 +79,16 @@ public class CalculationParams implements Constants {
         this.edgeValue = edgeValue;
         this.nodeValue = nodeValue;
         probabilitiesLoaded = true;
+    }
+
+    /**
+     * Setzt die Parameter für die Berechnung mit gleichn Wahrscheinlichkeiten
+     *
+     * @param terminalNodeValue Zuverlässigkeit für alle Terminalknoten
+     */
+    public void setDifferentTerminalNodeReliability(BigDecimal terminalNodeValue) {
+        this.terminalNodeValue = terminalNodeValue;
+        differentTerminalNodeReliability = true;
     }
 
     /**

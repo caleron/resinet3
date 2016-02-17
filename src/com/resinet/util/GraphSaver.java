@@ -30,6 +30,7 @@ import java.util.List;
  * Dabei wurde mit ResiNet3 ein neues und eigenes Dateiformat basierend auf XML eingeführt. Des weiteren können auch
  * Graphen im Pajek-Format eingelesen und gespeichert werden.
  */
+@SuppressWarnings("HardCodedStringLiteral")
 public final class GraphSaver {
 
     /**
@@ -276,6 +277,10 @@ public final class GraphSaver {
                                 break;
                             case "edgeStepSize":
                                 calculationParams.edgeStepSize = new BigDecimal(nodeElement.getAttribute("value"));
+                                break;
+                            case "terminalValue":
+                                calculationParams.setDifferentTerminalNodeReliability(
+                                        new BigDecimal(nodeElement.getAttribute("value")));
                                 break;
                         }
                     }
@@ -567,6 +572,13 @@ public final class GraphSaver {
                 edgeStartValue.setAttribute("type", "edgeStart");
                 edgeStartValue.setAttribute("value", params.edgeValue.toString());
                 rootElement.appendChild(edgeStartValue);
+
+                if (params.differentTerminalNodeReliability) {
+                    Element terminalValue = doc.createElement("seriesParam");
+                    terminalValue.setAttribute("type", "terminalValue");
+                    terminalValue.setAttribute("value", params.terminalNodeValue.toString());
+                    rootElement.appendChild(terminalValue);
+                }
 
                 if (params.calculationSeries) {
                     //Serienberechnungsparameter speichern

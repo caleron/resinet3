@@ -246,10 +246,8 @@ public class ProbabilityCalculator extends Thread implements Constants {
                 // Dann auf true, falls K-Knoten
                 node1.c_node = combination.contains(i);
 
-                // Schreibe jeden Knoten neu in die Knotenliste.
+                // Schreibe jeden Knoten neu in die Knotenliste. ob das sinnvoll ist, weiß ich nicht, da die Referenz trotzdem drinne ist.
                 workingGraph.nodeList.set(i, node1);
-                //graph.nodeList.set(i, node1);
-
             }
 
             // Erhöhe pro Kombination den Zähler um 1.
@@ -459,12 +457,12 @@ public class ProbabilityCalculator extends Thread implements Constants {
         int edgeCount = edgeList.size();
         //Kantenwahrscheinlichkeiten
         for (int i = 0; i < edgeCount; i++) {
-            Edge e = edgeList.get(i);
+            Edge edge = edgeList.get(i);
 
             if (params.sameReliabilityMode) {
-                e.prob = params.edgeValue;
+                edge.prob = params.edgeValue;
             } else {
-                e.prob = params.edgeProbabilities[i];
+                edge.prob = params.edgeProbabilities[i];
             }
         }
 
@@ -473,12 +471,16 @@ public class ProbabilityCalculator extends Thread implements Constants {
 
         //Knotenwahrscheinlichkeiten
         for (int i = 0; i < nodeCount; i++) {
-            Node e = nodeList.get(i);
+            Node node = nodeList.get(i);
 
             if (params.sameReliabilityMode) {
-                e.prob = params.nodeValue;
+                if (params.differentTerminalNodeReliability && node.c_node) {
+                    node.prob = params.terminalNodeValue;
+                } else {
+                    node.prob = params.nodeValue;
+                }
             } else {
-                e.prob = params.nodeProbabilities[i];
+                node.prob = params.nodeProbabilities[i];
             }
         }
     }
