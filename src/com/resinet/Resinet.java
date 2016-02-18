@@ -304,7 +304,7 @@ public class Resinet implements Constants {
         sameReliabilityPanel.add(sameReliabilityNodeProbBox, GbcBuilder.build(1, 1, 1, 1, 1, 0).bottom(10));
 
         //Terminalknotenwahrscheinlichkeiten / CheckBox
-        differentForTerminalCheckBox = new JCheckBox("Zuverlässigkeit Terminalknoten:");
+        differentForTerminalCheckBox = new JCheckBox(Strings.getLocalizedString("terminal.node.reliability"));
         differentForTerminalCheckBox.addItemListener(controller);
         differentForTerminalCheckBox.setMargin(new Insets(0, 0, 0, 0));
         sameReliabilityPanel.add(differentForTerminalCheckBox, GbcBuilder.build(0, 2, 1, 1, 1, 0).bottom(10).left());
