@@ -79,6 +79,7 @@ public class NetPanelController implements MouseListener, MouseMotionListener {
                 }
                 break;
         }
+        listener.graphChanged();
         netPanel.repaint();
     }
 

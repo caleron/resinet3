@@ -169,8 +169,11 @@ public class ProbabilityCalculator extends Thread implements Constants {
         //System.out.println("Prob. Heidtmann: " + prob);
 
         if (writeOutput) {
-            BigDecimal output = prob.setScale(OUTPUT_PRECISION, BigDecimal.ROUND_HALF_DOWN);
-            reportResult(MessageFormat.format(Strings.getLocalizedString("result.reliability"), output.toString()));
+            BigDecimal output = prob;
+            if (prob.scale() > OUTPUT_PRECISION) {
+                output = prob.setScale(OUTPUT_PRECISION, BigDecimal.ROUND_HALF_DOWN);
+            }
+            reportResult(MessageFormat.format(Strings.getLocalizedString("result.reliability"), output.toPlainString()));
         }
 
         return prob;
@@ -273,8 +276,11 @@ public class ProbabilityCalculator extends Thread implements Constants {
         System.out.println("Laufzeit Resilienz: " + runningTime);
 
         if (writeOutput) {
-            BigDecimal output = result.setScale(OUTPUT_PRECISION, BigDecimal.ROUND_HALF_DOWN);
-            reportResult(MessageFormat.format(Strings.getLocalizedString("result.resilience"), total_nodes, c_nodes, combinationCount, output.toString()));
+            BigDecimal output = result;
+            if (result.scale() > OUTPUT_PRECISION) {
+                output = result.setScale(OUTPUT_PRECISION, BigDecimal.ROUND_HALF_DOWN);
+            }
+            reportResult(MessageFormat.format(Strings.getLocalizedString("result.resilience"), total_nodes, c_nodes, combinationCount, output.toPlainString()));
         }
 
         return result;
@@ -412,7 +418,7 @@ public class ProbabilityCalculator extends Thread implements Constants {
                     }
 
                     prob = prob.setScale(OUTPUT_PRECISION, BigDecimal.ROUND_HALF_DOWN);
-                    writer.write(reliabilityString + prob);
+                    writer.write(reliabilityString + prob.toPlainString());
                 }
 
             }
