@@ -273,6 +273,24 @@ public class NetPanelData implements Serializable {
     }
 
     /**
+     * Gibt zurück, ob rückgängig gemacht werden kann.
+     *
+     * @return True, wenn rückgängig gemacht werden kann.
+     */
+    public boolean canUndo() {
+        return undoManager.canUndo();
+    }
+
+    /**
+     * Gibt zurück, ob wiederholt werden kann.
+     *
+     * @return True, wenn wiederholt werden kann.
+     */
+    public boolean canRedo() {
+        return undoManager.canRedo();
+    }
+
+    /**
      * Gibt eine nicht veränderbare Listenrepräsentation der Knotenliste zurück.
      *
      * @return nicht veränderbare Listenrepräsentation der Knotenliste

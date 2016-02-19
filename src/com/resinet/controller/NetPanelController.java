@@ -705,4 +705,8 @@ public class NetPanelController implements MouseListener, MouseMotionListener {
     public Rectangle getSelectionRectangle() {
         return selectionRectangle;
     }
+
+    public NetPanelData getNetData() {
+        return netData;
+    }
 }

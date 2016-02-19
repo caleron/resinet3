@@ -13,6 +13,8 @@ import com.sun.istack.internal.Nullable;
 import javax.swing.*;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import javax.swing.event.MenuEvent;
+import javax.swing.event.MenuListener;
 import java.awt.*;
 import java.awt.event.*;
 import java.beans.PropertyChangeEvent;
@@ -24,7 +26,7 @@ import java.util.List;
 
 @SuppressWarnings("Duplicates")
 public class MainframeController extends WindowAdapter implements ActionListener, GraphChangedListener,
-        CalculationProgressListener, Constants, ItemListener, ChangeListener, PropertyChangeListener {
+        CalculationProgressListener, Constants, ItemListener, ChangeListener, PropertyChangeListener, MenuListener {
     private Resinet mainFrame;
 
     private JComponent permanentFocusOwner;
@@ -245,6 +247,11 @@ public class MainframeController extends WindowAdapter implements ActionListener
         //}
     }
 
+    /**
+     * Wird ausgelöst, wenn das fokussierte Element verändert wird
+     *
+     * @param evt Das Event
+     */
     @Override
     public void propertyChange(PropertyChangeEvent evt) {
         Object o = evt.getNewValue();
@@ -253,6 +260,36 @@ public class MainframeController extends WindowAdapter implements ActionListener
         } else {
             permanentFocusOwner = null;
         }
+    }
+
+
+    /**
+     * Wird ausgelöst, wenn das Bearbeiten-Menü geöffnet wird, damit dann der Enabled-Status des Rückgängig-Buttons und
+     * des Wiederholen-Buttons gesetzt werden kann.
+     *
+     * @param e Das Event
+     */
+    @Override
+    public void menuSelected(MenuEvent e) {
+        NetPanel netPanel = mainFrame.getNetPanel();
+        mainFrame.getUndoMenuItem().setEnabled(netPanel.canUndo());
+        mainFrame.getRedoMenuItem().setEnabled(netPanel.canRedo());
+    }
+
+    /**
+     * Wird ausgelöst, wenn das Bearbeiten-Menü geschlossen/versteckt wird. Setzt die Rückgängig-/Wiederholen-Buttons
+     * auf enabled, damit auf die Tastenkombinationen reagiert wird, falls sich am canUndo/canRedo etwas geändert hat.
+     *
+     * @param e Das Event
+     */
+    @Override
+    public void menuDeselected(MenuEvent e) {
+        mainFrame.getUndoMenuItem().setEnabled(true);
+        mainFrame.getRedoMenuItem().setEnabled(true);
+    }
+
+    @Override
+    public void menuCanceled(MenuEvent e) {
     }
 
     private void resetGraph() {

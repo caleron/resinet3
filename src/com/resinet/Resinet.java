@@ -57,6 +57,8 @@ public class Resinet implements Constants {
     private JButton collapseOutputBtn;
     private JCheckBox differentForTerminalCheckBox;
     private ProbabilitySpinner terminalNodeProbBox;
+    private JMenuItem undoMenuItem;
+    private JMenuItem redoMenuItem;
 
     public Resinet(MainframeController controller) {
         this.controller = controller;
@@ -114,14 +116,15 @@ public class Resinet implements Constants {
 
     private void initEditMenu() {
         JMenu editMenu = new JMenu(Strings.getLocalizedString("edit"));
+        editMenu.addMenuListener(controller);
 
-        JMenuItem undoMenuItem = new JMenuItem(Strings.getLocalizedString("undo"));
+        undoMenuItem = new JMenuItem(Strings.getLocalizedString("undo"));
         undoMenuItem.addActionListener(controller);
         undoMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_Z, KeyEvent.CTRL_MASK));
         undoMenuItem.setActionCommand("undo");
         editMenu.add(undoMenuItem);
 
-        JMenuItem redoMenuItem = new JMenuItem(Strings.getLocalizedString("redo"));
+        redoMenuItem = new JMenuItem(Strings.getLocalizedString("redo"));
         redoMenuItem.addActionListener(controller);
         redoMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_Y, KeyEvent.CTRL_MASK));
         redoMenuItem.setActionCommand("redo");
@@ -614,5 +617,13 @@ public class Resinet implements Constants {
 
     public ProbabilitySpinner getTerminalNodeProbBox() {
         return terminalNodeProbBox;
+    }
+
+    public JMenuItem getUndoMenuItem() {
+        return undoMenuItem;
+    }
+
+    public JMenuItem getRedoMenuItem() {
+        return redoMenuItem;
     }
 }

@@ -18,7 +18,7 @@ import java.util.List;
 public class NetPanel extends JPanel {
     private static final long serialVersionUID = -124106422709849520L;
 
-    public final NetPanelController controller;
+    private final NetPanelController controller;
 
     public final Timer selectionAnimationTimer;
     private float selectionAnimationPhase = 0;
@@ -279,14 +279,6 @@ public class NetPanel extends JPanel {
         }
     }
 
-    public List<NodePoint> getNodes() {
-        return controller.getNodes();
-    }
-
-    public List<EdgeLine> getEdges() {
-        return controller.getEdges();
-    }
-
     /**
      * Fügt eine Menge von Knoten und Kanten hinzu.
      *
@@ -296,6 +288,33 @@ public class NetPanel extends JPanel {
     public void addNodesAndEdges(List<NodePoint> nodes, List<EdgeLine> edges) {
         controller.addNodesAndEdges(nodes, edges);
     }
+
+    /**
+     * Gibt zurück, ob rückgängig gemacht werden kann.
+     *
+     * @return True, wenn rückgängig gemacht werden kann.
+     */
+    public boolean canUndo() {
+        return controller.getNetData().canUndo();
+    }
+
+    /**
+     * Gibt zurück, ob wiederholt werden kann.
+     *
+     * @return True, wenn wiederholt werden kann.
+     */
+    public boolean canRedo() {
+        return controller.getNetData().canRedo();
+    }
+
+    public List<NodePoint> getNodes() {
+        return controller.getNodes();
+    }
+
+    public List<EdgeLine> getEdges() {
+        return controller.getEdges();
+    }
+
 
     public NetPanelController getController() {
         return controller;
