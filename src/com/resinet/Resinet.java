@@ -159,6 +159,14 @@ public class Resinet implements Constants {
         deleteMenuItem.setActionCommand("delete");
         editMenu.add(deleteMenuItem);
 
+        editMenu.addSeparator();
+
+        JMenuItem selectAllMenuItem = new JMenuItem(Strings.getLocalizedString("select.all"));
+        selectAllMenuItem.addActionListener(controller);
+        selectAllMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_A, KeyEvent.CTRL_MASK));
+        selectAllMenuItem.setActionCommand("select_all");
+        editMenu.add(selectAllMenuItem);
+
         menuBar.add(editMenu);
     }
 

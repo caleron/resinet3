@@ -72,6 +72,9 @@ public class NetPanelController implements MouseListener, MouseMotionListener {
                 netData.redo();
                 resetSelection();
                 break;
+            case "select_all":
+                selectAllNodes();
+                break;
             default:
                 Action a = netPanel.getActionMap().get(action);
                 if (a != null) {
@@ -637,6 +640,30 @@ public class NetPanelController implements MouseListener, MouseMotionListener {
             netPanel.repaint();
         }
         netPanel.setCursorHover(mouseEvent.isShiftDown(), mouseEvent.isControlDown());
+    }
+
+    /**
+     * Wählt alle Knoten aus
+     */
+    public void selectAllNodes() {
+        List<NodePoint> drawnNodes = netData.getNodes();
+
+        //Ohne Knoten gibts nichts auszuwählen
+        if (drawnNodes.isEmpty())
+            return;
+
+        //Alle Knoten als ausgewählt markieren
+        for (NodePoint node : drawnNodes) {
+            node.selected = true;
+        }
+
+        //Rechteck erstellen, dass mit 5 Pixel Abstand alle ausgewählten Knoten umschließt
+        //Falls keine Knoten ausgewählt wurden, hat das Reckteck alle Parameter auf 0
+        selectionRectangle = GraphUtil.getGraphBounds(drawnNodes, 5);
+
+        nodesSelected = true;
+        //Timer (neu) starten (falls er bereits läuft)
+        netPanel.selectionAnimationTimer.restart();
     }
 
     /**
