@@ -15,6 +15,7 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.MenuEvent;
 import javax.swing.event.MenuListener;
+import javax.swing.text.JTextComponent;
 import java.awt.*;
 import java.awt.event.*;
 import java.beans.PropertyChangeEvent;
@@ -29,6 +30,9 @@ public class MainframeController extends WindowAdapter implements ActionListener
         CalculationProgressListener, Constants, ItemListener, ChangeListener, PropertyChangeListener, MenuListener {
     private Resinet mainFrame;
 
+    /**
+     * Nähere Beschreibung siehe Methode propertyChange
+     */
     private JComponent permanentFocusOwner;
 
     private final List<ProbabilitySpinner> edgeProbabilityBoxes = new ArrayList<>();
@@ -248,17 +252,19 @@ public class MainframeController extends WindowAdapter implements ActionListener
     }
 
     /**
-     * Wird ausgelöst, wenn das fokussierte Element verändert wird
+     * Wird ausgelöst, wenn das fokussierte Element verändert wird. Hier wird der permanentFocusOwner gesetzt. Falls das
+     * neu fokussierte Element kein Textfeld ist, wird permanentFocusOwner auf das NetPanel gesetzt, damit es Befehle
+     * aus dem Bearbeiten-Menü ausführen kann.
      *
      * @param evt Das Event
      */
     @Override
     public void propertyChange(PropertyChangeEvent evt) {
         Object o = evt.getNewValue();
-        if (o instanceof JComponent) {
+        if (o instanceof JTextComponent) {
             permanentFocusOwner = (JComponent) o;
         } else {
-            permanentFocusOwner = null;
+            permanentFocusOwner = mainFrame.getNetPanel();
         }
     }
 
