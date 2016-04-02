@@ -2,6 +2,7 @@ package com.resinet.views;
 
 import com.resinet.controller.NetPanelController;
 import com.resinet.model.EdgeLine;
+import com.resinet.model.GraphWrapper;
 import com.resinet.model.NodePoint;
 import com.resinet.util.GraphChangedListener;
 import com.resinet.util.GraphUtil;
@@ -287,6 +288,15 @@ public class NetPanel extends JPanel {
      */
     public void addNodesAndEdges(List<NodePoint> nodes, List<EdgeLine> edges) {
         controller.addNodesAndEdges(nodes, edges);
+    }
+
+    /**
+     * Fügt eine Menge von Knoten und Kanten hinzu.
+     *
+     * @param graphWrapper Wrapper mit Mengen von Knoten und Kanten
+     */
+    public void addGraphWrapperAndSelect(GraphWrapper graphWrapper) {
+        controller.addGraphWrapperAndSelect(graphWrapper);
     }
 
     /**

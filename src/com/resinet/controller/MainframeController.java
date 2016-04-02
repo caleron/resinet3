@@ -4,7 +4,9 @@ import com.resinet.Resinet;
 import com.resinet.algorithms.ProbabilityCalculator;
 import com.resinet.model.CalculationParams;
 import com.resinet.model.Graph;
+import com.resinet.model.GraphWrapper;
 import com.resinet.util.*;
+import com.resinet.views.GenerateGraphFrame;
 import com.resinet.views.NetPanel;
 import com.resinet.views.ProbabilitySpinner;
 import com.resinet.views.SingleReliabilityPanel;
@@ -27,7 +29,7 @@ import java.util.List;
 
 @SuppressWarnings("Duplicates")
 public class MainframeController extends WindowAdapter implements ActionListener, GraphChangedListener,
-        CalculationProgressListener, Constants, ItemListener, ChangeListener, PropertyChangeListener, MenuListener {
+        CalculationProgressListener, Constants, ItemListener, ChangeListener, PropertyChangeListener, MenuListener, GraphGeneratorListener {
     private Resinet mainFrame;
 
     /**
@@ -66,6 +68,14 @@ public class MainframeController extends WindowAdapter implements ActionListener
             //TODO about window
         } else if (button == mainFrame.getTutorialMenuItem()) {
             //TODO tutorial oder hilfe
+        } else if (button == mainFrame.getGenerateGraphMenuItem()) {
+            GenerateGraphFrame.show(this);
+        } else if (button == mainFrame.getCenterGraphMenuItem()) {
+            NetPanel netPanel = mainFrame.getNetPanel();
+            netPanel.centerGraphOnNextPaint();
+            netPanel.repaint();
+        } else if (button == mainFrame.getAlignGraphMenuItem()) {
+            //TODO graph ausrichten
         } else if (button == mainFrame.getCalcReliabilityBtn()) {
             startCalculation(CALCULATION_MODES.RELIABILITY);
         } else if (button == mainFrame.getCalcResilienceBtn()) {
@@ -76,7 +86,7 @@ public class MainframeController extends WindowAdapter implements ActionListener
             mainFrame.getNetPanel().actionPerformed(e);
         }
     }
-    //TODO Zuletzt geöffnet-Liste, Graph generieren, Serienparallelreduktion
+    //TODO Zuletzt geöffnet-Liste, Serienparallelreduktion
     //TODO Graph optimieren bezüglich Anordnung nach verschiedenen Algorithmen
 
     /**
@@ -564,4 +574,10 @@ public class MainframeController extends WindowAdapter implements ActionListener
         calculator.start();
     }
 
+    @Override
+    public void graphGenerated(GraphWrapper graphWrapper) {
+        NetPanel netPanel = mainFrame.getNetPanel();
+        netPanel.addGraphWrapperAndSelect(graphWrapper);
+        updateSingleReliabilityProbPanel();
+    }
 }

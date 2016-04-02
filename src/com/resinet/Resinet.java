@@ -59,6 +59,9 @@ public class Resinet implements Constants {
     private ProbabilitySpinner terminalNodeProbBox;
     private JMenuItem undoMenuItem;
     private JMenuItem redoMenuItem;
+    private JMenuItem centerGraphMenuItem;
+    private JMenuItem alignGraphMenuItem;
+    private JMenuItem generateGraphMenuItem;
 
     public Resinet(MainframeController controller) {
         this.controller = controller;
@@ -109,7 +112,7 @@ public class Resinet implements Constants {
         menuBar = new JMenuBar();
         initFileMenu();
         initEditMenu();
-        initGenerateMenu();
+        initGraphMenu();
         initLanguageMenu();
         initHelpMenu();
     }
@@ -209,26 +212,26 @@ public class Resinet implements Constants {
         menuBar.add(languageMenu);
     }
 
-    private void initGenerateMenu() {
-        //Menu zum Graph Generieren aufbauen
-        JMenu generateGraphMenu = new JMenu(Strings.getLocalizedString("generate.graph"));
+    private void initGraphMenu() {
+        //Menü Graph aufbauen
+        JMenu graphMenu = new JMenu(Strings.getLocalizedString("graph"));
 
-        JMenuItem generateLineMenuItem = new JMenuItem(Strings.getLocalizedString("line"));
-        generateGraphMenu.add(generateLineMenuItem);
+        centerGraphMenuItem = new JMenuItem(Strings.getLocalizedString("center.graph"));
+        centerGraphMenuItem.addActionListener(controller);
+        graphMenu.add(centerGraphMenuItem);
 
-        JMenuItem generateBridgeMenuItem = new JMenuItem(Strings.getLocalizedString("bridge.network"));
-        generateGraphMenu.add(generateBridgeMenuItem);
+        alignGraphMenuItem = new JMenuItem(Strings.getLocalizedString("align.graph"));
+        alignGraphMenuItem.addActionListener(controller);
+        graphMenu.add(alignGraphMenuItem);
 
-        JMenuItem generateRingMenuItem = new JMenuItem(Strings.getLocalizedString("ring"));
-        generateGraphMenu.add(generateRingMenuItem);
+        graphMenu.addSeparator();
 
-        JMenuItem generateTreeMenuItem = new JMenuItem(Strings.getLocalizedString("tree"));
-        generateGraphMenu.add(generateTreeMenuItem);
+        generateGraphMenuItem = new JMenuItem(Strings.getLocalizedString("generate.graph"));
+        generateGraphMenuItem.addActionListener(controller);
+        generateGraphMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_G, KeyEvent.CTRL_MASK));
+        graphMenu.add(generateGraphMenuItem);
 
-        JMenuItem completeNetworkMenuItem = new JMenuItem(Strings.getLocalizedString("complete.graph"));
-        generateGraphMenu.add(completeNetworkMenuItem);
-
-        menuBar.add(generateGraphMenu);
+        menuBar.add(graphMenu);
     }
 
     private void initFileMenu() {
@@ -633,5 +636,17 @@ public class Resinet implements Constants {
 
     public JMenuItem getRedoMenuItem() {
         return redoMenuItem;
+    }
+
+    public JMenuItem getCenterGraphMenuItem() {
+        return centerGraphMenuItem;
+    }
+
+    public JMenuItem getAlignGraphMenuItem() {
+        return alignGraphMenuItem;
+    }
+
+    public JMenuItem getGenerateGraphMenuItem() {
+        return generateGraphMenuItem;
     }
 }

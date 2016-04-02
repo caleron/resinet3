@@ -1,8 +1,6 @@
 package com.resinet.controller;
 
-import com.resinet.model.EdgeLine;
-import com.resinet.model.NetPanelData;
-import com.resinet.model.NodePoint;
+import com.resinet.model.*;
 import com.resinet.util.GraphChangedListener;
 import com.resinet.util.GraphUtil;
 import com.resinet.util.NodeEdgeWrapper;
@@ -674,6 +672,25 @@ public class NetPanelController implements MouseListener, MouseMotionListener {
      */
     public void addNodesAndEdges(List<NodePoint> nodes, List<EdgeLine> edges) {
         netData.addNodesAndEdges(nodes, edges);
+    }
+
+    /**
+     * Fügt eine Menge von Knoten und Kanten hinzu und wählt diese aus
+     *
+     * @param graphWrapper Wrapper mit Mengen von Knoten und Kanten
+     */
+    public void addGraphWrapperAndSelect(GraphWrapper graphWrapper) {
+        netData.addNodesAndEdges(graphWrapper.nodes, graphWrapper.edges);
+
+        //Eingefügte Knoten auswählen
+        graphWrapper.nodes.forEach((nodePoint -> nodePoint.selected = true));
+        selectionRectangle = GraphUtil.getGraphBounds(graphWrapper.nodes, 5);
+        nodesSelected = true;
+        netPanel.selectionAnimationTimer.restart();
+
+        //Scrollbar refreshen
+        revalidateScrollPane();
+        netPanel.repaint();
     }
 
     public boolean isCursorInsideSelection() {

@@ -43,6 +43,31 @@ public class GbcBuilder extends GridBagConstraints {
     }
 
     /**
+     * Erstellt ein GbcBuilder-Objekt mit den angegebenen Parametern <br> weightx = 0, weighty = 0
+     *
+     * @param x      X-Position im Grid (gridx)
+     * @param y      Y-Position im Grid (gridy)
+     * @param width  beanspruchte Spaltenanzahl im Grid (gridwidth)
+     * @param height beanspruchte Zeilenanzahl im Grid (gridheight)
+     * @return GbcBuilder
+     */
+    public static GbcBuilder build(int x, int y, int width, int height) {
+        return build(x, y, width, height, 0, 0);
+    }
+
+    /**
+     * Erstellt ein GbcBuilder-Objekt mit den angegebenen Parametern. <br> width = 1, height = 1, weightx = 0, weighty =
+     * 0
+     *
+     * @param x X-Position im Grid (gridx)
+     * @param y Y-Position im Grid (gridy)
+     * @return GbcBuilder
+     */
+    public static GbcBuilder build(int x, int y) {
+        return build(x, y, 1, 1, 0, 0);
+    }
+
+    /**
      * Fülleffekt in alle Richtungen setzen
      *
      * @return GbcBuilder-Objekt
@@ -92,6 +117,17 @@ public class GbcBuilder extends GridBagConstraints {
     public GbcBuilder vertical(int verticalInset) {
         insets.bottom = verticalInset;
         insets.top = verticalInset;
+        return this;
+    }
+
+    /**
+     * Setzt das Gewicht auf der X-Achse
+     *
+     * @param weightx Gewichtung auf X-Achse (für Verteilung des freien Platzes)
+     * @return GbcBuilder-Objekt
+     */
+    public GbcBuilder weightx(int weightx) {
+        this.weightx = weightx;
         return this;
     }
 }
