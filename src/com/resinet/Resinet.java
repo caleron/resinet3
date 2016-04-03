@@ -224,6 +224,11 @@ public class Resinet implements Constants {
         alignGraphMenuItem.addActionListener(controller);
         graphMenu.add(alignGraphMenuItem);
 
+        JMenuItem selectOverlappingVerticesMenuItem =  new JMenuItem(Strings.getLocalizedString("select.overlapping.vertices"));
+        selectOverlappingVerticesMenuItem.addActionListener(controller);
+        selectOverlappingVerticesMenuItem.setActionCommand("select overlapping");
+        graphMenu.add(selectOverlappingVerticesMenuItem);
+
         graphMenu.addSeparator();
 
         generateGraphMenuItem = new JMenuItem(Strings.getLocalizedString("generate.graph"));

@@ -1,6 +1,9 @@
 package com.resinet.controller;
 
-import com.resinet.model.*;
+import com.resinet.model.EdgeLine;
+import com.resinet.model.GraphWrapper;
+import com.resinet.model.NetPanelData;
+import com.resinet.model.NodePoint;
 import com.resinet.util.GraphChangedListener;
 import com.resinet.util.GraphUtil;
 import com.resinet.util.NodeEdgeWrapper;
@@ -50,8 +53,8 @@ public class NetPanelController implements MouseListener, MouseMotionListener {
     }
 
     /**
-     * Wird vom Mainframe-Controller weitergegeben, wenn das NetPanel Fokus hat und dient dazu, Copy&Paste-Aktionen zu
-     * behandeln.
+     * Wird vom Mainframe-Controller weitergegeben, wenn das NetPanel Fokus hat und dient dazu, Copy&Paste-Aktionen und
+     * Aktionen mit definiertem ActionCommand zu behandeln.
      *
      * @param e Das ActionEvent
      */
@@ -72,6 +75,9 @@ public class NetPanelController implements MouseListener, MouseMotionListener {
                 break;
             case "select_all":
                 selectAllNodes();
+                break;
+            case "select overlapping":
+                selectOverlappingNodes();
                 break;
             default:
                 Action a = netPanel.getActionMap().get(action);
@@ -135,7 +141,6 @@ public class NetPanelController implements MouseListener, MouseMotionListener {
         netPanel.repaint();
     }
 
-
     /**
      * Setzt den Graph zurück
      */
@@ -146,6 +151,7 @@ public class NetPanelController implements MouseListener, MouseMotionListener {
         resetSelection();
         netPanel.repaint();
     }
+
 
     /**
      * Setzt die Auswahl zurück
@@ -166,7 +172,6 @@ public class NetPanelController implements MouseListener, MouseMotionListener {
         netData.removeSelectedNodes();
         resetSelection();
     }
-
 
     /**
      * Erstellt ein Objekt mit den ausgewählten Knoten und den Kanten innerhalb der Knotenmenge. Dabei werden die Knoten
@@ -272,6 +277,7 @@ public class NetPanelController implements MouseListener, MouseMotionListener {
         return null;
     }
 
+
     /**
      * Prüft, ob das Rechteck einen Knoten schneidet.
      *
@@ -288,6 +294,7 @@ public class NetPanelController implements MouseListener, MouseMotionListener {
         }
         return false;
     }
+
 
     /**
      * Lässt die Scrollpane revalidieren, damit etwa die Scrollbars an die veränderte Größe des Graphen angepasst
@@ -643,25 +650,70 @@ public class NetPanelController implements MouseListener, MouseMotionListener {
     /**
      * Wählt alle Knoten aus
      */
-    public void selectAllNodes() {
+    private void selectAllNodes() {
         List<NodePoint> drawnNodes = netData.getNodes();
+        selectNodes(drawnNodes);
+    }
 
+    /**
+     * Wählt eine Menge an Knoten aus. Knoten können auch doppelt in nodesToSelect auftauchen, dies macht jedoch keinen
+     * Unterschied.
+     *
+     * @param nodesToSelect die auszuwählenden Knoten
+     */
+    private void selectNodes(List<NodePoint> nodesToSelect) {
         //Ohne Knoten gibts nichts auszuwählen
-        if (drawnNodes.isEmpty())
+        if (nodesToSelect.isEmpty())
             return;
 
         //Alle Knoten als ausgewählt markieren
-        for (NodePoint node : drawnNodes) {
+        for (NodePoint node : nodesToSelect) {
             node.selected = true;
         }
 
         //Rechteck erstellen, dass mit 5 Pixel Abstand alle ausgewählten Knoten umschließt
         //Falls keine Knoten ausgewählt wurden, hat das Reckteck alle Parameter auf 0
-        selectionRectangle = GraphUtil.getGraphBounds(drawnNodes, 5);
+        selectionRectangle = GraphUtil.getGraphBounds(nodesToSelect, 5);
 
         nodesSelected = true;
         //Timer (neu) starten (falls er bereits läuft)
         netPanel.selectionAnimationTimer.restart();
+    }
+
+    /**
+     * Wählt alle Knoten aus, die einen anderen Knoten schneiden
+     */
+    private void selectOverlappingNodes() {
+        List<NodePoint> nodes = new ArrayList<>(netData.getNodes());
+
+        ArrayList<NodePoint> intersectingNodes = new ArrayList<>();
+
+        //Alle Knotenkombinationen durchgehen
+        for (int i1 = 0, nodesSize1 = nodes.size(); i1 < nodesSize1; i1++) {
+            NodePoint node1 = nodes.get(i1);
+
+            for (int i2 = 0, nodesSize2 = nodes.size(); i2 < nodesSize2; i2++) {
+                NodePoint node2 = nodes.get(i2);
+
+                if (i1 != i2 && (node1.intersects(node2.getFrame()) || node1.getBounds().equals(node2.getBounds()))) {
+                    //spielt durch die implementation von selectNodes keine Rolle, ob ein Knoten doppelt in der Liste ist
+                    intersectingNodes.add(node2);
+
+                    nodes.remove(i2);
+
+                    nodesSize1--;
+                    nodesSize2--;
+                    i2--;
+
+                    //damit ein Eintrag nicht doppelt überprüft wird
+                    if (i1 > i2) {
+                        i1--;
+                    }
+                }
+            }
+        }
+
+        selectNodes(intersectingNodes);
     }
 
     /**
