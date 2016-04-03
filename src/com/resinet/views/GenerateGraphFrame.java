@@ -20,12 +20,12 @@ public class GenerateGraphFrame implements ItemListener, KeyListener {
 
     private JFrame frame;
     private JPanel cardPanel;
-    private static final String BRIDGE = "Bridge";
 
-    private static final String LINE = "Line";
-    private static final String RING = "Ring";
-    private static final String TREE = "Tree";
-    private static final String COMPLETE_GRAPH = "Complete Graph";
+    private static final String BRIDGE = Strings.getLocalizedString("bridge.network");
+    private static final String LINE = Strings.getLocalizedString("line");
+    private static final String RING = Strings.getLocalizedString("ring");
+    private static final String TREE = Strings.getLocalizedString("tree");
+    private static final String COMPLETE_GRAPH = Strings.getLocalizedString("complete.graph");
 
     private static final String BRIDGE_PANEL_TAG = "bridgePanel";
     private static final String NODE_COUNT_PANEL_TAG = "nodeCountPanel";
@@ -63,11 +63,11 @@ public class GenerateGraphFrame implements ItemListener, KeyListener {
     private void initButtonBar() {
         JPanel buttonBar = new JPanel(new FlowLayout(FlowLayout.RIGHT));
 
-        JButton generateButton = new JButton("Generate");
+        JButton generateButton = new JButton(Strings.getLocalizedString("generate"));
         generateButton.addActionListener((e) -> generateButtonClick());
         buttonBar.add(generateButton);
 
-        JButton cancelButton = new JButton("Cancel");
+        JButton cancelButton = new JButton(Strings.getLocalizedString("cancel"));
         cancelButton.addActionListener((e) -> closeFrame());
         buttonBar.add(cancelButton);
 
@@ -77,7 +77,7 @@ public class GenerateGraphFrame implements ItemListener, KeyListener {
     private void initTypeSelectionBar() {
         JPanel panel = new JPanel(new FlowLayout(FlowLayout.LEFT));
 
-        JLabel label = new JLabel("Type of graph:");
+        JLabel label = new JLabel(Strings.getLocalizedString("type.of.graph"));
         panel.add(label);
 
         typeBox = new JComboBox<>(types.toArray(new String[types.size()]));
@@ -103,7 +103,7 @@ public class GenerateGraphFrame implements ItemListener, KeyListener {
     private void initNodeCountPanel() {
         JPanel linePanel = new JPanel();
 
-        JLabel label = new JLabel("Node count:");
+        JLabel label = new JLabel(Strings.getLocalizedString("node.count"));
         linePanel.add(label);
 
         nodeCountBox = new NumberSpinner(5, 2, 10000);
@@ -116,13 +116,13 @@ public class GenerateGraphFrame implements ItemListener, KeyListener {
     private void initTreePanel() {
         JPanel treePanel = new JPanel(new GridBagLayout());
 
-        JLabel heightLabel = new JLabel("Height:");
+        JLabel heightLabel = new JLabel(Strings.getLocalizedString("tree.height"));
         treePanel.add(heightLabel, GbcBuilder.build(0, 0).left());
 
-        JLabel descendantCountLabel = new JLabel("Descendant count of inner nodes:");
+        JLabel descendantCountLabel = new JLabel(Strings.getLocalizedString("tree.inner.descendants"));
         treePanel.add(descendantCountLabel, GbcBuilder.build(0, 1).left());
 
-        JLabel leafCountLabel = new JLabel("Descendant leaf count:");
+        JLabel leafCountLabel = new JLabel(Strings.getLocalizedString("tree.leaf.count"));
         treePanel.add(leafCountLabel, GbcBuilder.build(0, 2).left());
 
         treeHeightBox = new NumberSpinner(3, 2, 50);
