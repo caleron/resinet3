@@ -9,6 +9,9 @@ import java.awt.geom.Rectangle2D;
  */
 public class BorderRectangle extends Rectangle2D.Double {
     private static final long serialVersionUID = 2401721394399277623L;
+
+    private static final double RESIZE_MIN_DIMENSION = 30.0;
+
     private boolean renewBounds = true;
     private Line2D leftBorder, topBorder, rightBorder, bottomBorder;
     private Point2D topLeft, topRight, bottomLeft, bottomRight;
@@ -43,7 +46,7 @@ public class BorderRectangle extends Rectangle2D.Double {
      *
      * @param amount der zu addierende Wert
      */
-    public void addToX(int amount) {
+    public void addToX(double amount) {
         this.x += amount;
         renewBounds = true;
     }
@@ -53,7 +56,7 @@ public class BorderRectangle extends Rectangle2D.Double {
      *
      * @param amount der zu addierende Wert
      */
-    public void addToY(int amount) {
+    public void addToY(double amount) {
         this.y += amount;
         renewBounds = true;
     }
@@ -62,42 +65,58 @@ public class BorderRectangle extends Rectangle2D.Double {
      * Erweitert das Rechteck um die angegebene Größe nach links.
      *
      * @param amount Größe
+     * @return Tatsächliche Änderung unter Berücksichtigung von {@link BorderRectangle#RESIZE_MIN_DIMENSION}
      */
-    public void resizeLeft(int amount) {
-        x -= amount;
-        width += amount;
+    public double resizeLeft(double amount) {
+        double usedValue = Math.max(amount, RESIZE_MIN_DIMENSION - width);
+
+        x -= usedValue;
+        width += usedValue;
         renewBounds = true;
+        return usedValue;
     }
 
     /**
      * Erweitert das Rechteck um die angegebene Größe nach oben.
      *
      * @param amount Größe
+     * @return Tatsächliche Änderung unter Berücksichtigung von {@link BorderRectangle#RESIZE_MIN_DIMENSION}
      */
-    public void resizeTop(int amount) {
-        y -= amount;
-        height += amount;
+    public double resizeTop(double amount) {
+        double usedValue = Math.max(amount, RESIZE_MIN_DIMENSION - height);
+
+        y -= usedValue;
+        height += usedValue;
         renewBounds = true;
+        return usedValue;
     }
 
     /**
      * Erweitert das Rechteck nach rechts um die angegebene Größe
      *
      * @param amount Größe
+     * @return Tatsächliche Änderung unter Berücksichtigung von {@link BorderRectangle#RESIZE_MIN_DIMENSION}
      */
-    public void resizeRight(int amount) {
-        width += amount;
+    public double resizeRight(double amount) {
+        double usedValue = Math.max(amount, RESIZE_MIN_DIMENSION - width);
+
+        width += usedValue;
         renewBounds = true;
+        return usedValue;
     }
 
     /**
      * Erweitert das Reckteck nach unten um die angegebene Größe
      *
      * @param amount Größe
+     * @return Tatsächliche Änderung unter Berücksichtigung von {@link BorderRectangle#RESIZE_MIN_DIMENSION}
      */
-    public void resizeBottom(int amount) {
-        height += amount;
+    public double resizeBottom(double amount) {
+        double usedValue = Math.max(amount, RESIZE_MIN_DIMENSION - height);
+
+        height += usedValue;
         renewBounds = true;
+        return usedValue;
     }
 
     /**

@@ -608,26 +608,34 @@ public class NetPanelController implements MouseListener, MouseMotionListener {
             double factorY = 0;
             if (resizeBorder == 1 || resizeBorder == 5 || resizeBorder == 8) {
                 //links, links oben, links unten
-                selectionRectangle.resizeLeft((int) (currentMousePosition.getX() - newMousePosition.getX()));
-                factorX = (currentMousePosition.getX() - newMousePosition.getX()) / selectionRectangle.width;
+                double distance = currentMousePosition.getX() - newMousePosition.getX();
+
+                distance = selectionRectangle.resizeLeft(distance);
+                factorX = distance / selectionRectangle.width;
             }
 
             if (resizeBorder == 2 || resizeBorder == 5 || resizeBorder == 6) {
                 //oben, oben links, oben rechts
-                selectionRectangle.resizeTop((int) (currentMousePosition.getY() - newMousePosition.getY()));
-                factorY = (currentMousePosition.getY() - newMousePosition.getY()) / selectionRectangle.height;
+                double distance = currentMousePosition.getY() - newMousePosition.getY();
+
+                distance = selectionRectangle.resizeTop(distance);
+                factorY = distance / selectionRectangle.height;
             }
 
             if (resizeBorder == 3 || resizeBorder == 6 || resizeBorder == 7) {
                 //rechts, oben rechts, unten rechts
-                selectionRectangle.resizeRight((int) (newMousePosition.getX() - currentMousePosition.getX()));
-                factorX = (newMousePosition.getX() - currentMousePosition.getX()) / selectionRectangle.width;
+                double distance = newMousePosition.getX() - currentMousePosition.getX();
+
+                distance = selectionRectangle.resizeRight(distance);
+                factorX = distance / selectionRectangle.width;
             }
 
             if (resizeBorder == 4 || resizeBorder == 7 || resizeBorder == 8) {
                 //unten, unten links, unten rechts
-                selectionRectangle.resizeBottom((int) (newMousePosition.getY() - currentMousePosition.getY()));
-                factorY = (newMousePosition.getY() - currentMousePosition.getY()) / selectionRectangle.height;
+                double distance = newMousePosition.getY() - currentMousePosition.getY();
+
+                distance = selectionRectangle.resizeBottom(distance);
+                factorY = distance / selectionRectangle.height;
             }
 
             if (factorX != 0 || factorY != 0) {
