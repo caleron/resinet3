@@ -20,9 +20,9 @@ public class GraphUtil {
      * @param spaces Abstand des Rechtecks in alle Richtungen zum Graphen
      * @return Ein Rechteck, das den Graphen umschließt
      */
-    public static Rectangle getGraphBounds(List<NodePoint> nodes, int spaces) {
+    public static BorderRectangle getGraphBounds(List<NodePoint> nodes, int spaces) {
         if (nodes.isEmpty()) {
-            return new Rectangle(0, 0, 0, 0);
+            return new BorderRectangle(0, 0, 0, 0);
         }
 
         int minX = Integer.MAX_VALUE, minY = Integer.MAX_VALUE, maxX = 0, maxY = 0;
@@ -41,7 +41,8 @@ public class GraphUtil {
             }
         }
 
-        return new Rectangle(minX - spaces, minY - spaces, maxX - minX + 2 * spaces, maxY - minY + 2 * spaces);
+        return new BorderRectangle(Math.max(minX - spaces, 0), Math.max(minY - spaces, 0),
+                Math.max(maxX - minX + 2 * spaces, 0), Math.max(maxY - minY + 2 * spaces, 0));
     }
 
 
@@ -51,7 +52,7 @@ public class GraphUtil {
      * @param nodes Die Knotenliste
      * @return Ein Rechteck, das den Graphen umschließt
      */
-    public static Rectangle getGraphBounds(List<NodePoint> nodes) {
+    public static BorderRectangle getGraphBounds(List<NodePoint> nodes) {
         return getGraphBounds(nodes, 0);
     }
 

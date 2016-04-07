@@ -200,6 +200,41 @@ public class NetPanelData implements Serializable {
     }
 
     /**
+     * Verändert die Position einer Knotenmenge innerhalb eines Auswählrechtecks. Diese Aktion wird ausgeführt, aber
+     * nicht in den {@link UndoManager} eingetragen. Diese Methode sollte also aufgerufen werden, während das verzerren
+     * im Gange ist.
+     *
+     * @param nodes              Die Knotenmenge
+     * @param direction          Die Richtung, in der das Rechteck verzerrt wurde (Definiert in {@link
+     *                           BorderRectangle#getResizableBorder(int, int, int)})
+     * @param factorX            Faktor in X-Richtung
+     * @param factorY            Faktor in Y-Richtung
+     * @param selectionRectangle Das Auswählrechteck
+     */
+    public void resizeNodesNotFinal(List<NodePoint> nodes, int direction, double factorX, double factorY, BorderRectangle selectionRectangle) {
+        ResizeAction action = new ResizeAction(nodes, direction, factorX, factorY, selectionRectangle);
+        action.execute();
+    }
+
+    /**
+     * Verändert die Position einer Knotenmenge innerhalb eines Auswählrechtecks. Diese Aktion wird nicht ausgeführt,
+     * aber im Gegensatz zu {@link NetPanelData#resizeNodesNotFinal(List, int, double, double, BorderRectangle)} in den
+     * {@link UndoManager} eingetragen. Diese Methode sollte also nach dem Verzerren aufgerufen werden, damit
+     * Rückgängigmachen möglich ist.
+     *
+     * @param nodes              Die Knotenmenge
+     * @param direction          Die Richtung, in der das Rechteck verzerrt wurde (Definiert in {@link
+     *                           BorderRectangle#getResizableBorder(int, int, int)})
+     * @param factorX            Faktor in X-Richtung
+     * @param factorY            Faktor in Y-Richtung
+     * @param selectionRectangle Das Auswählrechteck
+     */
+    public void resizeNodesFinal(List<NodePoint> nodes, int direction, double factorX, double factorY, BorderRectangle selectionRectangle) {
+        ResizeAction action = new ResizeAction(nodes, direction, factorX, factorY, selectionRectangle);
+        undoManager.addEdit(action);
+    }
+
+    /**
      * Bewegt alle Knoten um die angegebenen Koordinaten. Diese Aktion kann nicht rückgängig gemacht werden.
      *
      * @param amount Die Dimension, um die die Knoten verschoben werden sollen
@@ -311,25 +346,25 @@ public class NetPanelData implements Serializable {
     /**
      * Beschreibt alle Aktionen, bei denen Knoten und/oder Kanten hinzugefügt oder gelöscht werden.
      */
-    class AddOrRemoveAction extends AbstractUndoableEdit {
+    private class AddOrRemoveAction extends AbstractUndoableEdit {
         private static final long serialVersionUID = 7183317665439824767L;
         List<NodePoint> affectedNodes;
         List<EdgeLine> affectedEdges;
         final boolean isAddAction;
 
-        public AddOrRemoveAction(boolean isAddAction, List<NodePoint> addedNodes, List<EdgeLine> addedEdges) {
+        AddOrRemoveAction(boolean isAddAction, List<NodePoint> addedNodes, List<EdgeLine> addedEdges) {
             this.isAddAction = isAddAction;
             affectedNodes = new ArrayList<>(addedNodes);
             affectedEdges = new ArrayList<>(addedEdges);
         }
 
-        public AddOrRemoveAction(boolean isAddAction, NodePoint node) {
+        AddOrRemoveAction(boolean isAddAction, NodePoint node) {
             this.isAddAction = isAddAction;
             affectedNodes = new ArrayList<>();
             affectedNodes.add(node);
         }
 
-        public AddOrRemoveAction(boolean isAddAction, EdgeLine edge) {
+        AddOrRemoveAction(boolean isAddAction, EdgeLine edge) {
             this.isAddAction = isAddAction;
             affectedEdges = new ArrayList<>();
             affectedEdges.add(edge);
@@ -341,7 +376,7 @@ public class NetPanelData implements Serializable {
             execute();
         }
 
-        public void execute() {
+        void execute() {
             if (affectedNodes != null) {
                 if (isAddAction) {
                     nodes.addAll(affectedNodes);
@@ -381,13 +416,13 @@ public class NetPanelData implements Serializable {
     /**
      * Beschreibt eine Aktion, bei der eine Menge von Knoten bewegt wird.
      */
-    class MoveAction extends AbstractUndoableEdit {
+    private class MoveAction extends AbstractUndoableEdit {
         private static final long serialVersionUID = 37760421287789359L;
 
         final List<NodePoint> movedNodes;
         final Dimension amount;
 
-        public MoveAction(ArrayList<NodePoint> nodes, Dimension amount) {
+        MoveAction(ArrayList<NodePoint> nodes, Dimension amount) {
             movedNodes = new ArrayList<>(nodes);
             this.amount = amount;
         }
@@ -398,45 +433,39 @@ public class NetPanelData implements Serializable {
             execute();
         }
 
-        public void execute() {
-            if (movedNodes != null) {
-                for (NodePoint node : movedNodes) {
-                    node.x += amount.getWidth();
-                    node.y += amount.getHeight();
-                }
-                refreshEdges();
+        void execute() {
+            for (NodePoint node : movedNodes) {
+                node.x += amount.getWidth();
+                node.y += amount.getHeight();
             }
+            refreshEdges();
         }
 
         @Override
         public void undo() throws CannotUndoException {
             super.undo();
-            if (movedNodes != null) {
-                for (NodePoint node : movedNodes) {
-                    node.x -= amount.getWidth();
-                    node.y -= amount.getHeight();
-                }
-                refreshEdges();
+            for (NodePoint node : movedNodes) {
+                node.x -= amount.getWidth();
+                node.y -= amount.getHeight();
             }
+            refreshEdges();
         }
 
         private void refreshEdges() {
-            for (EdgeLine edgeLine : edges) {
-                if (movedNodes.contains(edgeLine.startNode) || movedNodes.contains(edgeLine.endNode)) {
-                    edgeLine.refresh();
-                }
-            }
+            edges.stream().filter(
+                    edgeLine -> movedNodes.contains(edgeLine.startNode) || movedNodes.contains(edgeLine.endNode))
+                    .forEach(EdgeLine::refresh);
         }
     }
 
     /**
      * Beschreibt eine Aktion, bei der der Terminalstatus eines Knotens verändert wird
      */
-    static class TerminalChangeAction extends AbstractUndoableEdit {
+    private static class TerminalChangeAction extends AbstractUndoableEdit {
         private static final long serialVersionUID = 8220691958588757429L;
         final NodePoint node;
 
-        public TerminalChangeAction(NodePoint node) {
+        TerminalChangeAction(NodePoint node) {
             this.node = node;
         }
 
@@ -452,8 +481,103 @@ public class NetPanelData implements Serializable {
             execute();
         }
 
-        public void execute() {
+        void execute() {
             node.c_node = !node.c_node;
+        }
+    }
+
+    private class ResizeAction extends AbstractUndoableEdit {
+        private static final long serialVersionUID = -807459713565607621L;
+
+        final List<NodePoint> resizeNodes;
+        final int direction;
+        final double factorX, factorY;
+        private final BorderRectangle selectionRectangle;
+
+        ResizeAction(List<NodePoint> resizeNodes, int direction, double factorX, double factorY, BorderRectangle selectionRectangle) {
+            this.resizeNodes = new ArrayList<>(resizeNodes);
+            this.direction = direction;
+            this.factorX = factorX;
+            this.factorY = factorY;
+            this.selectionRectangle = selectionRectangle;
+        }
+
+        @Override
+        public void redo() throws CannotRedoException {
+            super.redo();
+            execute();
+        }
+
+        void execute() {
+            for (NodePoint node : resizeNodes) {
+                double x = node.x - selectionRectangle.x + 10.0;
+                double y = node.y - selectionRectangle.y + 10.0;
+
+                if (direction == 1 || direction == 5 || direction == 8) {
+                    //links
+                    //rechter Rand vom Auswahlrechteck minus Abstand des Knotens von rechts um den Faktor erhöht
+                    node.x = (selectionRectangle.x + selectionRectangle.width)
+                            - ((selectionRectangle.width - x) * (factorX + 1.0)) - 10.0;
+                }
+
+                if (direction == 2 || direction == 5 || direction == 6) {
+                    //oben
+                    node.y = (selectionRectangle.y + selectionRectangle.height)
+                            - ((selectionRectangle.height - y) * (factorY + 1.0)) - 10.0;
+                }
+
+                if (direction == 3 || direction == 6 || direction == 7) {
+                    //rechts
+                    node.x = selectionRectangle.x + x * (factorX + 1) - 10.0;
+                }
+
+                if (direction == 4 || direction == 7 || direction == 8) {
+                    //unten
+                    node.y = selectionRectangle.y + y * (factorY + 1) - 10.0;
+                }
+            }
+            refreshEdges();
+        }
+
+        @Override
+        public void undo() throws CannotUndoException {
+            super.undo();
+
+            //das selbe wie oben, mit mit Division statt Multiplikation mit Faktor
+            for (NodePoint node : resizeNodes) {
+                double x = node.x - selectionRectangle.x + 10.0;
+                double y = node.y - selectionRectangle.y + 10.0;
+
+                if (direction == 1 || direction == 5 || direction == 8) {
+                    //links
+                    //rechter Rand vom Auswahlrechteck minus Abstand des Knotens von rechts um den Faktor erhöht
+                    node.x = (selectionRectangle.x + selectionRectangle.width)
+                            - ((selectionRectangle.width - x) / (factorX + 1.0)) - 10.0;
+                }
+
+                if (direction == 2 || direction == 5 || direction == 6) {
+                    //oben
+                    node.y = (selectionRectangle.y + selectionRectangle.height)
+                            - ((selectionRectangle.height - y) / (factorY + 1.0)) - 10.0;
+                }
+
+                if (direction == 3 || direction == 6 || direction == 7) {
+                    //rechts
+                    node.x = selectionRectangle.x + x / (factorX + 1) - 10.0;
+                }
+
+                if (direction == 4 || direction == 7 || direction == 8) {
+                    //unten
+                    node.y = selectionRectangle.y + y / (factorY + 1) - 10.0;
+                }
+            }
+            refreshEdges();
+        }
+
+        private void refreshEdges() {
+            edges.stream().filter(
+                    edgeLine -> resizeNodes.contains(edgeLine.startNode) || resizeNodes.contains(edgeLine.endNode))
+                    .forEach(EdgeLine::refresh);
         }
     }
 }

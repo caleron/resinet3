@@ -18,6 +18,7 @@ import javax.xml.transform.*;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 import java.awt.*;
+import java.awt.geom.Rectangle2D;
 import java.io.*;
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -522,7 +523,7 @@ public final class GraphSaver {
              * Das heißt, dass alle Elemente um x nach links und y nach oben verschoben werden, damit der Graph nach
              * dem Laden richtig zentriert werden kann.
              */
-            Rectangle graphRect = GraphUtil.getGraphBounds(drawnNodes);
+            Rectangle2D graphRect = GraphUtil.getGraphBounds(drawnNodes);
 
             //Breite und Höhe schreiben
             Element sizeNode = doc.createElement("size");

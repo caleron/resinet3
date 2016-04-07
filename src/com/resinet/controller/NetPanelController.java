@@ -1,9 +1,6 @@
 package com.resinet.controller;
 
-import com.resinet.model.EdgeLine;
-import com.resinet.model.GraphWrapper;
-import com.resinet.model.NetPanelData;
-import com.resinet.model.NodePoint;
+import com.resinet.model.*;
 import com.resinet.util.GraphChangedListener;
 import com.resinet.util.GraphUtil;
 import com.resinet.util.NodeEdgeWrapper;
@@ -15,8 +12,11 @@ import java.awt.event.ActionEvent;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
+import java.awt.geom.Point2D;
+import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class NetPanelController implements MouseListener, MouseMotionListener {
     private final NetPanel netPanel;
@@ -25,7 +25,10 @@ public class NetPanelController implements MouseListener, MouseMotionListener {
     private final NetPanelData netData;
 
     private boolean cursorInsideSelection;
+    private boolean cursorOnSelectionBorder = false;
+    private int resizeBorder = 0;
     private boolean selectedNodesDragging = false;
+    private boolean selectedNodesResizing = false;
     private Point selectionDraggingStart;
 
     private boolean nodeClickable = true;
@@ -37,13 +40,15 @@ public class NetPanelController implements MouseListener, MouseMotionListener {
     private boolean selectDragging = false;
     private Point selectStartPoint;
     private boolean nodesSelected = false;
-    private Rectangle selectionRectangle;
+    private BorderRectangle selectionRectangle;
+    private BorderRectangle beginSelectionRectangle;
 
     //die Kante, die gezeichnet wird, während man die Maus gedrückt hält (beim Kanten erstellen)
     private EdgeLine draggingLine;
-    private boolean lineDragging = false;
+    private boolean newLineDragging = false;
 
     private static final int HOVER_DISTANCE = 7;
+    private static final int RESIZE_DISTANCE = 4;
 
     public NetPanelController(NetPanel netPanel, GraphChangedListener listener) {
         this.netPanel = netPanel;
@@ -104,7 +109,7 @@ public class NetPanelController implements MouseListener, MouseMotionListener {
             panelWidth = netPanel.getParent().getWidth();
         }
 
-        Rectangle graphRect = GraphUtil.getGraphBounds(netData.getNodes());
+        Rectangle2D graphRect = GraphUtil.getGraphBounds(netData.getNodes());
 
         Integer offsetX, offsetY;
 
@@ -146,7 +151,7 @@ public class NetPanelController implements MouseListener, MouseMotionListener {
      */
     public void resetGraph() {
         netData.resetGraph();
-        lineDragging = false;
+        newLineDragging = false;
         draggingLine = null;
         resetSelection();
         netPanel.repaint();
@@ -204,8 +209,8 @@ public class NetPanelController implements MouseListener, MouseMotionListener {
         ArrayList<NodePoint> nodes = nodeEdgeWrapper.nodes;
 
         //Freie Stelle für neue Knoten suchen
-        Rectangle pasteRectangle = GraphUtil.getGraphBounds(nodeEdgeWrapper.nodes);
-        Point originalLocation = pasteRectangle.getLocation();
+        BorderRectangle pasteRectangle = GraphUtil.getGraphBounds(nodeEdgeWrapper.nodes);
+        Point2D originalLocation = pasteRectangle.getLocation();
 
         //Wenn das Rechteck um die eingefügten Knoten andere Knoten kreuzt, neue Position suchen
         if (intersectsNode(pasteRectangle)) {
@@ -219,7 +224,7 @@ public class NetPanelController implements MouseListener, MouseMotionListener {
             if (intersectsNode(pasteRectangle)) {
                 //Falls an der Mausposition nicht möglich, sicheres Rechteck suchen
 
-                Point whiteRectanglePosition = searchSafeRectanglePosition(pasteRectangle);
+                Point2D whiteRectanglePosition = searchSafeRectanglePosition(pasteRectangle);
                 if (whiteRectanglePosition != null) {
                     pasteRectangle.setLocation(whiteRectanglePosition);
                 } else {
@@ -261,7 +266,7 @@ public class NetPanelController implements MouseListener, MouseMotionListener {
      * @param rectangle Das Rechteck
      * @return neue Position oder null
      */
-    private Point searchSafeRectanglePosition(Rectangle rectangle) {
+    private Point2D searchSafeRectanglePosition(BorderRectangle rectangle) {
         double xRange = netPanel.getWidth() - rectangle.getWidth();
         double yRange = netPanel.getHeight() - rectangle.getHeight();
 
@@ -284,7 +289,7 @@ public class NetPanelController implements MouseListener, MouseMotionListener {
      * @param pasteRectangle Das zu überprüfende Rechteck
      * @return Boolean
      */
-    private boolean intersectsNode(Rectangle pasteRectangle) {
+    private boolean intersectsNode(Rectangle2D pasteRectangle) {
         List<NodePoint> drawnNodes = netData.getNodes();
 
         for (NodePoint nodePoint : drawnNodes) {
@@ -414,15 +419,17 @@ public class NetPanelController implements MouseListener, MouseMotionListener {
         //Mausposition setzen
         currentMousePosition = mouseEvent.getPoint();
 
-        lineDragging = false;
+        newLineDragging = false;
         int x = mouseEvent.getX();
         int y = mouseEvent.getY();
 
-        //Prüfen, ob die Auswahl verschoben werden soll
-        if (cursorInsideSelection) {
-            selectedNodesDragging = true;
+        //Prüfen, ob die Auswahl verschoben werden soll oder ob die Auswahlgröße geändert werden soll
+        if (cursorInsideSelection || cursorOnSelectionBorder) {
+            selectedNodesDragging = cursorInsideSelection;
+            selectedNodesResizing = !cursorInsideSelection;
             selectionDraggingStart = mouseEvent.getPoint();
             hoveredElement = null;
+            beginSelectionRectangle = (BorderRectangle) selectionRectangle.clone();
             return;
         }
 
@@ -432,7 +439,7 @@ public class NetPanelController implements MouseListener, MouseMotionListener {
             if (node.contains(x, y)) {
                 //Es wurde in den Kreis geklickt, also Kantenziehen starten
                 draggingLine = new EdgeLine(node, null);
-                lineDragging = true;
+                newLineDragging = true;
                 return;
             }
         }
@@ -451,8 +458,8 @@ public class NetPanelController implements MouseListener, MouseMotionListener {
         List<NodePoint> drawnNodes = netData.getNodes();
         List<EdgeLine> drawnEdges = netData.getEdges();
 
-        if (lineDragging) {
-            lineDragging = false;
+        if (newLineDragging) {
+            newLineDragging = false;
             int x = mouseEvent.getX();
             int y = mouseEvent.getY();
 
@@ -486,8 +493,7 @@ public class NetPanelController implements MouseListener, MouseMotionListener {
             selectDragging = false;
 
             //Rechteck mit dem Startpunkt und der aktuellen Position erstellen
-            selectionRectangle = new Rectangle(mouseEvent.getPoint());
-            selectionRectangle.add(selectStartPoint);
+            selectionRectangle = new BorderRectangle(mouseEvent.getPoint(), selectStartPoint);
 
             //Liste mit ausgewählten Knoten
             ArrayList<NodePoint> selectedNodes = new ArrayList<>();
@@ -515,21 +521,29 @@ public class NetPanelController implements MouseListener, MouseMotionListener {
         if (selectedNodesDragging) {
             selectedNodesDragging = false;
 
-            ArrayList<NodePoint> selectedNodes = new ArrayList<>();
-
             //Ausgewählte Knoten sammeln
-            for (NodePoint nodePoint : drawnNodes) {
-                if (nodePoint.selected) {
-                    selectedNodes.add(nodePoint);
-                }
-            }
-            Point endPoint = mouseEvent.getPoint();
+            ArrayList<NodePoint> selectedNodes = new ArrayList<>(
+                    drawnNodes.stream().filter(nodePoint -> nodePoint.selected).collect(Collectors.toList()));
 
+            Point endPoint = mouseEvent.getPoint();
             Dimension moveAmount = new Dimension(endPoint.x - selectionDraggingStart.x, endPoint.y - selectionDraggingStart.y);
 
             netData.moveNodesFinal(selectedNodes, moveAmount);
             //Scrollpane aktualisieren
             revalidateScrollPane();
+        }
+
+        if (selectedNodesResizing) {
+            selectedNodesResizing = false;
+
+            //Ausgewählte Knoten sammeln
+            ArrayList<NodePoint> selectedNodes = new ArrayList<>(
+                    drawnNodes.stream().filter(nodePoint -> nodePoint.selected).collect(Collectors.toList()));
+
+            double factorX = selectionRectangle.width / beginSelectionRectangle.width - 1.0;
+            double factorY = selectionRectangle.height / beginSelectionRectangle.height - 1.0;
+
+            netData.resizeNodesFinal(selectedNodes, resizeBorder, factorX, factorY, selectionRectangle);
         }
         netPanel.repaint();
     }
@@ -546,7 +560,7 @@ public class NetPanelController implements MouseListener, MouseMotionListener {
 
     @Override
     public void mouseDragged(MouseEvent evt) {
-        if (lineDragging) {
+        if (newLineDragging) {
             //Während des Kantenziehens die Endposition der Kante aktualisieren, damit Sie immer unter dem Cursor endet
             int x = evt.getX();
             int y = evt.getY();
@@ -565,8 +579,8 @@ public class NetPanelController implements MouseListener, MouseMotionListener {
             int offsetY = newMousePosition.y - currentMousePosition.y;
 
             //Auswahlrechteck verschieben
-            selectionRectangle.x += offsetX;
-            selectionRectangle.y += offsetY;
+            selectionRectangle.addToX(offsetX);
+            selectionRectangle.addToY(offsetY);
 
             List<NodePoint> drawnNodes = netData.getNodes();
             ArrayList<NodePoint> selectedNodes = new ArrayList<>();
@@ -582,13 +596,51 @@ public class NetPanelController implements MouseListener, MouseMotionListener {
             //Neue Mausposition setzen
             currentMousePosition = evt.getPoint();
             netPanel.repaint();
+        } else if (selectedNodesResizing) {
+            Point newMousePosition = evt.getPoint();
+
+            List<NodePoint> drawnNodes = netData.getNodes();
+            //Ausgewählte Knoten sammeln
+            ArrayList<NodePoint> selectedNodes = new ArrayList<>(
+                    drawnNodes.stream().filter(nodePoint -> nodePoint.selected).collect(Collectors.toList()));
+
+            double factorX = 0;
+            double factorY = 0;
+            if (resizeBorder == 1 || resizeBorder == 5 || resizeBorder == 8) {
+                //links, links oben, links unten
+                selectionRectangle.resizeLeft((int) (currentMousePosition.getX() - newMousePosition.getX()));
+                factorX = (currentMousePosition.getX() - newMousePosition.getX()) / selectionRectangle.width;
+            }
+
+            if (resizeBorder == 2 || resizeBorder == 5 || resizeBorder == 6) {
+                //oben, oben links, oben rechts
+                selectionRectangle.resizeTop((int) (currentMousePosition.getY() - newMousePosition.getY()));
+                factorY = (currentMousePosition.getY() - newMousePosition.getY()) / selectionRectangle.height;
+            }
+
+            if (resizeBorder == 3 || resizeBorder == 6 || resizeBorder == 7) {
+                //rechts, oben rechts, unten rechts
+                selectionRectangle.resizeRight((int) (newMousePosition.getX() - currentMousePosition.getX()));
+                factorX = (newMousePosition.getX() - currentMousePosition.getX()) / selectionRectangle.width;
+            }
+
+            if (resizeBorder == 4 || resizeBorder == 7 || resizeBorder == 8) {
+                //unten, unten links, unten rechts
+                selectionRectangle.resizeBottom((int) (newMousePosition.getY() - currentMousePosition.getY()));
+                factorY = (newMousePosition.getY() - currentMousePosition.getY()) / selectionRectangle.height;
+            }
+
+            if (factorX != 0 || factorY != 0) {
+                netData.resizeNodesNotFinal(selectedNodes, resizeBorder, factorX, factorY, selectionRectangle);
+            }
+
+            currentMousePosition = evt.getPoint();
         }
     }
 
     @Override
     public void mouseMoved(MouseEvent mouseEvent) {
-
-        if (lineDragging || selectDragging)
+        if (newLineDragging || selectDragging || selectedNodesResizing)
             return;
 
         int x = mouseEvent.getX();
@@ -596,13 +648,26 @@ public class NetPanelController implements MouseListener, MouseMotionListener {
         boolean consumed = false;
 
         /**
-         * Prüfen, ob der Cursor auf einem markierten Bereich ist
+         * Prüfen, ob der Cursor auf einem markierten Bereich ist oder Nahe einer Kante davon ist
          */
-        if (nodesSelected && selectionRectangle.contains(x, y)) {
-            cursorInsideSelection = true;
-            consumed = true;
-            hoveredElement = null;
+        if (nodesSelected) {
+            resizeBorder = selectionRectangle.getResizableBorder(x, y, RESIZE_DISTANCE);
+            if (resizeBorder > 0) {
+                cursorOnSelectionBorder = true;
+                cursorInsideSelection = false;
+                consumed = true;
+                hoveredElement = null;
+            } else if (selectionRectangle.contains(x, y)) {
+                cursorInsideSelection = true;
+                cursorOnSelectionBorder = false;
+                consumed = true;
+                hoveredElement = null;
+            } else {
+                cursorInsideSelection = false;
+                cursorOnSelectionBorder = false;
+            }
         } else {
+            cursorOnSelectionBorder = false;
             cursorInsideSelection = false;
         }
 
@@ -749,6 +814,14 @@ public class NetPanelController implements MouseListener, MouseMotionListener {
         return cursorInsideSelection;
     }
 
+    public boolean isCursorOnSelectionBorder() {
+        return cursorOnSelectionBorder;
+    }
+
+    public int getResizeBorder() {
+        return resizeBorder;
+    }
+
     public List<NodePoint> getNodes() {
         return netData.getNodes();
     }
@@ -782,8 +855,8 @@ public class NetPanelController implements MouseListener, MouseMotionListener {
         return draggingLine;
     }
 
-    public boolean isLineDragging() {
-        return lineDragging;
+    public boolean isNewLineDragging() {
+        return newLineDragging;
     }
 
     public boolean isSelectDragging() {
@@ -798,7 +871,7 @@ public class NetPanelController implements MouseListener, MouseMotionListener {
         return nodesSelected;
     }
 
-    public Rectangle getSelectionRectangle() {
+    public Rectangle2D getSelectionRectangle() {
         return selectionRectangle;
     }
 

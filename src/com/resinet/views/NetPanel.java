@@ -13,6 +13,7 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
+import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
 import java.util.List;
 
@@ -125,7 +126,7 @@ public class NetPanel extends JPanel {
         EdgeLine draggingLine = controller.getDraggingLine();
 
         //Linie während des Kantenziehens nur zeichnen, wenn die Maus bewegt wurde, also auch ein zweiter Punkt gesetzt wurde
-        if (controller.isLineDragging() && draggingLine.x2 > 0 && draggingLine.y2 > 0) {
+        if (controller.isNewLineDragging() && draggingLine.x2 > 0 && draggingLine.y2 > 0) {
             imgGraphics.draw(draggingLine);
         }
 
@@ -219,7 +220,7 @@ public class NetPanel extends JPanel {
      */
     @Override
     public Dimension getPreferredSize() {
-        Rectangle graphRect = GraphUtil.getGraphBounds(controller.getNodes());
+        Rectangle2D graphRect = GraphUtil.getGraphBounds(controller.getNodes());
 
         return new Dimension((int) (graphRect.getX() + graphRect.getWidth()) + 10,
                 (int) (graphRect.getY() + graphRect.getHeight()) + 10);
@@ -266,7 +267,30 @@ public class NetPanel extends JPanel {
     public void setCursorHover(boolean shiftDown, boolean controlDown) {
         Shape hoveredElement = controller.getHoveredElement();
 
-        if (controller.isCursorInsideSelection()) {
+        if (controller.isCursorOnSelectionBorder()) {
+            //wenn border oben oder unten ist
+            switch (controller.getResizeBorder()) {
+                case 5:
+                    setCursor(new Cursor(Cursor.NW_RESIZE_CURSOR));
+                    break;
+                case 6:
+                    setCursor(new Cursor(Cursor.NE_RESIZE_CURSOR));
+                    break;
+                case 7:
+                    setCursor(new Cursor(Cursor.SE_RESIZE_CURSOR));
+                    break;
+                case 8:
+                    setCursor(new Cursor(Cursor.SW_RESIZE_CURSOR));
+                    break;
+                case 2:
+                case 4:
+                    setCursor(new Cursor(Cursor.N_RESIZE_CURSOR));
+                    break;
+                default: // 1 oder 3 bzw. links oder rechts
+                    setCursor(new Cursor(Cursor.E_RESIZE_CURSOR));
+                    break;
+            }
+        } else if (controller.isCursorInsideSelection()) {
             setCursor(new Cursor(Cursor.MOVE_CURSOR));
         } else if (shiftDown && hoveredElement != null) {
             setCursor(deleteCursor);
