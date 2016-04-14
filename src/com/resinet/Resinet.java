@@ -224,7 +224,7 @@ public class Resinet implements Constants {
         alignGraphMenuItem.addActionListener(controller);
         graphMenu.add(alignGraphMenuItem);
 
-        JMenuItem selectOverlappingVerticesMenuItem =  new JMenuItem(Strings.getLocalizedString("select.overlapping.vertices"));
+        JMenuItem selectOverlappingVerticesMenuItem = new JMenuItem(Strings.getLocalizedString("select.overlapping.vertices"));
         selectOverlappingVerticesMenuItem.addActionListener(controller);
         selectOverlappingVerticesMenuItem.setActionCommand("select overlapping");
         graphMenu.add(selectOverlappingVerticesMenuItem);
@@ -383,7 +383,7 @@ public class Resinet implements Constants {
         considerComponentsPanel.add(considerEdgesBox);
         considerEdgesBox.setSelected(true);
 
-        singleReliabilitiesContainer = new JPanel(new GridLayout(0, 2));
+        singleReliabilitiesContainer = new JPanel(new GridBagLayout());
         singleReliabilitiesContainer.setBorder(new EmptyBorder(0, 0, 0, 15));
         singleReliabilitiesScrollPane = new JScrollPane(singleReliabilitiesContainer);
         singleReliabilitiesScrollPane.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
@@ -529,6 +529,19 @@ public class Resinet implements Constants {
     public void setStatusBarCollapsed(boolean collapsed) {
         expandedOutputPanel.setVisible(!collapsed);
         statusBarCollapsedLabel.setVisible(collapsed);
+    }
+
+    public int getLastSingleReliabilityComponentX() {
+        int componentCount = singleReliabilitiesContainer.getComponentCount();
+        if (componentCount == 0) {
+            return 1;
+        }
+
+        JComponent lastComponent = (JComponent)
+                singleReliabilitiesContainer.getComponent(componentCount - 1);
+        GridBagLayout gbl = (GridBagLayout) singleReliabilitiesContainer.getLayout();
+
+        return gbl.getConstraints(lastComponent).gridx;
     }
 
     public JPanel getContentPane() {

@@ -336,10 +336,14 @@ public class NetPanelController implements MouseListener, MouseMotionListener {
                 if (mouseEvent.isShiftDown() || SwingUtilities.isMiddleMouseButton(mouseEvent)) {
                     //mit Shift geklickt oder mit mittlerer Maustaste
                     //Knoten löschen
-                    netData.removeNode(currentNode);
-
                     int currentNodeIndex = drawnNodes.indexOf(currentNode);
+
+                    List<Integer> removedEdgeIndices = netData.removeNode(currentNode);
                     listener.graphElementDeleted(true, currentNodeIndex);
+
+                    for (Integer pos : removedEdgeIndices) {
+                        listener.graphElementDeleted(false, pos);
+                    }
 
                 } else if (mouseEvent.isControlDown() || SwingUtilities.isRightMouseButton(mouseEvent)) {
                     //Rechtsklick oder mit Strg

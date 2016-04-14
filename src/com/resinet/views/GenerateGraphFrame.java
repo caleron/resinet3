@@ -18,7 +18,7 @@ import java.util.Arrays;
 
 public class GenerateGraphFrame implements ItemListener, KeyListener {
 
-    private JFrame frame;
+    private final JFrame frame;
     private JPanel cardPanel;
 
     private static final String BRIDGE = Strings.getLocalizedString("bridge.network");

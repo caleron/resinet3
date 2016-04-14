@@ -51,22 +51,29 @@ public class NetPanelData implements Serializable {
      * Entfernt einen Knoten.
      *
      * @param node Der zu entfernende Knoten
+     * @return Die Liste der damit zusätzlich entfernten Kanten
      */
-    public void removeNode(NodePoint node) {
+    public List<Integer> removeNode(NodePoint node) {
         ArrayList<NodePoint> nodeWrapper = new ArrayList<>();
         ArrayList<EdgeLine> removeEdges = new ArrayList<>();
+        ArrayList<Integer> removedEdgeIndices = new ArrayList<>();
         nodeWrapper.add(node);
 
         //Anliegende Kanten sammeln
-        for (EdgeLine edge : edges) {
+        for (int i = 0; i < edges.size(); i++) {
+            EdgeLine edge = edges.get(i);
+
             if (node.equals(edge.startNode) || node.equals(edge.endNode)) {
                 removeEdges.add(edge);
+                removedEdgeIndices.add(i);
             }
         }
 
         AddOrRemoveAction action = new AddOrRemoveAction(false, nodeWrapper, removeEdges);
         action.execute();
         undoManager.addEdit(action);
+
+        return removedEdgeIndices;
     }
 
     /**

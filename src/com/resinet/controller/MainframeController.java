@@ -147,11 +147,9 @@ public class MainframeController extends WindowAdapter implements ActionListener
         }
 
         //Letztes Element aus Liste und aus GUI entfernen
-        //if (list.size() > 0) {
         ProbabilitySpinner spinner = list.get(list.size() - 1);
         spinner.getParent().getParent().remove(spinner.getParent());
         list.remove(spinner);
-        //}
 
         refreshSingleReliabilityScrollPane();
     }
@@ -416,7 +414,39 @@ public class MainframeController extends WindowAdapter implements ActionListener
             nodeProbabilityBoxes.remove(textField);
         }
 
+        //Elemente neu anordnen
+        if (considerEdges && considerNodes) {
+            realignProbabiliyPanels(nodeProbabilityBoxes, 0);
+            realignProbabiliyPanels(edgeProbabilityBoxes, 1);
+        } else if (!considerEdges) {
+            realignProbabiliyPanels(nodeProbabilityBoxes, 2);
+        } else {
+            realignProbabiliyPanels(edgeProbabilityBoxes, 2);
+        }
+
         refreshSingleReliabilityScrollPane();
+    }
+
+    /**
+     * Verteilt die Panels auf die definierte Spalte
+     *
+     * @param list   Die Liste der {@link ProbabilitySpinner} innerhalb von {@link SingleReliabilityPanel}
+     * @param column 0 und 1 für die jeweilige Spalte, 2 für Verteilung auf beide Spalten
+     */
+    private void realignProbabiliyPanels(List<ProbabilitySpinner> list, int column) {
+        JPanel singleReliabilitiesPanel = mainFrame.getSingleReliabilitiesContainer();
+
+        int currentPosition = 0;
+        for (ProbabilitySpinner spinner : list) {
+            SingleReliabilityPanel panel = (SingleReliabilityPanel) spinner.getParent();
+
+            if (column == 2) {
+                singleReliabilitiesPanel.add(panel, GbcBuilder.build(currentPosition % 2, currentPosition / 2));
+            } else {
+                singleReliabilitiesPanel.add(panel, GbcBuilder.build(column, currentPosition));
+            }
+            currentPosition++;
+        }
     }
 
     private void refreshSingleReliabilityScrollPane() {
@@ -435,28 +465,31 @@ public class MainframeController extends WindowAdapter implements ActionListener
         JPanel singleReliabilitiesPanel = mainFrame.getSingleReliabilitiesContainer();
 
         if (isNodeProb) {
-            //Falls es ein Knoten ist, einfach am Ende hinzufügen
+            //Falls es ein Knoten ist
             nodeProbabilityBoxes.add(newPanel.getSpinner());
-            singleReliabilitiesPanel.add(newPanel);
+            if (mainFrame.getConsiderEdgesBox().isSelected()) {
+                //in linke spalte einfügen
+                singleReliabilitiesPanel.add(newPanel, GbcBuilder.build(0, number));
+            } else {
+                //hinten anfügen
+                int lastx = mainFrame.getLastSingleReliabilityComponentX();
+                int newX = lastx == 1 ? 0 : 1;
+
+                singleReliabilitiesPanel.add(newPanel, GbcBuilder.build(newX, number - newX));
+            }
         } else {
             //Falls es eine Kante ist
             edgeProbabilityBoxes.add(newPanel.getSpinner());
 
-            //Vor dem ersten Knotenzuverlässigkeitsfeld einfügen, falls es dieses gibt
-            if (nodeProbabilityBoxes.size() > 0) {
-                int insertPosition = 0;
-
-                for (int i = 0; i < singleReliabilitiesPanel.getComponents().length; i++) {
-                    SingleReliabilityPanel panel = (SingleReliabilityPanel) singleReliabilitiesPanel.getComponent(i);
-                    if (panel.isNode()) {
-                        insertPosition = i;
-                        break;
-                    }
-                }
-                singleReliabilitiesPanel.add(newPanel, insertPosition);
+            if (mainFrame.getConsiderNodesBox().isSelected()) {
+                //in die rechte Spalte einfügen
+                singleReliabilitiesPanel.add(newPanel, GbcBuilder.build(1, number));
             } else {
-                //Sonst auch am Ende einfügen
-                singleReliabilitiesPanel.add(newPanel);
+                //hinten anfügen
+                int lastx = mainFrame.getLastSingleReliabilityComponentX();
+                int newX = lastx == 1 ? 0 : 1;
+
+                singleReliabilitiesPanel.add(newPanel, GbcBuilder.build(newX, number - newX));
             }
         }
     }
