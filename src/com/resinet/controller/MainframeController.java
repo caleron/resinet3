@@ -27,9 +27,12 @@ import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.List;
 
-@SuppressWarnings("Duplicates")
+/**
+ * Verwaltet alle Events des MainFrames und vermittelt zwischen verschiedenen Komponenten wie Menüs, Datenspeicherung,
+ * Berechnung und Darstellung.
+ */
 public class MainframeController extends WindowAdapter implements ActionListener, GraphChangedListener,
-        CalculationProgressListener, Constants, ItemListener, ChangeListener, PropertyChangeListener, MenuListener, GraphGeneratorListener {
+        CalculationProgressListener, Constants, ItemListener, ChangeListener, PropertyChangeListener, MenuListener {
     private Resinet mainFrame;
 
     /**
@@ -37,6 +40,9 @@ public class MainframeController extends WindowAdapter implements ActionListener
      */
     private JComponent permanentFocusOwner;
 
+    /**
+     * Listen für die Eingabefelder für die Zuverlässigkeiten von Knoten und Kanten
+     */
     private final List<ProbabilitySpinner> edgeProbabilityBoxes = new ArrayList<>();
     private final List<ProbabilitySpinner> nodeProbabilityBoxes = new ArrayList<>();
 
@@ -69,7 +75,7 @@ public class MainframeController extends WindowAdapter implements ActionListener
         } else if (button == mainFrame.getTutorialMenuItem()) {
             //TODO tutorial oder hilfe
         } else if (button == mainFrame.getGenerateGraphMenuItem()) {
-            GenerateGraphFrame.show(this);
+            GenerateGraphFrame.show(this::graphGenerated);
         } else if (button == mainFrame.getCenterGraphMenuItem()) {
             NetPanel netPanel = mainFrame.getNetPanel();
             netPanel.centerGraphOnNextPaint();
@@ -113,6 +119,13 @@ public class MainframeController extends WindowAdapter implements ActionListener
         }
     }
 
+    /**
+     * Wird ausgelöst, wenn ein Graphelement hinzugefügt wird. Fügt ein entsprechendes Eingabefeld für die
+     * Zuverlässigkeit hinzu.
+     *
+     * @param isNode True bei Knoten, false bei Kante
+     * @param number Die Komponentennummer
+     */
     @Override
     public void graphElementAdded(boolean isNode, int number) {
         //Feld nur hinzufügen, falls der Einzelzuverlässigkeitsmodus aktiv ist und die Komponente berücksichtigt werden soll
@@ -128,7 +141,12 @@ public class MainframeController extends WindowAdapter implements ActionListener
         refreshSingleReliabilityScrollPane();
     }
 
-
+    /**
+     * Wird ausgelöst, wenn ein Graphelement gelöscht wird. Entfernt das zugehörige Eingabefeld.
+     *
+     * @param isNode True bei Knoten, false bei Kante
+     * @param number Die Komponentennummer
+     */
     @Override
     public void graphElementDeleted(boolean isNode, int number) {
         if (mainFrame.getReliabilityMode() == RELIABILITY_MODES.SAME)
@@ -154,6 +172,13 @@ public class MainframeController extends WindowAdapter implements ActionListener
         refreshSingleReliabilityScrollPane();
     }
 
+    /**
+     * Wird ausgelöst, wenn ein Element im Graphen angeklickt wird. Fokussiert das entsprechende Eingabefeld für die
+     * Zuverlässigkeit.
+     *
+     * @param isNode True bei Knoten, false bei Kante
+     * @param number Die Komponentennummer
+     */
     @Override
     public void graphElementClicked(boolean isNode, int number) {
         if (mainFrame.getReliabilityMode() == RELIABILITY_MODES.SAME) {
@@ -175,11 +200,20 @@ public class MainframeController extends WindowAdapter implements ActionListener
         }
     }
 
+    /**
+     * Wird ausgelöst, wenn der Graph verändert wurde. Aktualisiert das Einzelzuverlässigkeitspanel.
+     */
     @Override
     public void graphChanged() {
         updateSingleReliabilityProbPanel();
     }
 
+    /**
+     * Wird ausgelöst, wenn sich der Berechnungsfortschritt geändert hat. Setzt den Fortschritt in der
+     * Fortschrittsleiste.
+     *
+     * @param currentStep Der aktuelle Schritt
+     */
     @Override
     public void calculationProgressChanged(Integer currentStep) {
         //Falls das nicht der EventDispatchThread von Swing ist, auf dem entsprechenden Thread invoken
@@ -193,9 +227,13 @@ public class MainframeController extends WindowAdapter implements ActionListener
         mainFrame.setResultText(MessageFormat.format(Strings.getLocalizedString("calculation.progress"), currentStep, progressBar.getMaximum()));
     }
 
+    /**
+     * Wird ausgelöst, wenn die Berechnung abgeschlossen ist.
+     *
+     * @param status Das Ergebnis
+     */
     @Override
     public void calculationFinished(String status) {
-
         //Falls das nicht der EventDispatchThread von Swing ist, auf dem entsprechenden Thread invoken
         if (!SwingUtilities.isEventDispatchThread()) {
             SwingUtilities.invokeLater(() -> calculationFinished(status));
@@ -206,6 +244,11 @@ public class MainframeController extends WindowAdapter implements ActionListener
         mainFrame.setGuiState(GUI_STATES.ENTER_GRAPH);
     }
 
+    /**
+     * Wird ausgelöst, um die Anzahl der Berechnungsschritte festzulegen. Aktualisiert die Fortschrittsleiste.
+     *
+     * @param stepCount Die maximale Anzahl an Schritten der aktuellen Berechnungsaufgabe
+     */
     @Override
     public void reportCalculationStepCount(Integer stepCount) {
         //Falls das nicht der EventDispatchThread von Swing ist, auf dem entsprechenden Thread invoken
@@ -306,6 +349,9 @@ public class MainframeController extends WindowAdapter implements ActionListener
     public void menuCanceled(MenuEvent e) {
     }
 
+    /**
+     * Setzt den Graphen zurück und entfernt alle Zuverlässigkeitsfelder für einzelne Knoten.
+     */
     private void resetGraph() {
         mainFrame.setGuiState(GUI_STATES.ENTER_GRAPH);
 
@@ -318,6 +364,9 @@ public class MainframeController extends WindowAdapter implements ActionListener
         edgeProbabilityBoxes.clear();
     }
 
+    /**
+     * Löst das Laden von gespeicherten Daten aus und lädt diese in die GUI.
+     */
     private void loadSavedData() {
         NetPanel netPanel = mainFrame.getNetPanel();
         int width = netPanel.getWidth();
@@ -449,6 +498,9 @@ public class MainframeController extends WindowAdapter implements ActionListener
         }
     }
 
+    /**
+     * Lässt die Scrollpane sich revalidieren und neu zeichnen.
+     */
     private void refreshSingleReliabilityScrollPane() {
         mainFrame.getSingleReliabilitiesScrollPane().revalidate();
         mainFrame.getSingleReliabilitiesScrollPane().repaint();
@@ -494,6 +546,9 @@ public class MainframeController extends WindowAdapter implements ActionListener
         }
     }
 
+    /**
+     * Löst das Speichern aller aktuell dargestellten Daten aus.
+     */
     private void saveData() {
         NetPanel netPanel = mainFrame.getNetPanel();
         int width = netPanel.getWidth();
@@ -504,6 +559,14 @@ public class MainframeController extends WindowAdapter implements ActionListener
         GraphSaver.exportNet(params, mainFrame.getContentPane(), width, height);
     }
 
+    /**
+     * Stellt die Berechnungsparameter zusammen.
+     *
+     * @param mode      Der Berechnungsmodus
+     * @param forSaving True, wenn die Parameter zum Speichern gesammelt werden. In diesem Fall werden auch die
+     *                  Rohlisten von Knoten und Kanten des NetPanels gesetzt.
+     * @return CalculationParams-Objekt
+     */
     private CalculationParams buildCalculationParams(CALCULATION_MODES mode, boolean forSaving) {
         NetPanel netPanel = mainFrame.getNetPanel();
         RELIABILITY_MODES reliabilityMode = mainFrame.getReliabilityMode();
@@ -607,8 +670,12 @@ public class MainframeController extends WindowAdapter implements ActionListener
         calculator.start();
     }
 
-    @Override
-    public void graphGenerated(GraphWrapper graphWrapper) {
+    /**
+     * Wird ausgelöst, wenn ein Graph generiert wurde. Fügt die erzeugten Knoten und Kanten dem GraphPanel hinzu.
+     *
+     * @param graphWrapper Der Wrapper mit den generierten Knoten und Kanten
+     */
+    private void graphGenerated(GraphWrapper graphWrapper) {
         NetPanel netPanel = mainFrame.getNetPanel();
         netPanel.addGraphWrapperAndSelect(graphWrapper);
         updateSingleReliabilityProbPanel();

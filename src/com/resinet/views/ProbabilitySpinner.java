@@ -14,6 +14,7 @@ import java.text.DecimalFormat;
  */
 public class ProbabilitySpinner extends JSpinner {
 
+    private static final long serialVersionUID = -1634127332862046049L;
     /**
      * Die Spaltenzahl des Eingabefeldes
      */
@@ -31,7 +32,7 @@ public class ProbabilitySpinner extends JSpinner {
      *
      * @param inputColumns Spaltenanzahl des Eingabefeldes
      */
-    public ProbabilitySpinner(int inputColumns) {
+    ProbabilitySpinner(int inputColumns) {
 
         super();
         setModel(new SpinnerNumberModel(1, 0, 1, 0.01));
@@ -68,7 +69,7 @@ public class ProbabilitySpinner extends JSpinner {
     private static class MyFocusAdapter extends FocusAdapter {
         private final JFormattedTextField textField;
 
-        public MyFocusAdapter(JFormattedTextField textField) {
+        MyFocusAdapter(JFormattedTextField textField) {
             this.textField = textField;
         }
 
@@ -85,7 +86,7 @@ public class ProbabilitySpinner extends JSpinner {
     private static class MyKeyAdapter extends KeyAdapter {
         private final JFormattedTextField textField;
 
-        public MyKeyAdapter(JFormattedTextField textField) {
+        MyKeyAdapter(JFormattedTextField textField) {
             this.textField = textField;
         }
 

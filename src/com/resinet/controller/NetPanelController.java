@@ -24,6 +24,7 @@ public class NetPanelController implements MouseListener, MouseMotionListener {
 
     private final NetPanelData netData;
 
+    //Variablen für Verschieben und Skalieren
     private boolean cursorInsideSelection;
     private boolean cursorOnSelectionBorder = false;
     private int resizeBorder = 0;
@@ -31,23 +32,29 @@ public class NetPanelController implements MouseListener, MouseMotionListener {
     private boolean selectedNodesResizing = false;
     private Point selectionDraggingStart;
 
-    private boolean nodeClickable = true;
-    private boolean edgeClickable = true;
-
-    private Point currentMousePosition;
-    private Shape hoveredElement;
-
+    //Variablen für das Auswählen
     private boolean selectDragging = false;
     private Point selectStartPoint;
     private boolean nodesSelected = false;
     private BorderRectangle selectionRectangle;
     private BorderRectangle beginSelectionRectangle;
 
+    //Werden false, wenn etwa Knoten nicht berücksichtigt werden sollen
+    private boolean nodeClickable = true;
+    private boolean edgeClickable = true;
+
+    //Aktuelle Mausposition
+    private Point currentMousePosition;
+    //aktuell von der Maus anklickbares Element (Knoten/Kante)
+    private Shape hoveredElement;
+
     //die Kante, die gezeichnet wird, während man die Maus gedrückt hält (beim Kanten erstellen)
     private EdgeLine draggingLine;
     private boolean newLineDragging = false;
 
-    private static final int HOVER_DISTANCE = 7;
+    //Distanz der Maus von einer Kante, in der diese mit der Maus anklickbar ist.
+    private static final int EDGE_HOVER_DISTANCE = 7;
+    //Distanz der Maus vom Auswahlrechteck, von der aus die Größe des Recktecks verändert werden kann.
     private static final int RESIZE_DISTANCE = 4;
 
     public NetPanelController(NetPanel netPanel, GraphChangedListener listener) {
@@ -113,6 +120,7 @@ public class NetPanelController implements MouseListener, MouseMotionListener {
 
         Integer offsetX, offsetY;
 
+        //X-Offset bestimmen
         if (graphRect.getX() < 0) {
             offsetX = Math.abs(((int) graphRect.getX()));
         } else {
@@ -121,7 +129,7 @@ public class NetPanelController implements MouseListener, MouseMotionListener {
         if (graphRect.getX() + offsetX < 0) {
             offsetX = -((int) graphRect.getX());
         }
-
+        //Y-Offset bestimmen
         if (graphRect.getY() < 0) {
             offsetY = Math.abs((int) graphRect.getY());
         } else {
@@ -363,7 +371,7 @@ public class NetPanelController implements MouseListener, MouseMotionListener {
             //Wenn kein Knoten angeklickt wurde, auf Kante prüfen
             for (EdgeLine edgeLine : drawnEdges) {
 
-                if (edgeLine.ptSegDist(clickX, clickY) < HOVER_DISTANCE) {
+                if (edgeLine.ptSegDist(clickX, clickY) < EDGE_HOVER_DISTANCE) {
                     if (mouseEvent.isShiftDown() || SwingUtilities.isMiddleMouseButton(mouseEvent)) {
                         //mit shift oder mit mittlerer Maustaste geklickt --> Kante entfernen
                         netData.removeEdge(edgeLine);
@@ -554,12 +562,10 @@ public class NetPanelController implements MouseListener, MouseMotionListener {
 
     @Override
     public void mouseEntered(MouseEvent e) {
-
     }
 
     @Override
     public void mouseExited(MouseEvent e) {
-
     }
 
     @Override
@@ -707,7 +713,7 @@ public class NetPanelController implements MouseListener, MouseMotionListener {
         if (!consumed) {
             for (EdgeLine edgeLine : drawnEdges) {
 
-                if (edgeLine.ptSegDist(x, y) < HOVER_DISTANCE) {
+                if (edgeLine.ptSegDist(x, y) < EDGE_HOVER_DISTANCE) {
                     hoveredElement = edgeLine;
                     netPanel.repaint();
                     consumed = true;
@@ -821,6 +827,8 @@ public class NetPanelController implements MouseListener, MouseMotionListener {
         revalidateScrollPane();
         netPanel.repaint();
     }
+
+    //Ein paar Getter- und Setter-Methoden
 
     public boolean isCursorInsideSelection() {
         return cursorInsideSelection;

@@ -17,7 +17,7 @@ public class SingleReliabilityPanel extends JPanel {
     /**
      * Die bevorzugte Breite
      */
-    public static final int PREF_WIDTH = 160;
+    static final int PREF_WIDTH = 160;
     /**
      * Die bevorzugte Höhe
      */

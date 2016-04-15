@@ -10,10 +10,13 @@ import java.awt.geom.Rectangle2D;
 public class BorderRectangle extends Rectangle2D.Double {
     private static final long serialVersionUID = 2401721394399277623L;
 
+    //Die minimale Kantenlänge des Auswahlrechtecks
     private static final double RESIZE_MIN_DIMENSION = 30.0;
 
     private boolean renewBounds = true;
+    //Kanten des Rechtecks
     private Line2D leftBorder, topBorder, rightBorder, bottomBorder;
+    //Eckpunkte des Rechtecks
     private Point2D topLeft, topRight, bottomLeft, bottomRight;
 
     /**

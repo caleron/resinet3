@@ -140,7 +140,7 @@ public class GraphGenerator {
         GraphWrapper graph = new GraphWrapper();
 
         //maximale Breite bestimmen
-        double graphWidth = Math.pow(innerDescendants, height - 1) * leafCount * 35;
+        double graphWidth = Math.pow(innerDescendants, height - 2) * leafCount * 35;
 
         ArrayList<NodePoint> currentLevelNodes = new ArrayList<>();
         ArrayList<NodePoint> nextLevelNodes = new ArrayList<>();
@@ -150,10 +150,10 @@ public class GraphGenerator {
         graph.addNode(root);
         currentLevelNodes.add(root);
 
-        for (int i = 0; i < height; i++) {
+        for (int i = 0; i < height - 1; i++) {
             //Anzahl Kinderknoten bestimmen
             int descendantCount = innerDescendants;
-            if (i == height - 1) {
+            if (i == height - 2) {
                 //letzte Ebene mit Blättern
                 descendantCount = leafCount;
             }

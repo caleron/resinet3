@@ -3,12 +3,16 @@ package com.resinet.util;
 import java.awt.datatransfer.*;
 import java.io.IOException;
 
+/**
+ * Diese Klasse definiert das Verhalten und den Typ der aus dem Graphen kopierten Daten. Im Grunde handelt es sich um
+ * Standardverhalten.
+ */
 class NetPanelTransferable implements Transferable, ClipboardOwner {
-    public static final DataFlavor DATA_FLAVOR = new DataFlavor(NodeEdgeWrapper.class, "Nodes and Edges");
+    static final DataFlavor DATA_FLAVOR = new DataFlavor(NodeEdgeWrapper.class, "Nodes and Edges");
 
     private final NodeEdgeWrapper copyData;
 
-    public NetPanelTransferable(NodeEdgeWrapper wrapper) {
+    NetPanelTransferable(NodeEdgeWrapper wrapper) {
         copyData = wrapper;
     }
 
@@ -36,7 +40,7 @@ class NetPanelTransferable implements Transferable, ClipboardOwner {
         }
     }
 
-    public NodeEdgeWrapper getTransferData() {
+    NodeEdgeWrapper getTransferData() {
         return copyData;
     }
 }

@@ -5,6 +5,7 @@ import java.awt.event.KeyListener;
 
 class NumberSpinner extends JSpinner {
 
+    private static final long serialVersionUID = -4874300191518893893L;
     /**
      * Die Spaltenzahl des Eingabefeldes
      */
@@ -43,6 +44,11 @@ class NumberSpinner extends JSpinner {
         return Integer.parseInt(textField.getText());
     }
 
+    /**
+     * Fügt dem Editorfeld einen {@link KeyListener} hinzu.
+     *
+     * @param l Der {@link KeyListener}
+     */
     @Override
     public synchronized void addKeyListener(KeyListener l) {
         JSpinner.NumberEditor editor = ((JSpinner.NumberEditor) getEditor());

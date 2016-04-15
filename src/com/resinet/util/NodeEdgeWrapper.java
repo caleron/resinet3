@@ -16,12 +16,12 @@ public class NodeEdgeWrapper implements Serializable {
      * Die Originalliste, wird etwa zum Löschen von ausgeschnittenen Knoten benötigt, da die Knoten in der anderen Liste
      * dann geklont sind.
      */
-    public ArrayList<NodePoint> originalNodes;
+    ArrayList<NodePoint> originalNodes;
 
     public final ArrayList<NodePoint> nodes;
     public final ArrayList<EdgeLine> edges;
 
-    public NodeEdgeWrapper(ArrayList<NodePoint> nodes, ArrayList<EdgeLine> edges) {
+    private NodeEdgeWrapper(ArrayList<NodePoint> nodes, ArrayList<EdgeLine> edges) {
         this.nodes = nodes;
         this.edges = edges;
     }

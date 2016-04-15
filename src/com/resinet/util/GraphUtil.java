@@ -106,26 +106,29 @@ public class GraphUtil {
         ArrayList<Node> nodeList = new ArrayList<>();
         ArrayList<Edge> edgeList = new ArrayList<>();
 
-        int cnt = 0;
+        int counter = 0;
+        //Knoten eintragen
         for (NodePoint np : graphNodes) {
-            Node node = new Node(cnt, np.c_node);
+            Node node = new Node(counter, np.c_node);
             nodeList.add(node);
-            cnt++;
+            counter++;
         }
-        //fertig mit dem Eintragen von Knoten
-        cnt = 0;
+
+        counter = 0;
+        //Kanten eintragen
         for (EdgeLine e : graphEdges) {
             int m = graphNodes.indexOf(e.startNode);
             int n = graphNodes.indexOf(e.endNode);
-            Edge edge = new Edge(cnt);
+
             Node node1 = nodeList.get(m);
             Node node2 = nodeList.get(n);
-            edge.left_node = node1;
-            edge.right_node = node2;
+
+            Edge edge = new Edge(counter, node1, node2);
+
             edgeList.add(edge);
             node1.add_Edge(edge);
             node2.add_Edge(edge);
-            cnt++;
+            counter++;
         }
         return new Graph(nodeList, edgeList);
     }

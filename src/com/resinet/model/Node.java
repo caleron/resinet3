@@ -13,7 +13,7 @@ public class Node extends GraphElement implements Serializable {
     public boolean c_node = false;
 
     //Attribut für KTree
-    public Node left, right;
+    Node left, right;
     //Anliegende Kanten
     public final List<Edge> node_edge = new ArrayList<>();
 
@@ -24,17 +24,26 @@ public class Node extends GraphElement implements Serializable {
     public boolean marked = false;
 
 
-
     public Node(int node_no, boolean c_node) {
         this.node_no = node_no;
         this.c_node = c_node;
     }
 
+    /**
+     * Fügt eine anliegende Kante hinzu.
+     *
+     * @param edge Die neue Kante
+     */
     public void add_Edge(Edge edge) {
         node_edge.add(edge);
         degree = node_edge.size();
     }
 
+    /**
+     * Entfernt eine anliegende Kante.
+     *
+     * @param edge Die zu entfernende Kante
+     */
     void delete_Edge(Edge edge) {
         node_edge.remove(edge);
         degree = node_edge.size();

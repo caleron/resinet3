@@ -93,7 +93,7 @@ public class Util {
      * <p>
      * Quelle: http://stackoverflow.com/questions/4159802/how-can-i-restart-a-java-application
      */
-    public static void restartApplication() {
+    static void restartApplication() {
         final String javaBin = System.getProperty("java.home") + File.separator + "bin" + File.separator + "java";
 
         final File currentCodePath;
