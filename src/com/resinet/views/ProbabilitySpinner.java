@@ -128,7 +128,7 @@ public class ProbabilitySpinner extends JSpinner {
     /**
      * Ein {@link SpinnerModel} für {@link BigDecimal}.
      */
-    private static class ReliabilityNumberModel extends AbstractSpinnerModel {
+    private static class ReliabilityNumberModel extends SpinnerNumberModel {
         private static final long serialVersionUID = 4830497721488522051L;
         private static BigDecimal minimum = new BigDecimal("0");
         private static BigDecimal maximum = new BigDecimal("1");
