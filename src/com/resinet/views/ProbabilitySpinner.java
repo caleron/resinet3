@@ -25,15 +25,24 @@ public class ProbabilitySpinner extends JSpinner {
      *
      * @param value Der Startwert
      */
-    public ProbabilitySpinner(double value) {
+    public ProbabilitySpinner(String value) {
         this(COLUMNS, value);
+    }
+
+    /**
+     * Erstellt einen neuen JSpinner für Wahrscheinlichkeiten mit dem Startwert 1
+     *
+     * @param inputColumns Spaltenanzahl des Eingabefeldes
+     */
+    ProbabilitySpinner(int inputColumns) {
+        this(inputColumns, "1");
     }
 
     /**
      * Erstellt einen neuen JSpinner für Wahrscheinlichkeiten mit der Spaltenanzahl 15 und Startwert 1
      */
     public ProbabilitySpinner() {
-        this(COLUMNS, 1);
+        this(COLUMNS, "1");
     }
 
     /**
@@ -42,9 +51,9 @@ public class ProbabilitySpinner extends JSpinner {
      * @param inputColumns Spaltenanzahl des Eingabefeldes
      * @param value        Der Startwert
      */
-    private ProbabilitySpinner(int inputColumns, double value) {
+    private ProbabilitySpinner(int inputColumns, String value) {
         super();
-        setModel(new SpinnerNumberModel(value, 0, 1, 0.01));
+        setModel(new BigDecimalNumberModel(value, "0.01"));
 
         JSpinner.NumberEditor editor = ((JSpinner.NumberEditor) getEditor());
         JFormattedTextField textField = editor.getTextField();
@@ -114,5 +123,57 @@ public class ProbabilitySpinner extends JSpinner {
         JSpinner.NumberEditor editor = ((JSpinner.NumberEditor) getEditor());
         JFormattedTextField textField = editor.getTextField();
         return textField.requestFocusInWindow();
+    }
+
+    /**
+     * Ein {@link SpinnerModel} für {@link BigDecimal}. Da die Variablentypen von {@link SpinnerNumberModel} mit {@link
+     * BigDecimal} kompatibel sind, reicht es, die Methoden {@link SpinnerNumberModel#getNextValue()} und {@link
+     * SpinnerNumberModel#getPreviousValue()}  zu überschreiben.
+     */
+    private static class BigDecimalNumberModel extends SpinnerNumberModel {
+        private static final long serialVersionUID = 4830497721488522051L;
+
+        BigDecimalNumberModel(String value, String stepSize) {
+            super(new BigDecimal(value), new BigDecimal("0"), new BigDecimal("1"), new BigDecimal(stepSize));
+        }
+
+        @Override
+        public Object getNextValue() {
+            return incrementValue(true);
+        }
+
+        @Override
+        public Object getPreviousValue() {
+            return incrementValue(false);
+        }
+
+        /**
+         * Gibt den nächsten oder vorherigen Wert in der Zahlensequenz zurück.
+         *
+         * @param add True, wenn der nächste Wert zurückgegeben werden soll.
+         * @return Nächster oder vorheriger Wert
+         */
+        private Number incrementValue(boolean add) {
+            BigDecimal maximum = (BigDecimal) getMaximum();
+            BigDecimal minimum = (BigDecimal) getMinimum();
+            BigDecimal value = (BigDecimal) getValue();
+
+            BigDecimal newValue;
+            if (add) {
+                newValue = value.add((BigDecimal) getStepSize());
+            } else {
+                newValue = value.subtract((BigDecimal) getStepSize());
+            }
+
+            //neuer Wert muss in den Grenzen liegen
+            if ((maximum != null) && (maximum.compareTo(newValue) < 0)) {
+                return null;
+            }
+            if ((minimum != null) && (minimum.compareTo(newValue) > 0)) {
+                return null;
+            }
+
+            return newValue;
+        }
     }
 }
