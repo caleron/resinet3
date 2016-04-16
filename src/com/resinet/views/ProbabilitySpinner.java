@@ -53,7 +53,7 @@ public class ProbabilitySpinner extends JSpinner {
      */
     private ProbabilitySpinner(int inputColumns, String value) {
         super();
-        setModel(new BigDecimalNumberModel(value, "0.01"));
+        setModel(new ReliabilityNumberModel(value));
 
         JSpinner.NumberEditor editor = ((JSpinner.NumberEditor) getEditor());
         JFormattedTextField textField = editor.getTextField();
@@ -126,15 +126,33 @@ public class ProbabilitySpinner extends JSpinner {
     }
 
     /**
-     * Ein {@link SpinnerModel} für {@link BigDecimal}. Da die Variablentypen von {@link SpinnerNumberModel} mit {@link
-     * BigDecimal} kompatibel sind, reicht es, die Methoden {@link SpinnerNumberModel#getNextValue()} und {@link
-     * SpinnerNumberModel#getPreviousValue()}  zu überschreiben.
+     * Ein {@link SpinnerModel} für {@link BigDecimal}.
      */
-    private static class BigDecimalNumberModel extends SpinnerNumberModel {
+    private static class ReliabilityNumberModel extends AbstractSpinnerModel {
         private static final long serialVersionUID = 4830497721488522051L;
+        private static BigDecimal minimum = new BigDecimal("0");
+        private static BigDecimal maximum = new BigDecimal("1");
+        private static BigDecimal stepSize = new BigDecimal("0.01");
+        private BigDecimal value;
 
-        BigDecimalNumberModel(String value, String stepSize) {
-            super(new BigDecimal(value), new BigDecimal("0"), new BigDecimal("1"), new BigDecimal(stepSize));
+        ReliabilityNumberModel(String value) {
+            this.value = new BigDecimal(value);
+        }
+
+        @Override
+        public Object getValue() {
+            return value;
+        }
+
+        @Override
+        public void setValue(Object value) {
+            if ((value == null) || !(value instanceof BigDecimal)) {
+                throw new IllegalArgumentException("illegal value");
+            }
+            if (!value.equals(this.value)) {
+                this.value = (BigDecimal) value;
+                fireStateChanged();
+            }
         }
 
         @Override
@@ -154,15 +172,11 @@ public class ProbabilitySpinner extends JSpinner {
          * @return Nächster oder vorheriger Wert
          */
         private Number incrementValue(boolean add) {
-            BigDecimal maximum = (BigDecimal) getMaximum();
-            BigDecimal minimum = (BigDecimal) getMinimum();
-            BigDecimal value = (BigDecimal) getValue();
-
             BigDecimal newValue;
             if (add) {
-                newValue = value.add((BigDecimal) getStepSize());
+                newValue = value.add(stepSize);
             } else {
-                newValue = value.subtract((BigDecimal) getStepSize());
+                newValue = value.subtract(stepSize);
             }
 
             //neuer Wert muss in den Grenzen liegen
