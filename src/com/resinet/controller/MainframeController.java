@@ -556,7 +556,7 @@ public class MainframeController extends WindowAdapter implements ActionListener
 
         CalculationParams params = buildCalculationParams(null, true);
 
-        GraphSaver.exportNet(params, mainFrame.getContentPane(), width, height);
+        GraphSaver.exportNet(params, mainFrame.getNetPanel(), width, height);
     }
 
     /**

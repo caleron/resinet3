@@ -1,14 +1,17 @@
 package com.resinet.util;
 
+import com.resinet.model.BorderRectangle;
 import com.resinet.model.CalculationParams;
 import com.resinet.model.EdgeLine;
 import com.resinet.model.NodePoint;
+import com.resinet.views.NetPanel;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
+import javax.imageio.ImageIO;
 import javax.swing.*;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import javax.xml.parsers.DocumentBuilder;
@@ -19,6 +22,7 @@ import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 import java.awt.*;
 import java.awt.geom.Rectangle2D;
+import java.awt.image.BufferedImage;
 import java.io.*;
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -344,10 +348,10 @@ public final class GraphSaver {
     /**
      * Zeigt einen JFileChooser-Dialog an und speichert das aktuelle Netzwerk im gewünschten Format.
      *
-     * @param params          Die zu speichernden Daten
-     * @param parentComponent Eine GUI-Komponente für Fehlerdialoge
+     * @param params   Die zu speichernden Daten
+     * @param netPanel Das NetPanel
      */
-    public static void exportNet(CalculationParams params, Component parentComponent, int graphWidth, int graphHeight) {
+    public static void exportNet(CalculationParams params, NetPanel netPanel, int graphWidth, int graphHeight) {
         //Dialog zum Datei auswählen
         JFileChooser chooseSaveFile = new JFileChooser();
         chooseSaveFile.setDialogType(JFileChooser.SAVE_DIALOG);
@@ -355,10 +359,12 @@ public final class GraphSaver {
         //Speichern in zwei Formaten anbieten
         FileNameExtensionFilter pajekFilter = new FileNameExtensionFilter(Strings.getLocalizedString("pajek.networks"), "net");
         FileNameExtensionFilter resinetvFilter = new FileNameExtensionFilter(Strings.getLocalizedString("resinetv.networks"), "resinet");
+        FileNameExtensionFilter imageFilter = new FileNameExtensionFilter("Portable Network Graphics", "png");
         chooseSaveFile.setFileFilter(resinetvFilter);
         chooseSaveFile.addChoosableFileFilter(pajekFilter);
+        chooseSaveFile.addChoosableFileFilter(imageFilter);
         chooseSaveFile.setDialogTitle(Strings.getLocalizedString("save.network.as"));
-        chooseSaveFile.setSelectedFile(new File("myNetwork.resinet"));
+        chooseSaveFile.setSelectedFile(new File("myNetwork"));
 
         File saveNetFile;
         String path;
@@ -369,9 +375,11 @@ public final class GraphSaver {
             saveNetFile = new File(path);
 
             if (pajekFilter.accept(saveNetFile)) {
-                writePajekNetwork(path, params, parentComponent, graphWidth, graphHeight);
+                writePajekNetwork(path, params, netPanel, graphWidth, graphHeight);
             } else if (resinetvFilter.accept(saveNetFile)) {
-                writeResinetNetwork(path, params, parentComponent);
+                writeResinetNetwork(path, params, netPanel);
+            } else if (imageFilter.accept(saveNetFile)) {
+                writeImage(path, netPanel);
             } else {
                 //Dateierweiterung fehlt wohl
                 //Ausgewählten Filter finden
@@ -379,9 +387,11 @@ public final class GraphSaver {
 
                 //entsprechende Dateierweiterung an den Pfad anfügen und dann so speichern
                 if (selectedFilter.equals(pajekFilter)) {
-                    writePajekNetwork(path + ".net", params, parentComponent, graphWidth, graphHeight);
+                    writePajekNetwork(path + ".net", params, netPanel, graphWidth, graphHeight);
                 } else if (selectedFilter.equals(resinetvFilter)) {
-                    writeResinetNetwork(path + ".resinet", params, parentComponent);
+                    writeResinetNetwork(path + ".resinet", params, netPanel);
+                } else if (selectedFilter.equals(imageFilter)) {
+                    writeImage(path + ".png", netPanel);
                 }
             }
         }
@@ -641,6 +651,36 @@ public final class GraphSaver {
                     Strings.getLocalizedString("error"), JOptionPane.ERROR_MESSAGE);
         }
 
+    }
+
+    /**
+     * Speichert den Graphen als Bild im PNG-Format
+     *
+     * @param path     Der Pfad zur Datei
+     * @param netPanel Das NetPanel als Quelle
+     */
+    private static void writeImage(String path, NetPanel netPanel) {
+        BufferedImage image = new BufferedImage(netPanel.getWidth(), netPanel.getHeight(), BufferedImage.TYPE_3BYTE_BGR);
+
+        //Auswahl zurücksetzen, damit diese nich mitgespeichert wird
+        netPanel.getController().resetSelection();
+        //vorher neu zeichnen, damit es nicht zu Anzeigebugs kommt
+        netPanel.repaint();
+        //Panel in BufferedImage zeichnen
+        netPanel.print(image.createGraphics());
+
+        //Bild auf den Graphen zuschneiden
+        BorderRectangle bounds = GraphUtil.getGraphBounds(netPanel.getNodes(), 2);
+        image = image.getSubimage((int) bounds.getX(), (int) bounds.getY(), (int) bounds.getWidth(), (int) bounds.getHeight());
+
+        try {
+            //Bild speichern
+            ImageIO.write(image, "png", new File(path));
+        } catch (IOException e) {
+            e.printStackTrace();
+            JOptionPane.showMessageDialog(netPanel, Strings.getLocalizedString("saving.failed"),
+                    Strings.getLocalizedString("error"), JOptionPane.ERROR_MESSAGE);
+        }
     }
 
 }
