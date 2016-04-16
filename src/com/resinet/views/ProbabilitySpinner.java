@@ -22,20 +22,29 @@ public class ProbabilitySpinner extends JSpinner {
 
     /**
      * Erstellt einen neuen JSpinner für Wahrscheinlichkeiten mit der Spaltenanzahl 15
+     *
+     * @param value Der Startwert
+     */
+    public ProbabilitySpinner(double value) {
+        this(COLUMNS, value);
+    }
+
+    /**
+     * Erstellt einen neuen JSpinner für Wahrscheinlichkeiten mit der Spaltenanzahl 15 und Startwert 1
      */
     public ProbabilitySpinner() {
-        this(COLUMNS);
+        this(COLUMNS, 1);
     }
 
     /**
      * Erstellt einen neuen JSpinner für Wahrscheinlichkeiten
      *
      * @param inputColumns Spaltenanzahl des Eingabefeldes
+     * @param value        Der Startwert
      */
-    ProbabilitySpinner(int inputColumns) {
-
+    private ProbabilitySpinner(int inputColumns, double value) {
         super();
-        setModel(new SpinnerNumberModel(1, 0, 1, 0.01));
+        setModel(new SpinnerNumberModel(value, 0, 1, 0.01));
 
         JSpinner.NumberEditor editor = ((JSpinner.NumberEditor) getEditor());
         JFormattedTextField textField = editor.getTextField();

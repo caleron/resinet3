@@ -348,7 +348,7 @@ public class Resinet implements Constants {
         JLabel edgeStepSizeLbl = new JLabel(Strings.getLocalizedString("edge.step.size"), SwingConstants.RIGHT);
         sameReliabilityPanel.add(edgeStepSizeLbl, GbcBuilder.build(0, 5, 1, 1, 1, 0).bottom(10).left());
 
-        edgeProbabilityStepSizeBox = new ProbabilitySpinner();
+        edgeProbabilityStepSizeBox = new ProbabilitySpinner(0.01);
         edgeProbabilityStepSizeBox.setEnabled(false);
         sameReliabilityPanel.add(edgeProbabilityStepSizeBox, GbcBuilder.build(1, 5, 1, 1, 1, 0).bottom(10));
 
@@ -362,7 +362,7 @@ public class Resinet implements Constants {
         JLabel nodeStepSizeLbl = new JLabel(Strings.getLocalizedString("vertex.step.size"), SwingConstants.RIGHT);
         sameReliabilityPanel.add(nodeStepSizeLbl, GbcBuilder.build(0, 7, 1, 1, 1, 0).bottom(10).left());
 
-        nodeProbabilityStepSizeBox = new ProbabilitySpinner();
+        nodeProbabilityStepSizeBox = new ProbabilitySpinner(0.01);
         nodeProbabilityStepSizeBox.setEnabled(false);
         sameReliabilityPanel.add(nodeProbabilityStepSizeBox, GbcBuilder.build(1, 7, 1, 1, 1, 0).bottom(10));
     }
