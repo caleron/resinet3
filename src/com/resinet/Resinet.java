@@ -177,7 +177,7 @@ public class Resinet implements Constants {
         //Hilfemenü aufbauen
         JMenu helpMenu = new JMenu(Strings.getLocalizedString("help"));
 
-        tutorialMenuItem = new JMenuItem(Strings.getLocalizedString("start.tutorial"));
+        tutorialMenuItem = new JMenuItem(Strings.getLocalizedString("show.help"));
         tutorialMenuItem.addActionListener(controller);
         helpMenu.add(tutorialMenuItem);
 

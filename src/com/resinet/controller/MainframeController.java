@@ -6,10 +6,7 @@ import com.resinet.model.CalculationParams;
 import com.resinet.model.Graph;
 import com.resinet.model.GraphWrapper;
 import com.resinet.util.*;
-import com.resinet.views.GenerateGraphFrame;
-import com.resinet.views.NetPanel;
-import com.resinet.views.ProbabilitySpinner;
-import com.resinet.views.SingleReliabilityPanel;
+import com.resinet.views.*;
 import com.sun.istack.internal.Nullable;
 
 import javax.swing.*;
@@ -71,9 +68,9 @@ public class MainframeController extends WindowAdapter implements ActionListener
         } else if (button == mainFrame.getCloseMenuItem()) {
             windowClosing(null);
         } else if (button == mainFrame.getAboutMenuItem()) {
-            //TODO about window
+            AboutFrame.show();
         } else if (button == mainFrame.getTutorialMenuItem()) {
-            //TODO tutorial oder hilfe
+            HelpFrame.show();
         } else if (button == mainFrame.getGenerateGraphMenuItem()) {
             GenerateGraphFrame.show(this::graphGenerated);
         } else if (button == mainFrame.getCenterGraphMenuItem()) {
