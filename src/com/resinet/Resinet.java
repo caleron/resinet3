@@ -100,7 +100,10 @@ public class Resinet implements Constants {
             mainFrame.setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
 
             //Minimale Größe setzen
-            mainFrame.setMinimumSize(new Dimension(1000, 700));
+            mainFrame.setMinimumSize(new Dimension(700, 500));
+
+            //Größe setzen
+            mainFrame.setSize(1000, 700);
 
             //Auf dem Bildschirm zentrieren und sichtbar machen
             mainFrame.setLocationRelativeTo(null);
