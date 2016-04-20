@@ -131,31 +131,15 @@ class Tree extends Thread {
         }
 
         //An dieser Stelle wurde der Algorithmus erweitert.
-        //Diese Liste enthält alle bisher hinzugefügten Knoten
-        List<Node> consideredNodes = new ArrayList<>();
 
         //Eine flache Kopie des Baumes, durch die hindurchiteriert werden kann, da ktree um die Knoten erweitert wird.
         HashSet<Edge> treeCopy = (HashSet) ktree.clone();
 
-        //String output = "Pfad";
         for (Edge edge : treeCopy) {
-            //Prüft bei jeder Kante des Pfades für den linken und den rechten Knoten jeweils, ob er schon
-            //zur Menge ktree hinzugefügt wurde, und fügt den Knoten hinzu, falls er noch nicht in der Menge ist.
-            //output += " e" + edge.edge_no;
-
-            if (!consideredNodes.contains(edge.left_node)) {
-                consideredNodes.add(edge.left_node);
-                ktree.add(edge.left_node);
-                //output += " n" + edge.left_node.node_no;
-            }
-
-            if (!consideredNodes.contains(edge.right_node)) {
-                consideredNodes.add(edge.right_node);
-                ktree.add(edge.right_node);
-                //output += " n" + edge.right_node.node_no;
-            }
+            //Da ktree ein HashSet ist, ist jeder Knoten nur einmal enthalten
+            ktree.add(edge.left_node);
+            ktree.add(edge.right_node);
         }
-        //System.out.println(output);
 
         synchronized (trs) {
             if (!trs.contains(ktree)) {
