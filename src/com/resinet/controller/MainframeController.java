@@ -24,6 +24,17 @@ import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.List;
 
+/*
+ * Ideen zur Implementierung von Hypergraphen:
+ *    -Edge-Klassen mit Kantenliste erweitern
+ *    -Zeichnen der Hyperkanten mit B-Spline oder so was
+ *    -Konvertierung zur Berechnung: für jede Hyperkante mit mehr als 2 anliegenden Knoten
+ *          -zentralen Knoten erstellen
+ *          -alle an der Hyperkante anliegenden Knoten haben eine Kante zum neuen Knoten
+ *          -die Kanten haben eine Zuverlässigkeit von sqrt(p) mit p als Zuverlässigkeit der Hyperkante
+ *          -der Knoten hat die Zuverlässigkeit 1
+ */
+
 /**
  * Verwaltet alle Events des MainFrames und vermittelt zwischen verschiedenen Komponenten wie Menüs, Datenspeicherung,
  * Berechnung und Darstellung.
