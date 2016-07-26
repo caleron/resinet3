@@ -673,7 +673,7 @@ public class MainframeController extends WindowAdapter implements ActionListener
         //Elemente der GUI während der Berechnung deaktivieren
         mainFrame.setGuiState(GUI_STATES.CALCULATION_RUNNING);
 
-        System.out.println("startCalculation: " + Thread.currentThread().getName());
+        //System.out.println("startCalculation: " + Thread.currentThread().getName());
         //Starte die Berechnung
         calculator.start();
     }

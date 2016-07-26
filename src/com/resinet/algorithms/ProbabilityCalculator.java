@@ -38,7 +38,7 @@ public class ProbabilityCalculator extends Thread implements Constants {
      */
     @Override
     public void run() {
-        System.out.println("ProbabilityCalculator: " + Thread.currentThread().getName());
+        //System.out.println("ProbabilityCalculator: " + Thread.currentThread().getName());
         if (params.calculationMode == CALCULATION_MODES.RELIABILITY) {
             //Zuverlässigkeit berechnen
             if (params.calculationSeries) {
@@ -150,15 +150,16 @@ public class ProbabilityCalculator extends Thread implements Constants {
                 BigDecimal p;
                 //hs enthält hier anscheinend einen Pfad im Graphen zwischen den K-Knoten
                 //Das erste hs ist der Hin-Pfad
-                p = getPathProbability(hs);
+                p = getPathProbability(hs, false);
                 //Die weiteren Pfade entstehen beim Disjunktmachen und Invertieren
                 for (int i = 1; i < al.size(); i++) {
                     HashSet<GraphElement> hs1 = al.get(i);
                     if (hs1.isEmpty())
                         continue;
-                    p = p.multiply(BigDecimal.ONE.subtract(getPathProbability(hs1)));
+                    p = p.multiply(BigDecimal.ONE.subtract(getPathProbability(hs1, true)));
 
                 }
+                System.out.println("");
                 //System.out.println("Wahrscheinlichkeit: " + p.toString());
                 prob = prob.add(p);
 
@@ -441,11 +442,24 @@ public class ProbabilityCalculator extends Thread implements Constants {
      * @param path Der Pfad
      * @return Die Intaktwahrscheinlichkeit
      */
-    private static BigDecimal getPathProbability(HashSet<GraphElement> path) {
+    private static BigDecimal getPathProbability(HashSet<GraphElement> path, boolean isNegative) {
         BigDecimal p = BigDecimal.ONE;
+
+        if (isNegative) {
+            System.out.print("(1-");
+        }
 
         for (GraphElement el : path) {
             p = p.multiply(el.prob);
+            if (el instanceof Node) {
+                System.out.print("n" + ((Node) el).node_no);
+            } else {
+                System.out.print("e" + ((Edge) el).edge_no);
+            }
+        }
+
+        if (isNegative) {
+            System.out.print(")");
         }
 
         return p;
