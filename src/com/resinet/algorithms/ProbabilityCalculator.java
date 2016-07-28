@@ -8,6 +8,7 @@ import com.resinet.util.Util;
 import com.sun.istack.internal.Nullable;
 
 import javax.swing.*;
+import javax.swing.filechooser.FileFilter;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import java.io.File;
 import java.io.FileWriter;
@@ -329,16 +330,38 @@ public class ProbabilityCalculator extends Thread implements Constants {
         JFileChooser chooseSaveFile = new JFileChooser();
         chooseSaveFile.setDialogType(JFileChooser.SAVE_DIALOG);
 
-        FileNameExtensionFilter resultFilter = new FileNameExtensionFilter(Strings.getLocalizedString("text.files"), "txt");
-        chooseSaveFile.setFileFilter(resultFilter);
+        FileNameExtensionFilter textFilter = new FileNameExtensionFilter(Strings.getLocalizedString("text.files"), "txt");
+        FileNameExtensionFilter csvFilter = new FileNameExtensionFilter(Strings.getLocalizedString("csv.file"), "csv");
+        chooseSaveFile.setFileFilter(textFilter);
+        chooseSaveFile.addChoosableFileFilter(csvFilter);
         chooseSaveFile.setDialogTitle(Strings.getLocalizedString("save.results.as"));
-        chooseSaveFile.setSelectedFile(new File("myResults.txt"));
+        chooseSaveFile.setSelectedFile(new File("myResults"));
 
         String filepath;
+        String format = "text";
 
         int state = chooseSaveFile.showSaveDialog(null);
         if (state == JFileChooser.APPROVE_OPTION) {
             filepath = chooseSaveFile.getSelectedFile().toString();
+
+            if (textFilter.accept(chooseSaveFile.getSelectedFile())) {
+                format = "text";
+            } else if (csvFilter.accept(chooseSaveFile.getSelectedFile())) {
+                format = "csv";
+            } else {
+                //Dateiendung fehlt
+                //Ausgewählten Filter finden
+                FileFilter selectedFilter = chooseSaveFile.getFileFilter();
+
+                //entsprechende Dateierweiterung an den Pfad anfügen und dann so speichern
+                if (selectedFilter.equals(textFilter)) {
+                    format = "text";
+                    filepath += ".txt";
+                } else if (selectedFilter.equals(csvFilter)) {
+                    format = "csv";
+                    filepath += ".csv";
+                }
+            }
         } else {
             reportResult(Strings.getLocalizedString("calculation.cancelled"));
             return;
@@ -350,13 +373,20 @@ public class ProbabilityCalculator extends Thread implements Constants {
         try {
             writer = new FileWriter(filepath);
 
-            if (calculationSeriesMode == CALCULATION_MODES.RESILIENCE) {
-                writer.write("Reliability of every edge                 Reliability of every vertex               Resilience of the network");
+            if (format.equals("text")) {
+                if (calculationSeriesMode == CALCULATION_MODES.RESILIENCE) {
+                    writer.write("Reliability of every edge                 Reliability of every vertex               Resilience of the network");
+                } else {
+                    writer.write("Reliability of every edge                 Reliability of every vertex               Reliability of the network");
+                }
             } else {
-                writer.write("Reliability of every edge                 Reliability of every vertex               Reliability of the network");
+                //csv
+                if (calculationSeriesMode == CALCULATION_MODES.RESILIENCE) {
+                    writer.write("Reliability of every edge;Reliability of every vertex;Resilience of the network");
+                } else {
+                    writer.write("Reliability of every edge;Reliability of every vertex;Reliability of the network");
+                }
             }
-
-            writer.append(System.getProperty("line.separator"));
 
             //Ab hier Berechnungsserie
             int counter = 1;
@@ -399,27 +429,35 @@ public class ProbabilityCalculator extends Thread implements Constants {
                     writer.append(System.getProperty("line.separator"));
 
                     String reliabilityString = currentEdgeProb.toString();
-
-                    //Nullen hinzufügen, damit alle Ausgangswahrscheinlichkeiten die selbe Länge haben
-                    while (reliabilityString.length() < params.edgeStepSize.toString().length()) {
-                        reliabilityString += "0";
-                    }
-
-                    while (reliabilityString.length() < 42) {
-                        reliabilityString += " ";
-                    }
-
-                    reliabilityString += currentNodeProb.toString();
-                    while (reliabilityString.length() < 42 + params.nodeStepSize.toString().length()) {
-                        reliabilityString += "0";
-                    }
-
-                    while (reliabilityString.length() < 84) {
-                        reliabilityString += " ";
-                    }
-
                     prob = prob.setScale(OUTPUT_PRECISION, BigDecimal.ROUND_HALF_DOWN);
-                    writer.write(reliabilityString + prob.toPlainString());
+
+                    if (format.equals("text")) {
+                        //Nullen hinzufügen, damit alle Ausgangswahrscheinlichkeiten die selbe Länge haben
+                        while (reliabilityString.length() < params.edgeStepSize.toString().length()) {
+                            reliabilityString += "0";
+                        }
+
+                        while (reliabilityString.length() < 42) {
+                            reliabilityString += " ";
+                        }
+
+                        reliabilityString += currentNodeProb.toString();
+                        while (reliabilityString.length() < 42 + params.nodeStepSize.toString().length()) {
+                            reliabilityString += "0";
+                        }
+
+                        while (reliabilityString.length() < 84) {
+                            reliabilityString += " ";
+                        }
+
+                        writer.write(reliabilityString + prob.toPlainString());
+                    } else {
+                        //csv
+                        //Punkte durch Kommas ersetzen, damit excel die Zahlen richtig erkennt
+                        writer.write(reliabilityString.replace(".", ",") + ";");
+                        writer.write(currentNodeProb.toString().replace(".", ",") + ";");
+                        writer.write(prob.toPlainString().replace(".", ","));
+                    }
                 }
 
             }
