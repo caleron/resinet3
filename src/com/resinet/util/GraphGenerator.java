@@ -91,7 +91,7 @@ public class GraphGenerator {
         //Alle Kanten hinzufügen
         for (NodePoint node1 : graph.nodes) {
             for (NodePoint node2 : graph.nodes) {
-                if (node1 != node2) {
+                if (node1 != node2 && !graph.hasEdge(node1, node2)) {
                     graph.addEdge(node1, node2);
                 }
             }
