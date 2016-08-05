@@ -1,6 +1,7 @@
 package com.resinet.views;
 
 import javax.swing.*;
+import java.awt.*;
 import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;
 import java.awt.event.KeyAdapter;
@@ -122,6 +123,13 @@ public class ProbabilitySpinner extends JSpinner {
     public boolean requestFocusInWindow() {
         JSpinner.NumberEditor editor = ((JSpinner.NumberEditor) getEditor());
         JFormattedTextField textField = editor.getTextField();
+
+        //Zum feld scrollen, dabei Bereich erweitern, damit das Feld vollständig sichtbar ist
+        Rectangle visibleRect = getVisibleRect();
+        visibleRect.setLocation(visibleRect.x, visibleRect.y - getHeight());
+        visibleRect.height += 3 * getHeight();
+        scrollRectToVisible(visibleRect);
+
         return textField.requestFocusInWindow();
     }
 
