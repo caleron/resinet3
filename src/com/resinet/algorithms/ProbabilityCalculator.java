@@ -379,17 +379,12 @@ public class ProbabilityCalculator extends Thread implements Constants {
                 } else {
                     writer.write("Reliability of every edge                 Reliability of every vertex               Reliability of the network");
                 }
-            } else {
-                //csv
-                if (calculationSeriesMode == CALCULATION_MODES.RESILIENCE) {
-                    writer.write("Reliability of every edge;Reliability of every vertex;Resilience of the network");
-                } else {
-                    writer.write("Reliability of every edge;Reliability of every vertex;Reliability of the network");
-                }
             }
 
             //Ab hier Berechnungsserie
             int counter = 1;
+            int edgeCounter = 0;
+            int nodeCounter;
 
 
             BigInteger edgeStepCount = params.edgeEndValue.subtract(params.edgeStartValue).divide(params.edgeStepSize, BigDecimal.ROUND_FLOOR)
@@ -399,11 +394,15 @@ public class ProbabilityCalculator extends Thread implements Constants {
 
             Integer stepCount = edgeStepCount.multiply(nodeStepCount).intValue();
 
+            String[][] matrix = new String[edgeStepCount.intValue()][nodeStepCount.intValue()];
+
             //Schrittzahl weitergeben
             reportStepCount(stepCount);
 
             for (BigDecimal currentEdgeProb = params.edgeStartValue; currentEdgeProb.compareTo(params.edgeEndValue) <= 0;
                  currentEdgeProb = currentEdgeProb.add(params.edgeStepSize)) {
+
+                nodeCounter = 0;
 
                 for (BigDecimal currentNodeProb = params.nodeStartValue; currentNodeProb.compareTo(params.nodeEndValue) <= 0;
                      currentNodeProb = currentNodeProb.add(params.nodeStepSize)) {
@@ -426,7 +425,6 @@ public class ProbabilityCalculator extends Thread implements Constants {
                         prob = getHeidtmannsReliability(false);
                     }
 
-                    writer.append(System.getProperty("line.separator"));
 
                     String reliabilityString = currentEdgeProb.toString();
                     prob = prob.setScale(OUTPUT_PRECISION, BigDecimal.ROUND_HALF_DOWN);
@@ -450,17 +448,46 @@ public class ProbabilityCalculator extends Thread implements Constants {
                             reliabilityString += " ";
                         }
 
+                        writer.append(System.getProperty("line.separator"));
                         writer.write(reliabilityString + prob.toPlainString());
                     } else {
-                        //csv
                         //Punkte durch Kommas ersetzen, damit excel die Zahlen richtig erkennt
-                        writer.write(reliabilityString.replace(".", ",") + ";");
-                        writer.write(currentNodeProb.toString().replace(".", ",") + ";");
-                        writer.write(prob.toPlainString().replace(".", ","));
+                        matrix[edgeCounter][nodeCounter] = prob.toPlainString().replace(".", ",");
                     }
+                    nodeCounter++;
+                }
+                edgeCounter++;
+            }
+
+            if (format.equals("csv")) {
+                if (calculationSeriesMode == CALCULATION_MODES.RESILIENCE) {
+                    writer.write("edge reliability in first column;;;vertex reliability in first row;;;network resilience in cells");
+                } else {
+                    writer.write("edge reliability in first column;;;vertex reliability in first row;;;network reliability in cells");
+                }
+
+                writer.append(System.getProperty("line.separator"));
+
+                //erste zeile
+                //für die erste spalte mit beschriftungen
+                writer.write(";");
+                for (BigDecimal currentNodeProb = params.nodeStartValue; currentNodeProb.compareTo(params.nodeEndValue) <= 0;
+                     currentNodeProb = currentNodeProb.add(params.nodeStepSize)) {
+                    writer.write(currentNodeProb.toString().replace(".", ",") + ";");
+                }
+                BigDecimal currentEdgeProb = params.edgeStartValue;
+                for (int i = 0; i < edgeStepCount.intValue(); i++) {
+                    writer.append(System.getProperty("line.separator"));
+                    writer.write(currentEdgeProb.toString().replace(".", ",") + ";");
+
+                    for (int j = 0; j < nodeStepCount.intValue(); j++) {
+                        writer.write(matrix[i][j] + ";");
+                    }
+                    currentEdgeProb = currentEdgeProb.add(params.edgeStepSize);
                 }
 
             }
+
             writer.close();
 
             reportResult(Strings.getLocalizedString("calculation.series.finished"));
