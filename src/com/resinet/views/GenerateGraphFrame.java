@@ -29,6 +29,7 @@ public class GenerateGraphFrame implements ItemListener, KeyListener {
     private static final String RING = Strings.getLocalizedString("ring");
     private static final String TREE = Strings.getLocalizedString("tree");
     private static final String COMPLETE_GRAPH = Strings.getLocalizedString("complete.graph");
+    private static final String STAR = Strings.getLocalizedString("star");
 
     private static final String BRIDGE_PANEL_TAG = "bridgePanel";
     private static final String NODE_COUNT_PANEL_TAG = "nodeCountPanel";
@@ -45,7 +46,7 @@ public class GenerateGraphFrame implements ItemListener, KeyListener {
     private NumberSpinner treeLeafCountBox;
 
     static {
-        types = new ArrayList<>(Arrays.asList(LINE, BRIDGE, RING, TREE, COMPLETE_GRAPH));
+        types = new ArrayList<>(Arrays.asList(LINE, BRIDGE, RING, TREE, COMPLETE_GRAPH, STAR));
     }
 
     /**
@@ -191,18 +192,16 @@ public class GenerateGraphFrame implements ItemListener, KeyListener {
         cardLayout.show(cardPanel, (String) e.getItem());
 
         switch (types.indexOf(e.getItem())) {
-            case 0:
-            case 2:
-            case 4:
-                cardLayout.show(cardPanel, NODE_COUNT_PANEL_TAG);
-                break;
-
             case 1:
                 cardLayout.show(cardPanel, BRIDGE_PANEL_TAG);
                 break;
             case 3:
                 cardLayout.show(cardPanel, TREE_PANEL_TAG);
                 break;
+            default:
+                cardLayout.show(cardPanel, NODE_COUNT_PANEL_TAG);
+                break;
+
         }
     }
 
@@ -229,6 +228,9 @@ public class GenerateGraphFrame implements ItemListener, KeyListener {
                 break;
             case 4: //Vollständiger Graph
                 wrapper = GraphGenerator.generateComplete(nodeCountBox.getIntValue());
+                break;
+            case 5: //Stern
+                wrapper = GraphGenerator.generateStar(nodeCountBox.getIntValue());
                 break;
         }
         if (wrapper != null) {

@@ -184,4 +184,34 @@ public class GraphGenerator {
 
         return graph;
     }
+
+    public static GraphWrapper generateStar(int nodeCount) {
+        GraphWrapper graph = new GraphWrapper();
+
+        //30 Pixel Abstand pro Knoten
+        //radius = Umfang / 2*Pi
+        double radius = (nodeCount * 70) / (2 * Math.PI);
+
+        NodePoint centerNode = new NodePoint(radius, radius, false);
+        graph.addNode(centerNode);
+        nodeCount--;
+
+        for (int i = 0; i < nodeCount; i++) {
+            //Winkel bestimmen
+            double angle = (i / (nodeCount * 1.0)) * (2.0 * Math.PI);
+
+            //Position berechnen
+            double x = radius * Math.cos(angle) + radius;
+            double y = radius * Math.sin(angle) + radius;
+
+            NodePoint np = new NodePoint(x, y, false);
+
+            graph.addNode(np);
+            //Verbindung zum Knoten im Zentrum herstellen
+            graph.addEdge(centerNode, np);
+        }
+
+        return graph;
+
+    }
 }
