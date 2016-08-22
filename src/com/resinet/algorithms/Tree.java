@@ -3,10 +3,7 @@ package com.resinet.algorithms;/*Tree.java*/
 
 import com.resinet.model.*;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
+import java.util.*;
 
 class Tree extends Thread {
     private final Graph graph;
@@ -47,7 +44,11 @@ class Tree extends Thread {
 
     @Override
     public void run() {
+        long startTime = new Date().getTime();
+
         tree();
+
+        System.out.println("Laufzeit K-Tree: " + (new Date().getTime() - startTime) + "ms");
 
         dead = true;
         synchronized (trs) {

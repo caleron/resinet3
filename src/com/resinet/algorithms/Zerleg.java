@@ -4,6 +4,7 @@ import com.resinet.model.Graph;
 import com.resinet.model.GraphElement;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 
@@ -54,7 +55,11 @@ class Zerleg extends Thread {
      */
     private class HZerleg extends Thread {
         public void run() {
+            long startTime = new Date().getTime();
+
             hZerlegen();
+
+            System.out.println("Laufzeit Zerlegung: " + (new Date().getTime() - startTime) + "ms");
         }
 
         /**

@@ -139,7 +139,8 @@ public class ProbabilityCalculator extends Thread implements Constants {
         } else {
             Zerleg zer = getDecomposition();
 
-            //System.out.println("Laufzeit Heidtmann bis Zerlegung: " + ((new Date()).getTime() - startTime));
+            long startTime = new Date().getTime();
+
             prob = BigDecimal.ZERO;
 
             for (ArrayList<HashSet<GraphElement>> al : zer.hz) {
@@ -164,6 +165,10 @@ public class ProbabilityCalculator extends Thread implements Constants {
                 //System.out.println("Wahrscheinlichkeit: " + p.toString());
                 prob = prob.add(p);
 
+            }
+
+            if (writeOutput) {
+                System.out.println("Laufzeit Heidtmann Schritt 3: " + ((new Date()).getTime() - startTime) + "ms");
             }
         }
         //long runningTime = new Date().getTime() - startTime;
