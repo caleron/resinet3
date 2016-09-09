@@ -40,6 +40,14 @@ public class Strings {
         bundle = ResourceBundle.getBundle("strings", currentLocale);
     }
 
+    static String getLastPath() {
+        return preferences.get("graphPath", null);
+    }
+
+    static void setLastPath(String path) {
+        preferences.put("graphPath", path);
+    }
+
     /**
      * Gibt einen String aus den Ressourcen für die aktuelle Sprache zurück
      *
