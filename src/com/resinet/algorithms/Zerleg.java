@@ -49,6 +49,7 @@ class Zerleg extends Thread {
         } catch (Exception ignored) {
         }
     }
+    //TODO verbraucht enorm viel RAM, da für jeden Pfad sehr viele leere HashSets erstellt werden
 
     /**
      * Thread zur Zerlegung
@@ -106,7 +107,7 @@ class Zerleg extends Thread {
                     }
                 }
                 pathCount++;
-                if (pathCount % 100 == 0)
+                if (pathCount % 10 == 0)
                     System.out.println("Anzahl Pfade: " + pathCount + "/" + trs.size());
             }
             System.out.println("Anzahl Pfade: " + pathCount);

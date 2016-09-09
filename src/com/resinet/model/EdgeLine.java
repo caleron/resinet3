@@ -1,6 +1,7 @@
 package com.resinet.model;
 
 import java.awt.geom.Line2D;
+import java.math.BigDecimal;
 
 /**
  * Stellt eine Kante im Graphen dar
@@ -10,6 +11,9 @@ public class EdgeLine extends Line2D.Double {
     public double textPositionX, textPositionY;
     public NodePoint startNode;
     public NodePoint endNode;
+
+    //für die Reduktion
+    public BigDecimal prob;
 
     /**
      * Erzeugt eine Kante

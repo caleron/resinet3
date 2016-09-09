@@ -1,12 +1,16 @@
 package com.resinet.model;
 
 import java.awt.geom.Ellipse2D;
+import java.math.BigDecimal;
 
 public class NodePoint extends Ellipse2D.Double {
     private static final long serialVersionUID = -9017839205054461834L;
 
     public boolean c_node = false;
     public boolean selected = false;
+
+    //für die Reduktion
+    public BigDecimal prob;
 
     /**
      * Erstellt einen neuen Knoten

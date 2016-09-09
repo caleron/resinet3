@@ -60,6 +60,7 @@ public class Resinet implements Constants {
     private JMenuItem undoMenuItem;
     private JMenuItem redoMenuItem;
     private JMenuItem centerGraphMenuItem;
+    private JMenuItem reduceGraphMenuItem;
     private JMenuItem alignGraphMenuItem;
     private JMenuItem generateGraphMenuItem;
 
@@ -226,6 +227,10 @@ public class Resinet implements Constants {
         alignGraphMenuItem = new JMenuItem(Strings.getLocalizedString("align.graph"));
         alignGraphMenuItem.addActionListener(controller);
         graphMenu.add(alignGraphMenuItem);
+
+        reduceGraphMenuItem = new JMenuItem(Strings.getLocalizedString("reduce.graph"));
+        reduceGraphMenuItem.addActionListener(controller);
+        graphMenu.add(reduceGraphMenuItem);
 
         JMenuItem selectOverlappingVerticesMenuItem = new JMenuItem(Strings.getLocalizedString("select.overlapping.vertices"));
         selectOverlappingVerticesMenuItem.addActionListener(controller);
@@ -665,6 +670,10 @@ public class Resinet implements Constants {
 
     public JMenuItem getAlignGraphMenuItem() {
         return alignGraphMenuItem;
+    }
+
+    public JMenuItem getReduceGraphMenuItem() {
+        return reduceGraphMenuItem;
     }
 
     public JMenuItem getGenerateGraphMenuItem() {

@@ -1,6 +1,7 @@
 package com.resinet.controller;
 
 import com.resinet.Resinet;
+import com.resinet.algorithms.NetReducer;
 import com.resinet.algorithms.ProbabilityCalculator;
 import com.resinet.model.CalculationParams;
 import com.resinet.model.Graph;
@@ -90,6 +91,8 @@ public class MainframeController extends WindowAdapter implements ActionListener
             netPanel.repaint();
         } else if (button == mainFrame.getAlignGraphMenuItem()) {
             //TODO graph ausrichten
+        } else if (button == mainFrame.getReduceGraphMenuItem()) {
+            reduceGraph();
         } else if (button == mainFrame.getCalcReliabilityBtn()) {
             startCalculation(CALCULATION_MODES.RELIABILITY);
         } else if (button == mainFrame.getCalcResilienceBtn()) {
@@ -372,6 +375,12 @@ public class MainframeController extends WindowAdapter implements ActionListener
         edgeProbabilityBoxes.clear();
     }
 
+    private void reduceGraph() {
+        CalculationParams params = NetReducer.reduce(buildCalculationParams(CALCULATION_MODES.RELIABILITY, true));
+
+        loadCalculationParams(params, false);
+    }
+
     /**
      * Löst das Laden von gespeicherten Daten aus und lädt diese in die GUI.
      */
@@ -382,9 +391,14 @@ public class MainframeController extends WindowAdapter implements ActionListener
 
         CalculationParams params = GraphSaver.inputNet(mainFrame.getContentPane(), width, height);
 
+        loadCalculationParams(params, true);
+    }
+
+    private void loadCalculationParams(CalculationParams params, boolean center) {
         if (params == null)
             return;
 
+        NetPanel netPanel = mainFrame.getNetPanel();
         resetGraph();
 
         //Graphelemente hinzufügen
@@ -427,7 +441,9 @@ public class MainframeController extends WindowAdapter implements ActionListener
             }
         }
         mainFrame.setGuiState(GUI_STATES.ENTER_GRAPH, true);
-        netPanel.centerGraphOnNextPaint();
+        if (center) {
+            netPanel.centerGraphOnNextPaint();
+        }
         //verzögert Repaint auslösen
         SwingUtilities.invokeLater(netPanel::repaint);
     }
