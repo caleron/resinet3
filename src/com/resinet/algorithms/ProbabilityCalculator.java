@@ -120,6 +120,17 @@ public class ProbabilityCalculator extends Thread implements Constants {
      * @return Die Zuverlässigkeit des Arbeitsgraphen
      */
     BigDecimal getHeidtmannsReliability(boolean writeOutput) {
+        return getHeidtmannsReliability(writeOutput, null);
+    }
+
+    /**
+     * Startet die Berechnung der Zuverlässigkeit nach Heidtmann
+     *
+     * @param writeOutput Ob das Resultat als Ergebnis gemeldet werden soll
+     * @param decomp      Optional, eine vorherige Zerlegung des Graphen
+     * @return Die Zuverlässigkeit des Arbeitsgraphen
+     */
+    BigDecimal getHeidtmannsReliability(boolean writeOutput, Zerleg decomp) {
         BigDecimal prob;
 
         reassignProbabilities();
@@ -137,10 +148,15 @@ public class ProbabilityCalculator extends Thread implements Constants {
             //reportResult("The reduced network contains only one edge.\nThe reliability of the network is:\nP=" + prob);
 
         } else {
-            Zerleg zer = getDecomposition();
+            Zerleg zer;
+            //Falls der Parameter angegeben ist, wird dieser verwendet
+            if (decomp == null) {
+                zer = getDecomposition();
+            } else {
+                zer = decomp;
+            }
 
             long startTime = new Date().getTime();
-
             prob = BigDecimal.ZERO;
 
             for (ArrayList<HashSet<GraphElement>> al : zer.hz) {
@@ -161,7 +177,6 @@ public class ProbabilityCalculator extends Thread implements Constants {
                     p = p.multiply(BigDecimal.ONE.subtract(getPathProbability(hs1, true)));
 
                 }
-                System.out.println("");
                 //System.out.println("Wahrscheinlichkeit: " + p.toString());
                 prob = prob.add(p);
 
@@ -391,6 +406,8 @@ public class ProbabilityCalculator extends Thread implements Constants {
             int edgeCounter = 0;
             int nodeCounter;
 
+            //Zerlegung vorher anlegen
+            Zerleg decomposition = getDecomposition();
 
             BigInteger edgeStepCount = params.edgeEndValue.subtract(params.edgeStartValue).divide(params.edgeStepSize, BigDecimal.ROUND_FLOOR)
                     .add(BigDecimal.ONE).toBigInteger();
@@ -424,10 +441,9 @@ public class ProbabilityCalculator extends Thread implements Constants {
                         prob = getResilience(false);
                     } else {
                         //Reliability
-                        // Wahrscheinlichkeiten neu zuordnen. (wird in getResilience() auch gemacht)
-                        reassignProbabilities();
 
-                        prob = getHeidtmannsReliability(false);
+                        //Aufruf mit vorher angefertigter Zerlegung
+                        prob = getHeidtmannsReliability(false, decomposition);
                     }
 
 
@@ -513,6 +529,20 @@ public class ProbabilityCalculator extends Thread implements Constants {
      * @return Die Intaktwahrscheinlichkeit
      */
     private static BigDecimal getPathProbability(HashSet<GraphElement> path, boolean isNegative) {
+        BigDecimal p = BigDecimal.ONE;
+        for (GraphElement el : path) {
+            p = p.multiply(el.prob);
+        }
+        return p;
+    }
+
+    /**
+     * Berechnet die Intaktwahrscheinlichkeit eines Pfades
+     *
+     * @param path Der Pfad
+     * @return Die Intaktwahrscheinlichkeit
+     */
+    private static BigDecimal getPathProbabilityWithOutput(HashSet<GraphElement> path, boolean isNegative) {
         BigDecimal p = BigDecimal.ONE;
 
         if (isNegative) {
