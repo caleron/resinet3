@@ -30,7 +30,9 @@ public class GraphWrapper {
      * @param node2 Der Endknoten der Kante
      */
     public void addEdge(NodePoint node1, NodePoint node2) {
-        edges.add(new EdgeLine(node1, node2));
+        if (!node1.equals(node2)) {
+            edges.add(new EdgeLine(node1, node2));
+        }
     }
 
     /**
