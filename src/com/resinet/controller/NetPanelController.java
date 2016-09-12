@@ -374,9 +374,9 @@ public class NetPanelController implements MouseListener, MouseMotionListener {
                 if (edgeLine.ptSegDist(clickX, clickY) < EDGE_HOVER_DISTANCE) {
                     if (mouseEvent.isShiftDown() || SwingUtilities.isMiddleMouseButton(mouseEvent)) {
                         //mit shift oder mit mittlerer Maustaste geklickt --> Kante entfernen
-                        netData.removeEdge(edgeLine);
-
                         int edgeIndex = drawnEdges.indexOf(edgeLine);
+
+                        netData.removeEdge(edgeLine);
                         listener.graphElementDeleted(false, edgeIndex);
 
                     } else if (edgeClickable) {
