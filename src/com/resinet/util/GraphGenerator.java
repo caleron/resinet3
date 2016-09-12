@@ -44,7 +44,7 @@ public class GraphGenerator {
     public static GraphWrapper generateRing(int nodeCount) {
         GraphWrapper graph = new GraphWrapper();
 
-        //30 Pixel Abstand pro Knoten
+        //50 Pixel Abstand pro Knoten
         //radius = Umfang / 2*Pi
         double radius = (nodeCount * 50) / (2 * Math.PI);
 
@@ -72,7 +72,6 @@ public class GraphGenerator {
         graph.addEdge(lastNode, graph.nodes.get(0));
 
         return graph;
-
     }
 
     /**
@@ -85,7 +84,7 @@ public class GraphGenerator {
         //Ringgraphen als Basis
         GraphWrapper graph = generateRing(count);
 
-        //Kanten entfernen
+        //Alle Kanten entfernen
         graph.edges.clear();
 
         //Alle Kanten hinzufügen
@@ -141,7 +140,7 @@ public class GraphGenerator {
 
         //maximale Breite bestimmen
         double graphWidth = Math.pow(innerDescendants, height - 2) * leafCount * 35;
-
+        //Listen für Knoten auf der aktuellen und auf der nächsten Ebene
         ArrayList<NodePoint> currentLevelNodes = new ArrayList<>();
         ArrayList<NodePoint> nextLevelNodes = new ArrayList<>();
 
@@ -185,33 +184,27 @@ public class GraphGenerator {
         return graph;
     }
 
+    /**
+     * Generiert einen Stern-Graphen.
+     *
+     * @param nodeCount Die Anzahl an Knoten
+     * @return GraphWrapper mit allen Knoten und Kanten
+     */
     public static GraphWrapper generateStar(int nodeCount) {
-        GraphWrapper graph = new GraphWrapper();
-
-        //30 Pixel Abstand pro Knoten
-        //radius = Umfang / 2*Pi
-        double radius = (nodeCount * 70) / (2 * Math.PI);
-
+        //Anzahl um 1 verringern, da ein Knoten im Zentrum liegt
+        nodeCount--;
+        //Ring als Basis generieren
+        GraphWrapper graph = generateRing(nodeCount);
+        //Kanten entfernen
+        graph.edges.clear();
+        //Radius für die Position des Knotens im Zentrum bestimmen
+        double radius = (nodeCount * 50) / (2 * Math.PI);
+        //zentralen Knoten einfügen
         NodePoint centerNode = new NodePoint(radius, radius, false);
         graph.addNode(centerNode);
-        nodeCount--;
-
-        for (int i = 0; i < nodeCount; i++) {
-            //Winkel bestimmen
-            double angle = (i / (nodeCount * 1.0)) * (2.0 * Math.PI);
-
-            //Position berechnen
-            double x = radius * Math.cos(angle) + radius;
-            double y = radius * Math.sin(angle) + radius;
-
-            NodePoint np = new NodePoint(x, y, false);
-
-            graph.addNode(np);
-            //Verbindung zum Knoten im Zentrum herstellen
-            graph.addEdge(centerNode, np);
-        }
+        //Kanten von allen äußeren Knoten zum zentralen Knoten hinzufügen
+        graph.nodes.forEach(node -> graph.addEdge(node, centerNode));
 
         return graph;
-
     }
 }
