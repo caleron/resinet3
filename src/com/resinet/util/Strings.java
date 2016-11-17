@@ -40,12 +40,20 @@ public class Strings {
         bundle = ResourceBundle.getBundle("strings", currentLocale);
     }
 
-    static String getLastPath() {
-        return preferences.get("graphPath", null);
+    static String getLastGraphPath() {
+        return preferences.get("graphPath", "");
     }
 
-    static void setLastPath(String path) {
+    static void setLastGraphPath(String path) {
         preferences.put("graphPath", path);
+    }
+
+    public static String getLastResultPath() {
+        return preferences.get("resultPath", "");
+    }
+
+    public static void setLastResultPath(String path) {
+        preferences.put("resultPath", path);
     }
 
     /**

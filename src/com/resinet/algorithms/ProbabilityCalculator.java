@@ -347,7 +347,7 @@ public class ProbabilityCalculator extends Thread implements Constants {
     private void calculationSeries(CALCULATION_MODES calculationSeriesMode) {
 
         //Dialog zum Datei auswählen
-        JFileChooser chooseSaveFile = new JFileChooser();
+        JFileChooser chooseSaveFile = new JFileChooser(Strings.getLastResultPath());
         chooseSaveFile.setDialogType(JFileChooser.SAVE_DIALOG);
 
         FileNameExtensionFilter textFilter = new FileNameExtensionFilter(Strings.getLocalizedString("text.files"), "txt");
@@ -363,6 +363,7 @@ public class ProbabilityCalculator extends Thread implements Constants {
         int state = chooseSaveFile.showSaveDialog(null);
         if (state == JFileChooser.APPROVE_OPTION) {
             filepath = chooseSaveFile.getSelectedFile().toString();
+            Strings.setLastResultPath(filepath);
 
             if (textFilter.accept(chooseSaveFile.getSelectedFile())) {
                 format = "text";

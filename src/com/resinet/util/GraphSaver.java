@@ -48,7 +48,7 @@ public final class GraphSaver {
      */
     public static CalculationParams inputNet(Component dialogParentComponent, int graphWidth, int graphHeight) {
         //Dialog zum Datei auswählen
-        JFileChooser chooseFile = new JFileChooser(Strings.getLastPath());
+        JFileChooser chooseFile = new JFileChooser(Strings.getLastGraphPath());
         chooseFile.setDialogTitle(Strings.getLocalizedString("open.file"));
 
         //Dateifilter für Resinet- und Pajek-Netzwerke einfpgen
@@ -66,7 +66,7 @@ public final class GraphSaver {
             return null;
         }
 
-        Strings.setLastPath(netFile.getPath());
+        Strings.setLastGraphPath(netFile.getPath());
 
         if (resinetFilter.accept(netFile)) {
             return readResinetNetwork(netFile, dialogParentComponent);
@@ -355,7 +355,7 @@ public final class GraphSaver {
      */
     public static void exportNet(CalculationParams params, NetPanel netPanel, int graphWidth, int graphHeight) {
         //Dialog zum Datei auswählen
-        JFileChooser chooseSaveFile = new JFileChooser(Strings.getLastPath());
+        JFileChooser chooseSaveFile = new JFileChooser(Strings.getLastGraphPath());
         chooseSaveFile.setDialogType(JFileChooser.SAVE_DIALOG);
 
         //Speichern in zwei Formaten anbieten
@@ -374,7 +374,7 @@ public final class GraphSaver {
         int state = chooseSaveFile.showSaveDialog(null);
         if (state == JFileChooser.APPROVE_OPTION) {
             path = chooseSaveFile.getSelectedFile().toString();
-            Strings.setLastPath(path);
+            Strings.setLastGraphPath(path);
             saveNetFile = new File(path);
 
             if (pajekFilter.accept(saveNetFile)) {
